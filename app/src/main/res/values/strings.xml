@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Activity Monitoring</string>
+    <string name="error_accelerometer_unavailable">Accelerometer Sensor not available.</string>
 </resources>
