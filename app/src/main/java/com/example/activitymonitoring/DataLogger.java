@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class DataLogger {
@@ -15,6 +17,7 @@ public class DataLogger {
     private DataOutputStream dataOutputStream = null;
     private String filePath;
     private Boolean is_recording = Boolean.FALSE;
+    private Map<Long, float[]> dataSource = new HashMap<>();
 
     public DataLogger(Context context) {
         filesDir = context.getFilesDir();
@@ -35,7 +38,7 @@ public class DataLogger {
             }
         } catch (IOException e) {
             resetValues();
-            System.out.println("Could not setup filepathing, see stack trace below.");
+            System.out.println("Could not setup file path, see stack trace below.");
             e.printStackTrace();
             return Boolean.FALSE;
         }
@@ -88,10 +91,12 @@ public class DataLogger {
         return filePath;
     }
 
-    public String createDataString(String sensorName, float[] values) {
+    public String createDataString(long timestamp, float[] values, String sensorName) {
         // write sensorName to file
         StringBuilder output = new StringBuilder();
         output.append(sensorName);
+        output.append(";");
+        output.append(timestamp);
         output.append(";");
         for (float sensorValue : values) {
             // print sensorValue
@@ -100,6 +105,24 @@ public class DataLogger {
         }
         output.append(System.lineSeparator());
         return output.toString();
+    }
+
+    public String createDataString(long timestamp, float[] values) {
+        return this.createDataString(timestamp, values, "");
+    }
+
+    public void record(long timestamp, float[] values, String sensorName) {
+        dataSource.put(timestamp, values);
+
+        String dataString = createDataString(timestamp, values, sensorName);
+        this.record(dataString);
+    }
+
+    public void record(long timestamp, float[] values) {
+        dataSource.put(timestamp, values);
+
+        String dataString = createDataString(timestamp, values);
+        this.record(dataString);
     }
 
     public void record(String dataString) {

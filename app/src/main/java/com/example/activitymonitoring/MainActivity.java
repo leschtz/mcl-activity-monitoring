@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
         }
 
-        dataLogger = new DataLogger(getBaseContext());
+        dataLogger = new DataLogger(getApplicationContext());
 
         Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
         ImageButton playBtn = (ImageButton) findViewById(R.id.play_button);
@@ -80,18 +80,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStop() {
         super.onStop();
-
+        if(dataLogger != null) {
+            // ensure no data is lost and the logger is nicely ending.
+            dataLogger.stopRecording();
+        }
         sensorManager.unregisterListener(this);
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         int sensorType = sensorEvent.sensor.getType();
+        long timestamp = System.currentTimeMillis();
+
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
                 float[] currentValue = sensorEvent.values;
-                String data = dataLogger.createDataString(sensorEvent.sensor.getName(), currentValue);
-                dataLogger.record(data);
+                dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
                 // data gets written to /data/data/com.example.activitymonitoring/files
                 TextView textFilePath = (TextView) findViewById(R.id.label_file_path);
