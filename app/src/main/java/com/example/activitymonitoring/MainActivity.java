@@ -8,11 +8,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.widget.TextView;
+
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private SensorManager sensorManager;
     private Sensor sensorAccelerometer;
+    private DataLogger dataLogger;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +29,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             TextView textSensorAccelerometer = (TextView) findViewById(R.id.sensor_accelerometer);
             textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
         }
+
+        dataLogger = new DataLogger(getBaseContext());
+        if (dataLogger == null) {
+
+            TextView textSensorAccelerometer = (TextView) findViewById(R.id.sensor_accelerometer);
+            textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
+        }
+
+        // data gets written to /data/data/com.example.activitymonitoring/files
+        TextView textFilePath = (TextView) findViewById(R.id.label_file_path);
+        String path = dataLogger.getFilePath();
+        textFilePath.setText(getResources().getString(R.string.file_path, path));
     }
 
     @Override
@@ -50,7 +65,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
                 float[] currentValue = sensorEvent.values;
-                writeDataToFile(sensorEvent.sensor.getName(), currentValue);
+                String data = dataLogger.createDataString(sensorEvent.sensor.getName(), currentValue);
+                dataLogger.writeToFile(data);
+                TextView textValueAccelerometer = (TextView) findViewById(R.id.value_accelerometer);
+                textValueAccelerometer.setText(getResources().getString(R.string.label_accelerometer, currentValue[0], currentValue[1], currentValue[2]));
                 break;
             default:
                 // nothing
@@ -62,16 +80,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    protected void writeDataToFile(String sensorName, float[] values) {
-        // write sensorName to file
-        StringBuilder output = new StringBuilder();
-        output.append(sensorName);
-        output.append(";");
-        for(float sensorValue : values) {
 
-            // print sensorValue
-            output.append(sensorValue);
-            output.append(";");
-        }
-    }
 }
