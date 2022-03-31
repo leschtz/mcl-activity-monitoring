@@ -4,4 +4,11 @@
     <string name="error_data_logging_unavailable">DataLogger not available.</string>
     <string name="label_accelerometer">Accelerometer Values: x: %1$.2f, y: %2$.2f, z: %3$.2f</string>
     <string name="file_path">File Path: %1$s</string>
+
+    <string name="play_icon_description">Start Logging Data</string>
+
+    <string name="toast_start_recording">Started Recording</string>
+    <string name="toast_pause_recording">Paused Recording</string>
+    <string name="toast_stop_recording">Stopped Recording</string>
+    <string name="toast_activity_failed">Activity Failed</string>
 </resources>

@@ -6,37 +6,94 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 
 
 public class DataLogger {
-
-    String filename = "data.log";
-    DataOutputStream dataOutputStream = null;
+    private String filename;
+    private File filesDir;
+    private DataOutputStream dataOutputStream = null;
     private String filePath;
+    private Boolean is_recording = Boolean.FALSE;
 
-    public DataLogger (Context context) {
+    public DataLogger(Context context) {
+        filesDir = context.getFilesDir();
+    }
+
+    public Boolean startRecording() {
         try {
+            if (is_recording == Boolean.FALSE) {
+                is_recording = Boolean.TRUE;
 
-            File f = new File(context.getFilesDir(), filename);
-            FileOutputStream file = new FileOutputStream(f);
-            dataOutputStream = new DataOutputStream(file);
-            filePath = f.getAbsolutePath();
+                if (dataOutputStream == null) {
+                    filename = String.format("%s-data.log", Instant.now().toString());
+                    File f = new File(filesDir, filename);
+
+                    dataOutputStream = new DataOutputStream(new FileOutputStream(f));
+                    filePath = f.getAbsoluteFile().toString();
+                }
+            }
         } catch (IOException e) {
-            filePath = "could not setup filepath";
+            resetValues();
             System.out.println("Could not setup filepathing, see stack trace below.");
             e.printStackTrace();
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
+    }
+
+    public Boolean pauseRecording() {
+        is_recording = Boolean.FALSE;
+        flushDataStream();
+        return Boolean.TRUE;
+    }
+
+
+    public Boolean stopRecording() {
+        is_recording = Boolean.FALSE;
+        if (dataOutputStream == null) {
+            return Boolean.TRUE;
+        }
+
+        flushDataStream();
+        try {
+            dataOutputStream.close();
+            resetValues();
+        } catch (IOException e) {
+            //e.printStackTrace();
+            resetValues();
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
+    }
+
+    private void resetValues() {
+        is_recording = Boolean.FALSE;
+        filePath = "";
+        filename = "";
+        dataOutputStream = null;
+    }
+
+    private void flushDataStream() {
+        if (dataOutputStream != null) {
+            try {
+                dataOutputStream.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public String getFilePath() {
         return filePath;
     }
+
     public String createDataString(String sensorName, float[] values) {
         // write sensorName to file
         StringBuilder output = new StringBuilder();
         output.append(sensorName);
         output.append(";");
-        for(float sensorValue : values) {
+        for (float sensorValue : values) {
             // print sensorValue
             output.append(sensorValue);
             output.append(";");
@@ -45,15 +102,17 @@ public class DataLogger {
         return output.toString();
     }
 
-    public void writeToFile(String dataString) {
+    public void record(String dataString) {
         if (dataOutputStream == null) {
             return;
         }
-        try {
-            dataOutputStream.write(dataString.getBytes());
-            dataOutputStream.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (is_recording) {
+            try {
+                dataOutputStream.write(dataString.getBytes());
+                dataOutputStream.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

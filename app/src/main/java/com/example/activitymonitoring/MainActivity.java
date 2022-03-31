@@ -8,8 +8,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.Environment;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -26,28 +28,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (sensorAccelerometer == null) {
-            TextView textSensorAccelerometer = (TextView) findViewById(R.id.sensor_accelerometer);
+            TextView textSensorAccelerometer = (TextView) findViewById(R.id.value_accelerometer);
             textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
         }
 
         dataLogger = new DataLogger(getBaseContext());
-        if (dataLogger == null) {
 
-            TextView textSensorAccelerometer = (TextView) findViewById(R.id.sensor_accelerometer);
-            textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
-        }
+        Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
+        ImageButton playBtn = (ImageButton) findViewById(R.id.play_button);
+        playBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (dataLogger.startRecording()) {
+                    Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
+                } else {
+                    failureActivity.show();
+                }
+            }
+        });
 
-        // data gets written to /data/data/com.example.activitymonitoring/files
-        TextView textFilePath = (TextView) findViewById(R.id.label_file_path);
-        String path = dataLogger.getFilePath();
-        textFilePath.setText(getResources().getString(R.string.file_path, path));
+        ImageButton pauseBtn = (ImageButton) findViewById(R.id.pause_button);
+        pauseBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (dataLogger.pauseRecording()) {
+                    Toast.makeText(getApplicationContext(), R.string.toast_pause_recording, Toast.LENGTH_SHORT).show();
+                } else {
+                    failureActivity.show();
+                }
+            }
+        });
+        ImageButton stopBtn = (ImageButton) findViewById(R.id.stop_button);
+        stopBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (dataLogger.stopRecording()) {
+                    Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+                } else {
+                    failureActivity.show();
+                }
+            }
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        if(sensorAccelerometer != null) {
+        if (sensorAccelerometer != null) {
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
@@ -66,7 +91,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case Sensor.TYPE_ACCELEROMETER:
                 float[] currentValue = sensorEvent.values;
                 String data = dataLogger.createDataString(sensorEvent.sensor.getName(), currentValue);
-                dataLogger.writeToFile(data);
+                dataLogger.record(data);
+
+                // data gets written to /data/data/com.example.activitymonitoring/files
+                TextView textFilePath = (TextView) findViewById(R.id.label_file_path);
+                String path = dataLogger.getFilePath();
+                textFilePath.setText(getResources().getString(R.string.file_path, path));
+
                 TextView textValueAccelerometer = (TextView) findViewById(R.id.value_accelerometer);
                 textValueAccelerometer.setText(getResources().getString(R.string.label_accelerometer, currentValue[0], currentValue[1], currentValue[2]));
                 break;
