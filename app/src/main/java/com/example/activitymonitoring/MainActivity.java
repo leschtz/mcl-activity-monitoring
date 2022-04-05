@@ -7,8 +7,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +43,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             TextView textSensorGyroscope = findViewById(R.id.value_gyroscope);
             textSensorGyroscope.setText(getResources().getString(R.string.error_gyroscope_unavailable));
         }
+
+        TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
+        textSensorAccelerometer.setText(R.string.seconds_left_default);
 
         dataLogger = new DataLogger(getApplicationContext());
 
@@ -83,13 +91,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
                 Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
 
-                // todo: wait for t Seconds
 
-                if (!dataLogger.stopRecording()) {
-                    failureActivity.show();
-                    return;
+                // I'm sure this is not the nicest way to do this, but it works.
+                EditText editText = findViewById(R.id.timer_value);
+                Long time;
+                try {
+                    time = Long.parseLong(editText.getText().toString()) * 1000L;
+                } catch(NumberFormatException nfe) {
+                    time = 10 * 1000L;
                 }
-                Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+                new CountDownTimer(time, 1000) {
+                    @Override
+                    public void onTick(long timeLeftInMillis) {
+
+                        if(dataLogger == null || !dataLogger.isRecording()) {
+                            return;
+                        }
+                        TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
+                        textSensorAccelerometer.setText(getResources().getString(R.string.seconds_left, (timeLeftInMillis / 1000)));
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        if (dataLogger == null || !dataLogger.isRecording()) {
+                            return;
+                        }
+                        if (!dataLogger.stopRecording()) {
+                            failureActivity.show();
+                            return;
+                        }
+
+                        RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
+                        Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+                    }
+                }.start();
+
+
             }
         });
     }
@@ -132,6 +169,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else {
             TextView textFilePath = findViewById(R.id.label_file_path);
             textFilePath.setText(getResources().getString(R.string.file_path, "NOT_RECORDING"));
+
+            TextView textSecondsLeft = findViewById(R.id.timer_rest_time);
+            textSecondsLeft.setText(R.string.seconds_left_default);
         }
 
         switch (sensorType) {

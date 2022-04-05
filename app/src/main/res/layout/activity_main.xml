@@ -34,6 +34,31 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/value_accelerometer" />
 
+    <TextView
+        android:id="@+id/timer_rest_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="@string/seconds_left"
+        app:layout_constraintBottom_toTopOf="@id/timer_value"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+    <EditText
+        android:id="@+id/timer_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="12dp"
+        android:ems="7"
+        android:inputType="number"
+        android:hint="Timer Seconds"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"/>
+        <!--
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/value_gyroscope"
+        -->
+
+
+
     <ImageButton
         android:id="@+id/play_button"
         android:layout_width="wrap_content"
@@ -70,5 +95,7 @@
         app:layout_constraintRight_toLeftOf="@+id/stop_button"
         app:layout_constraintBottom_toBottomOf="parent">
     </ImageButton>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

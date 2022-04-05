@@ -7,6 +7,9 @@
     <string name="label_gyroscope">Gyroscope Values: x: %1$.2f, y: %2$.2f, z: %3$.2f</string>
     <string name="file_path">File Path: %1$s</string>
 
+    <string name="seconds_left_default">seconds left.</string>
+    <string name="seconds_left">%1$d seconds left.</string>
+
     <string name="play_icon_description">Start Logging Data</string>
 
     <string name="toast_start_recording">Started Recording</string>
