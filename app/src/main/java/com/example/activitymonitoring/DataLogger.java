@@ -23,6 +23,10 @@ public class DataLogger {
         filesDir = context.getFilesDir();
     }
 
+    public Boolean isRecording() {
+        return is_recording;
+    }
+
     public Boolean startRecording() {
         try {
             if (is_recording == Boolean.FALSE) {

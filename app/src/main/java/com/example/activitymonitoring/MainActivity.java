@@ -17,6 +17,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private SensorManager sensorManager;
     private Sensor sensorAccelerometer;
+    private Sensor sensorGyroscope;
     private DataLogger dataLogger;
 
     @Override
@@ -28,14 +29,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (sensorAccelerometer == null) {
-            TextView textSensorAccelerometer = (TextView) findViewById(R.id.value_accelerometer);
+            TextView textSensorAccelerometer = findViewById(R.id.value_accelerometer);
             textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
+        }
+
+        sensorGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        if (sensorGyroscope == null) {
+            TextView textSensorGyroscope = findViewById(R.id.value_gyroscope);
+            textSensorGyroscope.setText(getResources().getString(R.string.error_gyroscope_unavailable));
         }
 
         dataLogger = new DataLogger(getApplicationContext());
 
         Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
-        ImageButton playBtn = (ImageButton) findViewById(R.id.play_button);
+        ImageButton playBtn = findViewById(R.id.play_button);
         playBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 if (dataLogger.startRecording()) {
@@ -46,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        ImageButton pauseBtn = (ImageButton) findViewById(R.id.pause_button);
+        ImageButton pauseBtn = findViewById(R.id.pause_button);
         pauseBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 if (dataLogger.pauseRecording()) {
@@ -56,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         });
-        ImageButton stopBtn = (ImageButton) findViewById(R.id.stop_button);
+        ImageButton stopBtn = findViewById(R.id.stop_button);
         stopBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 if (dataLogger.stopRecording()) {
@@ -64,6 +71,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 } else {
                     failureActivity.show();
                 }
+            }
+        });
+
+        ImageButton timerBtn = findViewById(R.id.timed_log_button);
+        timerBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                if (!dataLogger.startRecording()) {
+                    failureActivity.show();
+                    return;
+                }
+                Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
+
+                // todo: wait for t Seconds
+
+                if (!dataLogger.stopRecording()) {
+                    failureActivity.show();
+                    return;
+                }
+                Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -75,12 +101,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (sensorAccelerometer != null) {
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
+
+        if (sensorGyroscope != null) {
+            sensorManager.registerListener(this, sensorGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(dataLogger != null) {
+        if (dataLogger != null) {
             // ensure no data is lost and the logger is nicely ending.
             dataLogger.stopRecording();
         }
@@ -92,18 +122,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
 
+        float[] currentValue;
+
+        // data gets written to /data/data/com.example.activitymonitoring/files
+        if (dataLogger.isRecording()) {
+            TextView textFilePath = findViewById(R.id.label_file_path);
+            String path = dataLogger.getFilePath();
+            textFilePath.setText(getResources().getString(R.string.file_path, path));
+        } else {
+            TextView textFilePath = findViewById(R.id.label_file_path);
+            textFilePath.setText(getResources().getString(R.string.file_path, "NOT_RECORDING"));
+        }
+
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
-                float[] currentValue = sensorEvent.values;
+                currentValue = sensorEvent.values;
                 dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
-                // data gets written to /data/data/com.example.activitymonitoring/files
-                TextView textFilePath = (TextView) findViewById(R.id.label_file_path);
-                String path = dataLogger.getFilePath();
-                textFilePath.setText(getResources().getString(R.string.file_path, path));
-
-                TextView textValueAccelerometer = (TextView) findViewById(R.id.value_accelerometer);
+                TextView textValueAccelerometer = findViewById(R.id.value_accelerometer);
                 textValueAccelerometer.setText(getResources().getString(R.string.label_accelerometer, currentValue[0], currentValue[1], currentValue[2]));
+                break;
+
+            case Sensor.TYPE_GYROSCOPE:
+                currentValue = sensorEvent.values;
+                dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
+
+                TextView textValueGyroscope = findViewById(R.id.value_gyroscope);
+                textValueGyroscope.setText(getResources().getString(R.string.label_gyroscope, currentValue[0], currentValue[1], currentValue[2]));
                 break;
             default:
                 // nothing

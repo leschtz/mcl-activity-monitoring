@@ -25,6 +25,15 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/label_file_path" />
 
+    <TextView
+        android:id="@+id/value_gyroscope"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/label_gyroscope"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/value_accelerometer" />
+
     <ImageButton
         android:id="@+id/play_button"
         android:layout_width="wrap_content"
@@ -38,6 +47,7 @@
         android:id="@+id/stop_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="Stop Logging Data"
         android:src="@drawable/ic_baseline_stop_circle_24"
         app:layout_constraintRight_toLeftOf="@+id/pause_button"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -46,8 +56,18 @@
         android:id="@+id/pause_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="Pause Logging Data"
         android:src="@drawable/ic_baseline_pause_circle_filled_24"
         app:layout_constraintRight_toLeftOf="@+id/play_button"
+        app:layout_constraintBottom_toBottomOf="parent">
+    </ImageButton>
+    <ImageButton
+        android:id="@+id/timed_log_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Timed Data Logging"
+        android:src="@drawable/ic_baseline_timer_24"
+        app:layout_constraintRight_toLeftOf="@+id/stop_button"
         app:layout_constraintBottom_toBottomOf="parent">
     </ImageButton>
 
