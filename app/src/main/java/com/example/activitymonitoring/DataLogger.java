@@ -114,6 +114,18 @@ public class DataLogger {
     public String createDataString(long timestamp, float[] values) {
         return this.createDataString(timestamp, values, "");
     }
+    public String createDataString( float[] values) {
+        String valuesString = "";
+        for (int i = 0; i < values.length ; i++) {
+            if (i == values.length -1){
+                valuesString+= String.valueOf(values[i])+"\n";
+            }else{
+                valuesString+= String.valueOf(values[i])+"; ";
+            }
+
+        }
+        return valuesString;
+    }
 
     public void record(long timestamp, float[] values, String sensorName) {
         dataSource.put(timestamp, values);
@@ -126,6 +138,11 @@ public class DataLogger {
         dataSource.put(timestamp, values);
 
         String dataString = createDataString(timestamp, values);
+        this.record(dataString);
+    }
+    public void record( float[] values) {
+
+        String dataString = createDataString( values);
         this.record(dataString);
     }
 

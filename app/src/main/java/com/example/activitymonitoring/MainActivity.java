@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor sensorAccelerometer;
     private Sensor sensorGyroscope;
     private DataLogger dataLogger;
+    protected float[] currentValue = new float[6];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,8 +159,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent sensorEvent) {
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
-
-        float[] currentValue;
+        for (float x :currentValue
+             ) {
+            System.out.print(String.valueOf(x)+"; ");
+        }
+        System.out.println();
+        //float[] currentValue = new float[6];
 
         // data gets written to /data/data/com.example.activitymonitoring/files
         if (dataLogger.isRecording()) {
@@ -176,19 +181,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
-                currentValue = sensorEvent.values;
-                dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
-
+                //currentValue = sensorEvent.values;
+                currentValue[0]= sensorEvent.values[0];
+                currentValue[1]= sensorEvent.values[1];
+                currentValue[2]= sensorEvent.values[2];
+                //dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
+                dataLogger.record(currentValue);
                 TextView textValueAccelerometer = findViewById(R.id.value_accelerometer);
                 textValueAccelerometer.setText(getResources().getString(R.string.label_accelerometer, currentValue[0], currentValue[1], currentValue[2]));
                 break;
 
             case Sensor.TYPE_GYROSCOPE:
-                currentValue = sensorEvent.values;
-                dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
+                //currentValue = sensorEvent.values;
+                currentValue[3]= sensorEvent.values[0];
+                currentValue[4]= sensorEvent.values[1];
+                currentValue[5]= sensorEvent.values[2];
+                dataLogger.record(currentValue);
+                //dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
                 TextView textValueGyroscope = findViewById(R.id.value_gyroscope);
-                textValueGyroscope.setText(getResources().getString(R.string.label_gyroscope, currentValue[0], currentValue[1], currentValue[2]));
+                textValueGyroscope.setText(getResources().getString(R.string.label_gyroscope, currentValue[3], currentValue[4], currentValue[5]));
+
+                //textValueGyroscope.setText(getResources().getString(R.string.label_gyroscope, currentValue[0], currentValue[1], currentValue[2]));
                 break;
             default:
                 // nothing
