@@ -3,6 +3,7 @@ package com.example.activitymonitoring;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,10 +14,19 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -24,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor sensorAccelerometer;
     private Sensor sensorGyroscope;
     private DataLogger dataLogger;
+    private KNNClassifier classifier;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,14 +108,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Long time;
                 try {
                     time = Long.parseLong(editText.getText().toString()) * 1000L;
-                } catch(NumberFormatException nfe) {
+                } catch (NumberFormatException nfe) {
                     time = 10 * 1000L;
                 }
                 new CountDownTimer(time, 1000) {
                     @Override
                     public void onTick(long timeLeftInMillis) {
 
-                        if(dataLogger == null || !dataLogger.isRecording()) {
+                        if (dataLogger == null || !dataLogger.isRecording()) {
                             return;
                         }
                         TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
@@ -128,7 +139,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
             }
+
+
+
         });
+        Button classifyBtn = findViewById(R.id.classify_button);
+        classifyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                double[] test = {0.15546063, -0.18447587, -0.03802524, -1.2355938, 1.9710877, 9.363115};
+
+                int result = classifier.classify(test);
+                System.out.println("Classification result is : " + result);
+
+                test = new double[]{6.3976064, 1.4413095, -1.5993267, -5.1666985, 5.567502, -8.977047};
+
+                result = classifier.classify(test);
+                System.out.println("Classification result is : " + result);
+            }
+        });
+
+
+
+
+       this.classifier = new KNNClassifier(3,7, readFile());
     }
 
     @Override
@@ -198,6 +234,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    public List<double[]> readFile(){
+
+        List<double[]> rowList = new ArrayList<double[]>();
+        try{
+            InputStream is =  getResources().openRawResource(R.raw.neighbors);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] lineItemsStrings = line.split(",");
+                    double[] lineItems = new double[lineItemsStrings.length];
+                    for (int i = 0; i < lineItemsStrings.length; i++) {
+                        lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
+                    }
+                    rowList.add(lineItems);
+                }
+        }catch (Exception e){
+            System.out.println("Could not open neighbor file:   "+ e);
+        }
+
+        return rowList;
     }
 
 
