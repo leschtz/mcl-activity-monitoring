@@ -17,7 +17,7 @@ public class DataLogger {
     private DataOutputStream dataOutputStream = null;
     private String filePath;
     private Boolean is_recording = Boolean.FALSE;
-    private Map<Long, float[]> dataSource = new HashMap<>();
+    private Map<String, Map<Long, float[]>> sensorSource = new HashMap<>();
 
     public DataLogger(Context context) {
         filesDir = context.getFilesDir();
@@ -95,6 +95,13 @@ public class DataLogger {
         return filePath;
     }
 
+    // collects the logged data and returns it to the collector.
+    public Map<String, Map<Long, float[]>> collect() {
+        Map<String, Map<Long, float[]>> data = new HashMap<>(this.sensorSource);
+        this.sensorSource.clear();
+        return data;
+    }
+
     public String createDataString(long timestamp, float[] values, String sensorName) {
         // write sensorName to file
         StringBuilder output = new StringBuilder();
@@ -111,21 +118,18 @@ public class DataLogger {
         return output.toString();
     }
 
-    public String createDataString(long timestamp, float[] values) {
-        return this.createDataString(timestamp, values, "");
-    }
-
     public void record(long timestamp, float[] values, String sensorName) {
-        dataSource.put(timestamp, values);
+        if (!this.sensorSource.containsKey(sensorName)) {
+            Map<Long, float[]> initial_data = new HashMap<>();
+            initial_data.put(timestamp, values);
+            this.sensorSource.put(sensorName, initial_data);
+        }
+        Map<Long, float[]> data = sensorSource.get(sensorName);
+        if (data != null) {
+            data.put(timestamp, values);
+        }
 
         String dataString = createDataString(timestamp, values, sensorName);
-        this.record(dataString);
-    }
-
-    public void record(long timestamp, float[] values) {
-        dataSource.put(timestamp, values);
-
-        String dataString = createDataString(timestamp, values);
         this.record(dataString);
     }
 
