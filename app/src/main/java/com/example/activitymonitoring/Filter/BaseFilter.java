@@ -1,23 +1,23 @@
 package com.example.activitymonitoring.Filter;
 
-import com.example.activitymonitoring.DataStrategy.DataStrategy;
+import com.example.activitymonitoring.DataStrategy.Strategy;
 
 import java.util.ArrayList;
 import java.util.List;
 
 abstract class DataFilter {
-    protected DataStrategy strategy;
+    protected Strategy strategy;
     protected List<Double[]> data;
 
-    public DataFilter(DataStrategy strategy) {
+    public DataFilter(Strategy strategy) {
         this.strategy = strategy;
     }
 
-    public void setStrategy(DataStrategy strategy) {
+    public void setStrategy(Strategy strategy) {
         this.strategy = strategy;
     }
 
-    public DataStrategy getStrategy() {
+    public Strategy getStrategy() {
         return this.strategy;
     }
 

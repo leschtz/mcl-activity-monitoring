@@ -1,6 +1,6 @@
 package com.example.activitymonitoring.Filter;
 
-import com.example.activitymonitoring.DataStrategy.DataStrategy;
+import com.example.activitymonitoring.DataStrategy.Strategy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,11 +10,11 @@ import java.util.List;
 public class TimeFilter extends DataFilter {
     private double time_threshold;
 
-    public TimeFilter(DataStrategy strategy) {
+    public TimeFilter(Strategy strategy) {
         this(strategy, 2 * 1000);
     }
 
-    public TimeFilter(DataStrategy strategy, double time_threshold_in_ms) {
+    public TimeFilter(Strategy strategy, double time_threshold_in_ms) {
         super(strategy);
         if (time_threshold_in_ms < 0) {
             throw new UnsupportedOperationException();
