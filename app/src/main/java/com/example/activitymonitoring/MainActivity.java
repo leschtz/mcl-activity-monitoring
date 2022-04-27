@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
 
 
-
         });
         Button classifyBtn = findViewById(R.id.classify_button);
         classifyBtn.setOnClickListener(new View.OnClickListener() {
@@ -162,9 +161,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
 
-
-
-       this.classifier = new KNNClassifier(3,7, readFile());
+        this.classifier = new KNNClassifier(3, 7, readFile());
     }
 
     @Override
@@ -236,25 +233,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public List<double[]> readFile(){
+    public List<double[]> readFile() {
 
         List<double[]> rowList = new ArrayList<double[]>();
-        try{
-            InputStream is =  getResources().openRawResource(R.raw.neighbors);
+        try {
+            InputStream is = getResources().openRawResource(R.raw.neighbors);
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] lineItemsStrings = line.split(",");
-                    double[] lineItems = new double[lineItemsStrings.length];
-                    for (int i = 0; i < lineItemsStrings.length; i++) {
-                        lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
-                    }
-                    rowList.add(lineItems);
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] lineItemsStrings = line.split(",");
+                double[] lineItems = new double[lineItemsStrings.length];
+                for (int i = 0; i < lineItemsStrings.length; i++) {
+                    lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
                 }
-        }catch (Exception e){
-            System.out.println("Could not open neighbor file:   "+ e);
+                rowList.add(lineItems);
+            }
+        } catch (Exception e) {
+            System.out.println("Could not open neighbor file:   " + e);
         }
 
         return rowList;
