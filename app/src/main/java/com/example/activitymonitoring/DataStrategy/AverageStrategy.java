@@ -3,7 +3,7 @@ package com.example.activitymonitoring.DataStrategy;
 import java.util.List;
 import java.util.Arrays;
 
-public class AverageStrategy implements DataStrategy {
+public class AverageStrategy implements Strategy {
 
 
     @Override
