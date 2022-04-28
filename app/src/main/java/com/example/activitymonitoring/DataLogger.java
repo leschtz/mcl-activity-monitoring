@@ -28,7 +28,9 @@ public class DataLogger {
     }
 
     public Boolean startRecording() {
+
         try {
+            Thread.sleep(2000);
             if (is_recording == Boolean.FALSE) {
                 is_recording = Boolean.TRUE;
 
@@ -40,7 +42,7 @@ public class DataLogger {
                     filePath = f.getAbsoluteFile().toString();
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             resetValues();
             System.out.println("Could not setup file path, see stack trace below.");
             e.printStackTrace();
