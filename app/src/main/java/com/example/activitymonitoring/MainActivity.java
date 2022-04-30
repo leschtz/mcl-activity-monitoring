@@ -148,12 +148,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
 
 
-                double[] test = {0.15546063, -0.18447587, -0.03802524, -1.2355938, 1.9710877, 9.363115};
+                double[] test = {-4.1922474,-3.466804,2.006341,-0.54023397,-0.8074875,-1.6421585};
 
                 int result = classifier.classify(test);
                 System.out.println("Classification result is : " + result);
 
-                test = new double[]{6.3976064, 1.4413095, -1.5993267, -5.1666985, 5.567502, -8.977047};
+                test = new double[]{-0.06849326,-0.08689558,-0.0388663,-1.364695,-0.7637503,9.644144};
 
                 result = classifier.classify(test);
                 System.out.println("Classification result is : " + result);
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
 
-        this.classifier = new KNNClassifier(3, 7, readFile());
+       this.classifier = new KNNClassifier(13,7, readFile());
     }
 
     @Override

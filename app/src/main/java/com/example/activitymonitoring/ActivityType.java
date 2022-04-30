@@ -6,6 +6,6 @@ public enum ActivityType {
     RUN,
     JUMP,
     SQUAT,
-    SIT,
     STAND,
+    SIT
 }
