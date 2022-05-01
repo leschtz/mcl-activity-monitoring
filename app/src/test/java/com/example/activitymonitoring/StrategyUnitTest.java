@@ -20,8 +20,8 @@ import java.util.List;
 public class StrategyUnitTest {
     @Test
     public void averageStrategy_resultIsCorrect() {
-        List<double[]> data = new ArrayList<>();
-        double[] entry = {0.0, 0.2, 0.4, 0.6};
+        List<float[]> data = new ArrayList<>();
+        float[] entry = {0.0f, 0.2f, 0.4f, 0.6f};
         for(int i = 0; i < 10; i++) {
             data.add(entry);
         }
@@ -36,8 +36,8 @@ public class StrategyUnitTest {
 
     @Test
     public void averageStrategy_canHandleNull() {
-        List<double[]> data = new ArrayList<>();
-        double[] e_1 = {0.0, 0.2, 0.4, 0.6};
+        List<float[]> data = new ArrayList<>();
+        float[] e_1 = {0.0f, 0.2f, 0.4f, 0.6f};
         for(int i = 0; i < 10; i++) {
             data.add(e_1);
             data.add(null);
