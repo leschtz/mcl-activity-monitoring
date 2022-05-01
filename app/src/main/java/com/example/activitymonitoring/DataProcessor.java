@@ -1,19 +1,57 @@
 package com.example.activitymonitoring;
 
 
+import com.example.activitymonitoring.DataStrategy.Strategy;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class DataProcessor {
     private Map<String, Map<Long, float[]>> sensorData;
-    private List<Double[]> data;
-    private SortedMap<Long, float[]> correct_data;
+    private TreeMap<Long, float[]> alignedData;
 
-    public DataProcessor(List<Double[]> data) {
-        this.data = data;
+    public DataProcessor() {
+        this.sensorData = null;
+        this.alignedData = new TreeMap<>();
+    }
+
+    public DataProcessor(Map<String, Map<Long, float[]>> data) {
+        this.sensorData = data;
+        this.alignedData = new TreeMap<>();
+        this.align();
+    }
+
+    public void addRawData(Map<String, Map<Long, float[]>> data) {
+        if (this.sensorData == null) {
+            this.sensorData = data;
+        } else {
+            // todo: add raw data correctly
+
+            for (Map.Entry<String, Map<Long, float[]>> sensor : data.entrySet()) {
+                if (this.sensorData.containsKey(sensor.getKey())) {
+                    Map<Long, float[]> sensorSpecificData = this.sensorData.get(sensor.getKey());
+
+                    if (sensorSpecificData == null) {
+                        this.sensorData.put(sensor.getKey(), sensor.getValue());
+                    } else {
+                        for (Map.Entry<Long, float[]> sensorData : sensorSpecificData.entrySet()) {
+                            if((sensorData == null) || (sensorData.getKey() == null)) {
+                                continue;
+                            }
+                            this.sensorData.get(sensor.getKey()).put(sensorData.getKey(), sensorData.getValue());
+                        }
+                    }
+                } else {
+                    this.sensorData.put(sensor.getKey(), sensor.getValue());
+                }
+            }
+        }
+
+        this.align();
     }
 
     private float[] concatArrays(float[] a, float[] b) {
@@ -23,8 +61,14 @@ public class DataProcessor {
     }
 
     private void updateMap(String key) {
-        Map<Long, float[]> data = this.sensorData.get(key);
+        if (this.sensorData == null) {
+            return;
+        }
 
+        Map<Long, float[]> data = this.sensorData.get(key);
+        if (data == null) {
+            return;
+        }
         float[] last_know_values = {0, 0, 0};
 
         // iterate over timestamp-to-sens_values
@@ -33,22 +77,25 @@ public class DataProcessor {
             if (d == null) {
                 continue;
             }
-            if (this.correct_data.containsKey(d.getKey())) {
-                last_know_values = this.correct_data.get(d.getKey());
+            if (this.alignedData.containsKey(d.getKey())) {
+                last_know_values = this.alignedData.get(d.getKey());
             }
 
             float[] new_array = concatArrays(last_know_values, d.getValue());
-            this.correct_data.put(d.getKey(), new_array);
+            this.alignedData.put(d.getKey(), new_array);
         }
     }
 
-    private void process() {
-        if (sensorData == null || this.correct_data == null) {
+    private void align() {
+        if (this.sensorData == null || this.alignedData == null) {
             return;
         }
 
         String gyro_key = "";
         String acc_key = "";
+
+        // todo: make the key the Android Sensor.TYPE_ACCELEROMETER // Sensor.TYPE_GYROSCOPE
+        // this is not nice code.
         for (String key : sensorData.keySet()) {
             if (key.contains("Gyroscope") || key.contains("gyroscope")) {
                 gyro_key = key;
@@ -58,60 +105,86 @@ public class DataProcessor {
             }
         }
 
-        // this is not nice code.
         if (gyro_key.length() > 0) {
             updateMap(gyro_key);
         }
-
         if (acc_key.length() > 0) {
             updateMap(acc_key);
         }
     }
 
-    private List<Double[]> remove_timestamp() {
-        if (this.data == null) {
-            return null;
-        }
-        List<Double[]> data = new ArrayList<>();
-        for (Double[] d : this.data) {
-            Double[] array = Arrays.copyOfRange(d, 1, d.length);
-            data.add(array);
-        }
-        return data;
+    public Map<Long, float[]> getData() {
+        return this.alignedData;
     }
 
-    // return the last n logged elements
-    public List<Double[]> get_last_n_elements(int n) {
-        if (n > this.data.size()) {
-            return this.data;
+    public Map<String, Map<Long, float[]>> getRawData() {
+        return this.sensorData;
+    }
+
+    //return the last n logged elements
+    public List<float[]> get_last_n_elements(int n) {
+        List<float[]> sublist = new ArrayList<>();
+
+        if (this.alignedData == null) {
+            return sublist;
         }
-        List<Double[]> sublist = this.data.subList(this.data.size() - n, this.data.size());
+
+        Set<Long> descendingKeys = this.alignedData.descendingKeySet();
+        int i = 0;
+
+        for (Long key : descendingKeys) {
+            float[] d = this.alignedData.get(key);
+
+            if (i >= this.alignedData.size() || i >= n) {
+                break;
+            }
+            sublist.add(d);
+            i++;
+        }
 
         return sublist;
     }
 
     // return all elements from $NOW until ($NOW - t)
-    public List<Double[]> get_last_t_ms_elements(long t) {
+    // or should it return the last $t ms from the latest entry?
+    public List<float[]> get_last_t_ms_elements(long t) {
         if (t <= 0) {
             return null;
         }
-        long now = System.currentTimeMillis();
-        List<Double[]> sublist = new ArrayList<>();
 
-        for (int i = this.data.size() - 1; i > 0; i--) {
-            Double[] entry = this.data.get(i);
-            if (entry.length < 2) {
-                continue;
+        List<float[]> sublist = new ArrayList<>();
+
+        if (this.alignedData == null) {
+            return sublist;
+        }
+
+        Set<Long> descendingKeys = this.alignedData.descendingKeySet();
+        long threshold_time = 0;
+
+
+        for (Long key : descendingKeys) {
+            if (threshold_time == 0) {
+                threshold_time = key - t;
+
+                System.out.println("threshold: " + threshold_time);
             }
-
-            if (entry[0] < (now - t)) {
+            if (threshold_time >= key) {
                 break;
             }
-            sublist.add(entry);
+            System.out.println("key: " + key);
+            sublist.add(this.alignedData.get(key));
         }
 
         return sublist;
     }
 
+    public double[] getKnnData(Strategy strategy, long t_in_ms) {
+        List<float[]> data = get_last_t_ms_elements(t_in_ms);
+        return strategy.execute(data);
+    }
 
+    public double[] getKnnData(Strategy strategy) {
+        return this.getKnnData(strategy, 2 * 1000);
+
+    }
 }

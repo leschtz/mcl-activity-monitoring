@@ -100,7 +100,7 @@ public class DataLogger {
     // collects the logged data and returns it to the collector.
     public Map<String, Map<Long, float[]>> collect() {
         Map<String, Map<Long, float[]>> data = new HashMap<>(this.sensorSource);
-        this.sensorSource.clear();
+        this.sensorSource = new HashMap<>();
         return data;
     }
 
