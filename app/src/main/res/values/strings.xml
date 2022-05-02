@@ -16,4 +16,6 @@
     <string name="toast_pause_recording">Paused Recording</string>
     <string name="toast_stop_recording">Stopped Recording</string>
     <string name="toast_activity_failed">Activity Failed</string>
+
+    <string name="classification_result">Classification Result: %1$s.</string>
 </resources>

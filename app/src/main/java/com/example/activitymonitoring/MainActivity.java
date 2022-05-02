@@ -3,14 +3,11 @@ package com.example.activitymonitoring;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.Ringtone;
 import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
@@ -19,14 +16,15 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
+
+import com.example.activitymonitoring.DataStrategy.AverageStrategy;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -35,11 +33,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor sensorGyroscope;
     private DataLogger dataLogger;
     private KNNClassifier classifier;
+    private DataProcessor dataProcessor;
+    private int dummyCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         textSensorAccelerometer.setText(R.string.seconds_left_default);
 
         dataLogger = new DataLogger(getApplicationContext());
+        this.dataProcessor = new DataProcessor();
 
         Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
         ImageButton playBtn = findViewById(R.id.play_button);
@@ -105,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 // I'm sure this is not the nicest way to do this, but it works.
                 EditText editText = findViewById(R.id.timer_value);
-                Long time;
+                long time;
                 try {
                     time = Long.parseLong(editText.getText().toString()) * 1000L;
                 } catch (NumberFormatException nfe) {
@@ -136,32 +138,37 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
                     }
                 }.start();
-
-
             }
 
-
         });
+
+
         Button classifyBtn = findViewById(R.id.classify_button);
         classifyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-
-                double[] test = {-4.1922474,-3.466804,2.006341,-0.54023397,-0.8074875,-1.6421585};
+                if (dataProcessor == null) {
+                    return;
+                }
+                //Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
+                //dataProcessor.addRawData(dlData);
+                //double[] knnData = dataProcessor.getKnnData(new AverageStrategy());
+                //int result = classifier.classify(test);
+                double[] test = {-4.1922474, -3.466804, 2.006341, -0.54023397, -0.8074875, -1.6421585};
 
                 int result = classifier.classify(test);
                 System.out.println("Classification result is : " + result);
 
-                test = new double[]{-0.06849326,-0.08689558,-0.0388663,-1.364695,-0.7637503,9.644144};
-
+                test = new double[]{-0.06849326, -0.08689558, -0.0388663, -1.364695, -0.7637503, 9.644144};
                 result = classifier.classify(test);
                 System.out.println("Classification result is : " + result);
             }
         });
 
 
-       this.classifier = new KNNClassifier(13,7, readFile());
+        this.classifier = new KNNClassifier(13, 7, readFile());
+
     }
 
     @Override
@@ -207,6 +214,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             textSecondsLeft.setText(R.string.seconds_left_default);
         }
 
+        if(dummyCounter >= 1) {
+            dummyCounter = 0;
+            if (this.dataLogger != null) {
+                Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
+                if (this.dataProcessor != null) {
+
+                    this.dataProcessor.addRawData(dlData);
+                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
+                    int knnResult = -1;
+                    if (this.classifier != null) {
+
+                        knnResult = classifier.classify(knnData);
+                        //System.out.println(knnResult);
+                    }
+
+                    TextView classification_result = findViewById(R.id.str_classification_result);
+                    classification_result.setText(getResources().getString(R.string.classification_result, Integer.toString(knnResult)));
+                }
+            }
+        }
+        dummyCounter++;
+
+
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
                 currentValue = sensorEvent.values;
@@ -235,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public List<double[]> readFile() {
 
-        List<double[]> rowList = new ArrayList<double[]>();
+        List<double[]> rowList = new ArrayList<>();
         try {
             InputStream is = getResources().openRawResource(R.raw.neighbors);
 

@@ -43,6 +43,15 @@
         app:layout_constraintBottom_toTopOf="@id/timer_value"
         app:layout_constraintLeft_toLeftOf="parent" />
 
+    <TextView
+        android:id="@+id/str_classification_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="@string/classification_result"
+        app:layout_constraintBottom_toTopOf="@id/classify_button"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
     <EditText
         android:id="@+id/timer_value"
         android:layout_width="wrap_content"
@@ -53,11 +62,6 @@
         android:inputType="number"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
-    <!--
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/value_gyroscope"
-        -->
-
 
     <ImageButton
         android:id="@+id/play_button"
@@ -66,7 +70,7 @@
         android:contentDescription="@string/play_icon_description"
         android:src="@drawable/ic_baseline_play_circle_filled_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"></ImageButton>
+        app:layout_constraintRight_toRightOf="parent">Play</ImageButton>
 
     <ImageButton
         android:id="@+id/stop_button"
@@ -75,7 +79,7 @@
         android:contentDescription="Stop Logging Data"
         android:src="@drawable/ic_baseline_stop_circle_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/pause_button"></ImageButton>
+        app:layout_constraintRight_toLeftOf="@+id/pause_button">Stop</ImageButton>
 
     <ImageButton
         android:id="@+id/pause_button"
@@ -84,7 +88,7 @@
         android:contentDescription="Pause Logging Data"
         android:src="@drawable/ic_baseline_pause_circle_filled_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/play_button"></ImageButton>
+        app:layout_constraintRight_toLeftOf="@+id/play_button">Pause</ImageButton>
 
     <ImageButton
         android:id="@+id/timed_log_button"
@@ -93,15 +97,24 @@
         android:contentDescription="Timed Data Logging"
         android:src="@drawable/ic_baseline_timer_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/stop_button"></ImageButton>
+        app:layout_constraintRight_toLeftOf="@+id/stop_button">Timed Logging</ImageButton>
+
+    <Button
+        android:id="@+id/btn_start_classify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Classify"
+        app:layout_constraintBottom_toTopOf="@+id/timer_rest_time"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteX="0dp" />
 
     <Button
         android:id="@+id/classify_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Classify"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="Test Classify"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_start_classify"
         tools:layout_editor_absoluteX="229dp" />
 
 

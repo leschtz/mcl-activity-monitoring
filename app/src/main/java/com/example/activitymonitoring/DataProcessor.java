@@ -39,7 +39,7 @@ public class DataProcessor {
                         this.sensorData.put(sensor.getKey(), sensor.getValue());
                     } else {
                         for (Map.Entry<Long, float[]> sensorData : sensorSpecificData.entrySet()) {
-                            if((sensorData == null) || (sensorData.getKey() == null)) {
+                            if ((sensorData == null) || (sensorData.getKey() == null)) {
                                 continue;
                             }
                             this.sensorData.get(sensor.getKey()).put(sensorData.getKey(), sensorData.getValue());
@@ -79,8 +79,26 @@ public class DataProcessor {
             }
             if (this.alignedData.containsKey(d.getKey())) {
                 last_know_values = this.alignedData.get(d.getKey());
+
             }
 
+            /*
+            for(float val : d.getValue()) {
+                System.out.print(val + "\t");
+            }
+            for (float val : last_know_values) {
+                System.out.print(val + "\t");
+            }
+            System.out.println();
+            */
+            if (last_know_values.length == 6) {
+                last_know_values[3] = d.getValue()[0];
+                last_know_values[4] = d.getValue()[1];
+                last_know_values[5] = d.getValue()[2];
+                this.alignedData.put(d.getKey(), last_know_values);
+                return;
+            }
+            // todo: last_known_values: entferne die 0.0f werte, wenn man sie überschreibt
             float[] new_array = concatArrays(last_know_values, d.getValue());
             this.alignedData.put(d.getKey(), new_array);
         }
@@ -161,17 +179,14 @@ public class DataProcessor {
         Set<Long> descendingKeys = this.alignedData.descendingKeySet();
         long threshold_time = 0;
 
-
         for (Long key : descendingKeys) {
             if (threshold_time == 0) {
                 threshold_time = key - t;
 
-                System.out.println("threshold: " + threshold_time);
             }
             if (threshold_time >= key) {
                 break;
             }
-            System.out.println("key: " + key);
             sublist.add(this.alignedData.get(key));
         }
 
@@ -184,7 +199,7 @@ public class DataProcessor {
     }
 
     public double[] getKnnData(Strategy strategy) {
-        return this.getKnnData(strategy, 2 * 1000);
+        return this.getKnnData(strategy, 100);
 
     }
 }
