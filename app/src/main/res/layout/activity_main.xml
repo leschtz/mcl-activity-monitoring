@@ -49,6 +49,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:text="@string/classification_result"
+        android:textStyle="bold"
+        android:textSize="50px"
         app:layout_constraintBottom_toTopOf="@id/classify_button"
         app:layout_constraintLeft_toLeftOf="parent" />
 
