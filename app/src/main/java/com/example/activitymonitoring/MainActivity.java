@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             textSecondsLeft.setText(R.string.seconds_left_default);
         }
 
-        if(dummyCounter >= 1) {
+        if (dummyCounter >= 1) {
             dummyCounter = 0;
             if (this.dataLogger != null) {
                 Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
 
                     TextView classification_result = findViewById(R.id.str_classification_result);
-                    classification_result.setText(getResources().getString(R.string.classification_result, Integer.toString(knnResult)));
+                    classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
                 }
             }
         }
@@ -261,6 +261,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    public String getActivityByNumber(int activity) {
+        switch (activity) {
+            case 1:
+                return "Walk";
+            case 2:
+                return "Run";
+            case 3:
+                return "Jump";
+            case 4:
+                return "Squat";
+            case 5:
+                return "Stand";
+            case 6:
+                return "Sit";
+
+            default:
+                return "None";
+        }
     }
 
     public List<double[]> readFile() {
