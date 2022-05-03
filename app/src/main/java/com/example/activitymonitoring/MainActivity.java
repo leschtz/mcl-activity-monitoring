@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -169,13 +168,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 System.out.println("Classification result is : " + result);
             }
         });
+                        /*
 
         Button classifyBtn = findViewById(R.id.classify_start_button);
         classifyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
+                return;
                 if (dataLogger != null) {
                     Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
                     if (dataProcessor != null) {
@@ -197,12 +196,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         TextView classification_result = findViewById(R.id.str_classification_result);
                         classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
                     }
+
                 }
             }
         });
-
+        */
         this.classifier = new KNNClassifier(7, 7, readFile());
-
     }
 
     @Override
@@ -250,34 +249,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.dataLogger != null) {
             Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-            if (this.dataProcessor != null && dlData.size() > 0) {
-
+            if (this.dataProcessor != null  && dlData.size() > 0) {
                 this.dataProcessor.addRawData(dlData);
             }
         }
+        if (dummyCounter >= 10) {
+            dummyCounter = 0;
+            if (this.dataLogger != null) {
+                Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
+                if (this.dataProcessor != null) {
 
-//        if (dummyCounter >= 1) {
-//            dummyCounter = 0;
-//            if (this.dataLogger != null) {
-//                Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-//                if (this.dataProcessor != null) {
-//
-//                    this.dataProcessor.addRawData(dlData);
-//                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
-//                    int knnResult = -1;
-//                    if (this.classifier != null) {
-//
-//                        knnResult = classifier.classify(knnData);
-//                        System.out.println(knnResult);
-//                    }
-//
-//                    TextView classification_result = findViewById(R.id.str_classification_result);
-//                    classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
-//                }
-//            }
-//        }
-//        dummyCounter++;
+                    this.dataProcessor.addRawData(dlData);
+                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
+                    for(double d : knnData) {
+                        System.out.print(d + "\t");
+                    }
+                    System.out.println();
+                    int knnResult = -1;
+                    if (this.classifier != null) {
 
+                        knnResult = classifier.classify(knnData);
+                        System.out.println(knnResult);
+                    }
+
+                    TextView classification_result = findViewById(R.id.str_classification_result);
+                    classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
+                }
+            }
+        }
+        dummyCounter++;
 
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
