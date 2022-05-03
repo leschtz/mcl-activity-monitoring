@@ -92,7 +92,7 @@ public class DataProcessor {
                 last_know_values = this.alignedData.get(d.getKey());
             }
 
-            if (key.contains("Gyroscope") || key.contains("gyroscope")) {
+            if (key.contains("Gyroscope") || key.contains("gyroscope")|| key.contains("Gyro") || key.contains("gyro")) {
                 if ( d.getValue()[0] != 0.0)
                     last_know_values[0] = d.getValue()[0];
                 if ( d.getValue()[1] != 0.0)
@@ -100,7 +100,7 @@ public class DataProcessor {
                 if ( d.getValue()[2] != 0.0)
                     last_know_values[2] = d.getValue()[2];
             }
-            if (key.contains("Accelerometer") || key.contains("accelerometer")) {
+            if (key.contains("Accelerometer") || key.contains("accelerometer") || key.contains("Acc") || key.contains("acc")) {
                 if ( d.getValue()[0] != 0.0)
                     last_know_values[3] = d.getValue()[0];
                 if ( d.getValue()[1] != 0.0)
@@ -128,10 +128,10 @@ public class DataProcessor {
         // todo: make the key the Android Sensor.TYPE_ACCELEROMETER // Sensor.TYPE_GYROSCOPE
         // this is not nice code.
         for (String key : sensorData.keySet()) {
-            if (key.contains("Gyroscope") || key.contains("gyroscope")) {
+            if (key.contains("Gyroscope") || key.contains("gyroscope")|| key.contains("Gyro") || key.contains("gyro")) {
                 gyro_key = key;
                 updateMap(gyro_key);
-            } else if (key.contains("Accelerometer") || key.contains("accelerometer")) {
+            } else if (key.contains("Accelerometer") || key.contains("accelerometer") || key.contains("Acc") || key.contains("acc")) {
                 acc_key = key;
                 updateMap(acc_key);
             }

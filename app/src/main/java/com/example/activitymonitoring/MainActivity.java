@@ -143,8 +143,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
 
-        Button classifyBtn = findViewById(R.id.classify_button);
-        classifyBtn.setOnClickListener(new View.OnClickListener() {
+        Button classify_start_Btn = findViewById(R.id.classify_button_test);
+        classify_start_Btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
@@ -163,11 +163,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 test = new double[]{-0.06849326, -0.08689558, -0.0388663, -1.364695, -0.7637503, 9.644144};
                 result = classifier.classify(test);
                 System.out.println("Classification result is : " + result);
+
+                test = new double[]{0,0,0, 0.020311269909143448,  0.04688390716910362, 0.07513642311096191};
+                result = classifier.classify(test);
+                System.out.println("Classification result is : " + result);
             }
         });
 
+        Button classifyBtn = findViewById(R.id.classify_start_button);
+        classifyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-        this.classifier = new KNNClassifier(13, 7, readFile());
+
+        if (dataLogger != null) {
+            Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
+            if (dataProcessor != null) {
+
+                dataProcessor.addRawData(dlData);
+                double[] knnData = dataProcessor.getKnnData(new AverageStrategy());
+                for (double x :knnData
+                     ) {
+                    System.out.println(x);
+                }
+
+                int knnResult = -1;
+                if (classifier != null) {
+
+                    knnResult = classifier.classify(knnData);
+                    System.out.println(knnResult);
+                }
+
+                TextView classification_result = findViewById(R.id.str_classification_result);
+                classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
+            }
+        }}});
+
+        this.classifier = new KNNClassifier(7, 7, readFile());
 
     }
 
@@ -214,27 +246,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             textSecondsLeft.setText(R.string.seconds_left_default);
         }
 
-        if (dummyCounter >= 1) {
-            dummyCounter = 0;
-            if (this.dataLogger != null) {
+        if (this.dataLogger != null) {
                 Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-                if (this.dataProcessor != null) {
+                if (this.dataProcessor != null && dlData.size() > 0) {
 
-                    this.dataProcessor.addRawData(dlData);
-                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
-                    int knnResult = -1;
-                    if (this.classifier != null) {
+                    this.dataProcessor.addRawData(dlData);}}
 
-                        knnResult = classifier.classify(knnData);
-                        //System.out.println(knnResult);
-                    }
-
-                    TextView classification_result = findViewById(R.id.str_classification_result);
-                    classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
-                }
-            }
-        }
-        dummyCounter++;
+//        if (dummyCounter >= 1) {
+//            dummyCounter = 0;
+//            if (this.dataLogger != null) {
+//                Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
+//                if (this.dataProcessor != null) {
+//
+//                    this.dataProcessor.addRawData(dlData);
+//                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
+//                    int knnResult = -1;
+//                    if (this.classifier != null) {
+//
+//                        knnResult = classifier.classify(knnData);
+//                        System.out.println(knnResult);
+//                    }
+//
+//                    TextView classification_result = findViewById(R.id.str_classification_result);
+//                    classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
+//                }
+//            }
+//        }
+//        dummyCounter++;
 
 
         switch (sensorType) {
