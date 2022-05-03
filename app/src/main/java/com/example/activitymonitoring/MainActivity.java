@@ -168,23 +168,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 System.out.println("Classification result is : " + result);
             }
         });
-                        /*
 
         Button classifyBtn = findViewById(R.id.classify_start_button);
         classifyBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                return;
                 if (dataLogger != null) {
-                    Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
                     if (dataProcessor != null) {
+                        //Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
 
-                        dataProcessor.addRawData(dlData);
-                        double[] knnData = dataProcessor.getKnnData(new AverageStrategy());
-                        for (double x : knnData
-                        ) {
-                            System.out.println(x);
-                        }
+                        //dataProcessor.addRawData(dlData);
+                        // gets the last 10 seconds to classify
+                        double[] knnData = dataProcessor.getKnnData(new AverageStrategy(), 10 * 1000);
 
                         int knnResult = -1;
                         if (classifier != null) {
@@ -193,15 +188,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             System.out.println(knnResult);
                         }
 
-                        TextView classification_result = findViewById(R.id.str_classification_result);
-                        classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
+                        TextView classification_result = findViewById(R.id.man_classification_result);
+                        classification_result.setText(getResources().getString(R.string.manual_classification_result, getActivityByNumber(knnResult)));
                     }
 
                 }
             }
         });
-        */
-        this.classifier = new KNNClassifier(7, 7, readFile());
+
+        this.classifier = new KNNClassifier(13, 7, readFile());
     }
 
     @Override
@@ -249,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.dataLogger != null) {
             Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-            if (this.dataProcessor != null  && dlData.size() > 0) {
+            if (this.dataProcessor != null && dlData.size() > 0) {
                 this.dataProcessor.addRawData(dlData);
             }
         }
@@ -261,7 +256,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     this.dataProcessor.addRawData(dlData);
                     double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
-                    for(double d : knnData) {
+                    for (double d : knnData) {
                         System.out.print(d + "\t");
                     }
                     System.out.println();

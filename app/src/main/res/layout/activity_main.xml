@@ -54,6 +54,17 @@
         app:layout_constraintBottom_toTopOf="@id/classify_button_test"
         app:layout_constraintLeft_toLeftOf="parent" />
 
+    <TextView
+        android:id="@+id/man_classification_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="@string/manual_classification_result"
+        android:textStyle="bold"
+        android:textSize="50px"
+        app:layout_constraintBottom_toTopOf="@id/str_classification_result"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
     <EditText
         android:id="@+id/timer_value"
         android:layout_width="wrap_content"
