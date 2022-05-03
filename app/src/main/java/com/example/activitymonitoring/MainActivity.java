@@ -253,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.dataProcessor.addRawData(dlData);
             }
         }
-        if (dummyCounter >= 10) {
+        if (dummyCounter >= 2) {
             dummyCounter = 0;
             if (this.dataLogger != null) {
                 Map<String, Map<Long, float[]>> dlData = dataLogger.collect();

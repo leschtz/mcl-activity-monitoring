@@ -120,7 +120,7 @@ public class DataProcessor {
 
             while (prevValue == null) {
                 timestamp--;
-                if(this.alignedData.containsKey(timestamp)) {
+                if (this.alignedData.containsKey(timestamp)) {
                     //System.out.println("Found a value!!!");
                     prevValue = this.alignedData.get(timestamp);
                     //for(float v : prevValue) {
@@ -257,7 +257,7 @@ public class DataProcessor {
     }
 
     public double[] getKnnData(Strategy strategy) {
-        return this.getKnnData(strategy, 2 * 1000);
+        return this.getKnnData(strategy, 1 * 1000);
 
     }
 }
