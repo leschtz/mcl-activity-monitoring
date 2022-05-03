@@ -13,6 +13,7 @@ import java.util.TreeMap;
 public class DataProcessor {
     private Map<String, Map<Long, float[]>> sensorData;
     private TreeMap<Long, float[]> alignedData;
+    private float[] sensorValues = new float[]{0, 0, 0, 0, 0, 0};
 
     public DataProcessor() {
         this.sensorData = null;
@@ -88,43 +89,78 @@ public class DataProcessor {
             last_know_values = new float[]{0, 0, 0, 0, 0, 0};
 
             if (this.alignedData.containsKey(d.getKey())) {
-                last_know_values = this.alignedData.get(d.getKey());
+                float[] test = this.alignedData.get(d.getKey());
+                if (test != null) {
+                    last_know_values = test;
+                }
             }
-            if(last_know_values == null) {
-                last_know_values = new float[]{0, 0, 0, 0, 0, 0};
-            }
-
-            // todo: Werte werden nicht richtig geschrieben. Alte Werte werden immer mit 0 überschrieben.
-            if (key.contains("Gyroscope") || key.contains("gyroscope")|| key.contains("Gyro") || key.contains("gyro")) {
+            boolean gyro_data = key.contains("Gyroscope") || key.contains("gyroscope") || key.contains("Gyro") || key.contains("gyro");
+            if (gyro_data) {
                 last_know_values[0] = d.getValue()[0];
                 last_know_values[1] = d.getValue()[1];
                 last_know_values[2] = d.getValue()[2];
-
-                float[] prevData = this.alignedData.get(d.getKey());
-                if (prevData != null) {
-                    last_know_values[3] = prevData[3];
-                    last_know_values[4] = prevData[4];
-                    last_know_values[5] = prevData[5];
-                }
             }
 
-            if (key.contains("Accelerometer") || key.contains("accelerometer") || key.contains("Acc") || key.contains("acc")) {
+            boolean acc_data = key.contains("Accelerometer") || key.contains("accelerometer") || key.contains("Acc") || key.contains("acc");
+            if (acc_data) {
                 last_know_values[3] = d.getValue()[0];
                 last_know_values[4] = d.getValue()[1];
                 last_know_values[5] = d.getValue()[2];
+            }
 
-                float[] prevData = this.alignedData.get(d.getKey());
-                if (prevData != null) {
-                    last_know_values[0] = prevData[0];
-                    last_know_values[1] = prevData[1];
-                    last_know_values[2] = prevData[2];
+            // todo: get values from previous sensor readings
+            // as we are using the timestamp, I simply look for the next smaller timestamp in the alignedData
+            // and use it's value there.
+            Long timestamp = d.getKey();
+            if (this.alignedData.size() > 0) {
+                //System.out.println("Working with Timestamp: " + timestamp + " first Key: " + this.alignedData.firstKey());
+            }
+            timestamp--;
+            float[] prevValue = this.alignedData.get(timestamp);
+
+            while (prevValue == null) {
+                timestamp--;
+                if(this.alignedData.containsKey(timestamp)) {
+                    //System.out.println("Found a value!!!");
+                    prevValue = this.alignedData.get(timestamp);
+                    //for(float v : prevValue) {
+                    //    System.out.print(v + "\t");
+                    //}
+                    break;
+                }
+                if (this.alignedData.size() == 0) {
+                    //System.out.println("No data in this.alignedData");
+                    break;
+                }
+
+                if (this.alignedData.firstKey() > timestamp) {
+                    break;
                 }
             }
-            for (float val : last_know_values) {
-                System.out.print(val + "\t");
-            }
-            System.out.println();
 
+            // now we have the previous sensor readings of all sensors.
+            // we need to write those to the current timestamp, which we did not change.
+            if (prevValue == null) {
+                this.alignedData.put(d.getKey(), last_know_values);
+                return;
+            }
+
+            if (gyro_data) {
+                //System.out.println("Fixing Acceleration in Gyro sensor.");
+                last_know_values[3] = prevValue[3];
+                last_know_values[4] = prevValue[4];
+                last_know_values[5] = prevValue[5];
+            }
+
+            if (acc_data) {
+                //System.out.println("Fixing Gyro in Acceleration sensor.");
+                last_know_values[0] = prevValue[0];
+                last_know_values[1] = prevValue[1];
+                last_know_values[2] = prevValue[2];
+            }
+            //for(float v : last_know_values) {
+            //    System.out.print(v + "\t");
+            //}
             this.alignedData.put(d.getKey(), last_know_values);
         }
     }
@@ -140,14 +176,17 @@ public class DataProcessor {
         // todo: make the key the Android Sensor.TYPE_ACCELEROMETER // Sensor.TYPE_GYROSCOPE
         // this is not nice code.
         for (String key : sensorData.keySet()) {
-            if (key.contains("Gyroscope") || key.contains("gyroscope")|| key.contains("Gyro") || key.contains("gyro")) {
+            if (key.contains("Gyroscope") || key.contains("gyroscope") || key.contains("Gyro") || key.contains("gyro")) {
                 gyro_key = key;
-                updateMap(gyro_key);
             } else if (key.contains("Accelerometer") || key.contains("accelerometer") || key.contains("Acc") || key.contains("acc")) {
                 acc_key = key;
-                updateMap(acc_key);
+
             }
         }
+
+        updateMap(gyro_key);
+        updateMap(acc_key);
+
     }
 
     public Map<Long, float[]> getData() {
