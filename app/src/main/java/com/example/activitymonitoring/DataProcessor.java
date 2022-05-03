@@ -78,8 +78,6 @@ public class DataProcessor {
             return;
         }
 
-        float[] last_know_values;
-        last_know_values = new float[]{0, 0, 0, 0, 0, 0};
 
         // iterate over timestamp-to-sens_values
         for (Map.Entry<Long, float[]> d : data.entrySet()) {
@@ -87,59 +85,35 @@ public class DataProcessor {
                 continue;
             }
 
+            float[] last_know_values;
+            last_know_values = new float[]{0, 0, 0, 0, 0, 0};
+
             if (this.alignedData.containsKey(d.getKey())) {
                 last_know_values = this.alignedData.get(d.getKey());
-                System.out.println("found the key in the data set");
             }
-            for (float val : last_know_values) {
-                System.out.print(val + "\t");
-            }
-            System.out.println();
+
             if (key.contains("Gyroscope") || key.contains("gyroscope")) {
-                last_know_values[0] = d.getValue()[0];
-                last_know_values[1] = d.getValue()[1];
-                last_know_values[2] = d.getValue()[2];
+                if ( d.getValue()[0] != 0.0)
+                    last_know_values[0] = d.getValue()[0];
+                if ( d.getValue()[1] != 0.0)
+                    last_know_values[1] = d.getValue()[1];
+                if ( d.getValue()[2] != 0.0)
+                    last_know_values[2] = d.getValue()[2];
             }
             if (key.contains("Accelerometer") || key.contains("accelerometer")) {
-                last_know_values[3] = d.getValue()[0];
-                last_know_values[4] = d.getValue()[1];
-                last_know_values[5] = d.getValue()[2];
+                if ( d.getValue()[0] != 0.0)
+                    last_know_values[3] = d.getValue()[0];
+                if ( d.getValue()[1] != 0.0)
+                    last_know_values[4] = d.getValue()[1];
+                if ( d.getValue()[2] != 0.0)
+                    last_know_values[5] = d.getValue()[2];
             }
+            for(float val : last_know_values) {
+                System.out.print(val + "\t");
+            }
+            System.out.println();
 
             this.alignedData.put(d.getKey(), last_know_values);
-
-
-            float[] xv = this.alignedData.get(d.getKey());
-            if (xv == null) {
-                continue;
-            }
-            for (float val : xv) {
-                System.out.print(val + "\t");
-            }
-            System.out.println();
-            // return;
-
-            /*
-            for(float val : d.getValue()) {
-                System.out.print(val + "\t");
-            }
-            */
-            for (float val : last_know_values) {
-                System.out.print(val + "\t");
-            }
-            System.out.println();
-            /*
-            if (last_know_values.length == 6) {
-                last_know_values[3] = d.getValue()[0];
-                last_know_values[4] = d.getValue()[1];
-                last_know_values[5] = d.getValue()[2];
-                this.alignedData.put(d.getKey(), last_know_values);
-                return;
-            }
-
-            float[] new_array = concatArrays(last_know_values, d.getValue());
-            this.alignedData.put(d.getKey(), new_array);
-            */
         }
     }
 
