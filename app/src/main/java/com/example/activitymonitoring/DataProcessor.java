@@ -257,7 +257,9 @@ public class DataProcessor {
     }
 
     public double[] getKnnData(Strategy strategy) {
-        return this.getKnnData(strategy, 1 * 1000);
+        //List<float[]> data = get_last_n_elements(1000);
+        List<float[]> data = get_last_t_ms_elements(2*1000);
 
+        return strategy.execute(data); //this.getKnnData(strategy, 100);
     }
 }
