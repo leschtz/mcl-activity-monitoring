@@ -32,6 +32,12 @@ public class AverageStrategy implements Strategy {
             return null;
         }
 
+        //test
+        for (float[] x:data
+             ) {
+
+        }
+
         double[] result = new double[data.get(0).length];
         Arrays.fill(result, 0);
 
@@ -45,6 +51,7 @@ public class AverageStrategy implements Strategy {
             for (int i = 0; i < entry.length; i++) {
 
                 result[i] = (result[i] + (double)entry[i]) / 2;
+                System.out.println("excute loop: "+ result[i]);
             }
         }
 
