@@ -257,7 +257,7 @@ public class DataProcessor {
     }
 
     public double[] getKnnData(Strategy strategy) {
-        return this.getKnnData(strategy, 100);
+        return this.getKnnData(strategy, 2 * 1000);
 
     }
 }
