@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 result = classifier.classify(test);
                 System.out.println("Classification result is : " + result);
 
-                test = new double[]{0,0,0, 0.020311269909143448,  0.04688390716910362, 0.07513642311096191};
+                test = new double[]{0, 0, 0, 0.020311269909143448, 0.04688390716910362, 0.07513642311096191};
                 result = classifier.classify(test);
                 System.out.println("Classification result is : " + result);
             }
@@ -176,28 +176,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
 
 
-        if (dataLogger != null) {
-            Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-            if (dataProcessor != null) {
+                if (dataLogger != null) {
+                    Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
+                    if (dataProcessor != null) {
 
-                dataProcessor.addRawData(dlData);
-                double[] knnData = dataProcessor.getKnnData(new AverageStrategy());
-                for (double x :knnData
-                     ) {
-                    System.out.println(x);
+                        dataProcessor.addRawData(dlData);
+                        double[] knnData = dataProcessor.getKnnData(new AverageStrategy());
+                        for (double x : knnData
+                        ) {
+                            System.out.println(x);
+                        }
+
+                        int knnResult = -1;
+                        if (classifier != null) {
+
+                            knnResult = classifier.classify(knnData);
+                            System.out.println(knnResult);
+                        }
+
+                        TextView classification_result = findViewById(R.id.str_classification_result);
+                        classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
+                    }
                 }
-
-                int knnResult = -1;
-                if (classifier != null) {
-
-                    knnResult = classifier.classify(knnData);
-                    System.out.println(knnResult);
-                }
-
-                TextView classification_result = findViewById(R.id.str_classification_result);
-                classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
             }
-        }}});
+        });
 
         this.classifier = new KNNClassifier(7, 7, readFile());
 
@@ -247,10 +249,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if (this.dataLogger != null) {
-                Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-                if (this.dataProcessor != null && dlData.size() > 0) {
+            Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
+            if (this.dataProcessor != null && dlData.size() > 0) {
 
-                    this.dataProcessor.addRawData(dlData);}}
+                this.dataProcessor.addRawData(dlData);
+            }
+        }
 
 //        if (dummyCounter >= 1) {
 //            dummyCounter = 0;

@@ -90,7 +90,11 @@ public class DataProcessor {
             if (this.alignedData.containsKey(d.getKey())) {
                 last_know_values = this.alignedData.get(d.getKey());
             }
+            if(last_know_values == null) {
+                last_know_values = new float[]{0, 0, 0, 0, 0, 0};
+            }
 
+            // todo: Werte werden nicht richtig geschrieben. Alte Werte werden immer mit 0 überschrieben.
             if (key.contains("Gyroscope") || key.contains("gyroscope")|| key.contains("Gyro") || key.contains("gyro")) {
                 last_know_values[0] = d.getValue()[0];
                 last_know_values[1] = d.getValue()[1];
@@ -139,24 +143,11 @@ public class DataProcessor {
             if (key.contains("Gyroscope") || key.contains("gyroscope")|| key.contains("Gyro") || key.contains("gyro")) {
                 gyro_key = key;
                 updateMap(gyro_key);
-<<<<<<< HEAD
-            } else if (key.contains("Acc") || key.contains("acc")) {
-=======
             } else if (key.contains("Accelerometer") || key.contains("accelerometer") || key.contains("Acc") || key.contains("acc")) {
->>>>>>> a2541c0860bebd33c17b25b7d594b90664e6cb56
                 acc_key = key;
                 updateMap(acc_key);
             }
         }
-        /*
-        if (gyro_key.length() > 0) {
-
-        }
-        if (acc_key.length() > 0) {
-
-        }
-
-         */
     }
 
     public Map<Long, float[]> getData() {
