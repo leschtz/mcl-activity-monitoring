@@ -26,7 +26,7 @@ public class DataProcessor {
     }
 
     public void addRawData(Map<String, Map<Long, float[]>> data) {
-        if(data == null) {
+        if (data == null) {
             return;
         }
 
@@ -78,7 +78,6 @@ public class DataProcessor {
             return;
         }
 
-
         // iterate over timestamp-to-sens_values
         for (Map.Entry<Long, float[]> d : data.entrySet()) {
             if (d == null) {
@@ -93,22 +92,32 @@ public class DataProcessor {
             }
 
             if (key.contains("Gyroscope") || key.contains("gyroscope")) {
-                if ( d.getValue()[0] != 0.0)
-                    last_know_values[0] = d.getValue()[0];
-                if ( d.getValue()[1] != 0.0)
-                    last_know_values[1] = d.getValue()[1];
-                if ( d.getValue()[2] != 0.0)
-                    last_know_values[2] = d.getValue()[2];
+                last_know_values[0] = d.getValue()[0];
+                last_know_values[1] = d.getValue()[1];
+                last_know_values[2] = d.getValue()[2];
+
+                float[] prevData = this.alignedData.get(d.getKey());
+                if (prevData != null) {
+                    last_know_values[3] = prevData[3];
+                    last_know_values[4] = prevData[4];
+                    last_know_values[5] = prevData[5];
+                }
+
             }
-            if (key.contains("Accelerometer") || key.contains("accelerometer")) {
-                if ( d.getValue()[0] != 0.0)
-                    last_know_values[3] = d.getValue()[0];
-                if ( d.getValue()[1] != 0.0)
-                    last_know_values[4] = d.getValue()[1];
-                if ( d.getValue()[2] != 0.0)
-                    last_know_values[5] = d.getValue()[2];
+
+            if (key.contains("Acc") || key.contains("acc")) {
+                last_know_values[3] = d.getValue()[0];
+                last_know_values[4] = d.getValue()[1];
+                last_know_values[5] = d.getValue()[2];
+
+                float[] prevData = this.alignedData.get(d.getKey());
+                if (prevData != null) {
+                    last_know_values[0] = prevData[0];
+                    last_know_values[1] = prevData[1];
+                    last_know_values[2] = prevData[2];
+                }
             }
-            for(float val : last_know_values) {
+            for (float val : last_know_values) {
                 System.out.print(val + "\t");
             }
             System.out.println();
@@ -131,7 +140,7 @@ public class DataProcessor {
             if (key.contains("Gyroscope") || key.contains("gyroscope")) {
                 gyro_key = key;
                 updateMap(gyro_key);
-            } else if (key.contains("Accelerometer") || key.contains("accelerometer")) {
+            } else if (key.contains("Acc") || key.contains("acc")) {
                 acc_key = key;
                 updateMap(acc_key);
             }
