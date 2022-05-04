@@ -36,22 +36,25 @@ public class DataProcessor {
         } else {
             // todo: add raw data correctly
 
-            for (Map.Entry<String, Map<Long, float[]>> sensor : data.entrySet()) {
-                if (this.sensorData.containsKey(sensor.getKey())) {
-                    Map<Long, float[]> sensorSpecificData = this.sensorData.get(sensor.getKey());
+            for (Map.Entry<String, Map<Long, float[]>> newSensorData : data.entrySet()) {
+                if (this.sensorData.containsKey(newSensorData.getKey())) {
+                    Map<Long, float[]> sensorSpecificData = this.sensorData.get(newSensorData.getKey());
 
                     if (sensorSpecificData == null) {
-                        this.sensorData.put(sensor.getKey(), sensor.getValue());
+                        this.sensorData.put(newSensorData.getKey(), newSensorData.getValue());
                     } else {
-                        for (Map.Entry<Long, float[]> sensorData : sensorSpecificData.entrySet()) {
+                        //data.get(newSensorData.getKey()).put(data.get(newSensorData.getKey()))
+                        // entrySet() is the mapping {timestamp: values[]}
+                        for (Map.Entry<Long, float[]> sensorData : newSensorData.getValue().entrySet()) {
                             if ((sensorData == null) || (sensorData.getKey() == null)) {
                                 continue;
                             }
-                            this.sensorData.get(sensor.getKey()).put(sensorData.getKey(), sensorData.getValue());
+                            // sensorDate = {timestamp : values[]}
+                            this.sensorData.get(newSensorData.getKey()).put(sensorData.getKey(), sensorData.getValue());
                         }
                     }
                 } else {
-                    this.sensorData.put(sensor.getKey(), sensor.getValue());
+                    this.sensorData.put(newSensorData.getKey(), newSensorData.getValue());
                 }
             }
         }
@@ -258,7 +261,7 @@ public class DataProcessor {
 
     public double[] getKnnData(Strategy strategy) {
         //List<float[]> data = get_last_n_elements(1000);
-        List<float[]> data = get_last_t_ms_elements(2*1000);
+        List<float[]> data = get_last_t_ms_elements(2 * 1000);
 
         return strategy.execute(data); //this.getKnnData(strategy, 100);
     }
