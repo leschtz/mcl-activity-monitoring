@@ -248,14 +248,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.dataProcessor.addRawData(dlData);
             }
         }
-        if (dummyCounter >= 2) {
+        if (dummyCounter >= 10) {
             dummyCounter = 0;
             if (this.dataLogger != null) {
                 Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
                 if (this.dataProcessor != null) {
 
                     this.dataProcessor.addRawData(dlData);
-                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
+                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy(), 500);
                     for (double d : knnData) {
                         System.out.print(d + "\t");
                     }
