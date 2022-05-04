@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        this.classifier = new KNNClassifier(37, 7, readFile());
+        this.classifier = new KNNClassifier(13, 7, readFile());
     }
 
     @Override
@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.dataProcessor.addRawData(dlData);
             }
         }
-        if (dummyCounter >= 10) {
+        if (dummyCounter >= 5) {
             dummyCounter = 0;
             if (this.dataLogger != null) {
                 Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
@@ -327,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         List<double[]> rowList = new ArrayList<>();
         try {
-            InputStream is = getResources().openRawResource(R.raw.neighbors);
+            InputStream is = getResources().openRawResource(R.raw.new_neighbors);
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
