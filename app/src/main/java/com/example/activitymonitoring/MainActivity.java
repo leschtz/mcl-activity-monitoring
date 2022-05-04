@@ -256,8 +256,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (this.dataProcessor != null) {
 
                     this.dataProcessor.addRawData(dlData);
-                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy());
-                    System.out.println("auto class");
+                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy(), 500);
                     for (double d : knnData) {
                         System.out.print(d + "\t");
                     }

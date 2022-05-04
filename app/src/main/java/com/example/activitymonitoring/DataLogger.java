@@ -125,12 +125,8 @@ public class DataLogger {
     public void record(long timestamp, float[] values, String sensorName) {
         if (!this.sensorSource.containsKey(sensorName)) {
             Map<Long, float[]> initial_data = new HashMap<>();
-            float[] new_values = new float[values.length];
-            for (int i = 0; i < new_values.length; i++) {
-                new_values[i] = values[i];
-            }
 
-            initial_data.put(timestamp, new_values);
+            initial_data.put(timestamp, values.clone());
             this.sensorSource.put(sensorName, initial_data);
         }
         Map<Long, float[]> data = sensorSource.get(sensorName);
