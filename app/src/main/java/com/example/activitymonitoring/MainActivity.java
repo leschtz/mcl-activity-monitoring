@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -227,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
 
-        float[] currentValue;
+        float[] currentValue = new float[3];
 
         // data gets written to /data/data/com.example.activitymonitoring/files
         if (dataLogger.isRecording()) {
@@ -248,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 this.dataProcessor.addRawData(dlData);
             }
         }
-        if (dummyCounter >= 10) {
+        if (dummyCounter >= 5) {
             dummyCounter = 0;
             if (this.dataLogger != null) {
                 Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
@@ -276,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
-                currentValue = sensorEvent.values;
+                currentValue = sensorEvent.values.clone();
                 dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
                 TextView textValueAccelerometer = findViewById(R.id.value_accelerometer);
@@ -284,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 break;
 
             case Sensor.TYPE_GYROSCOPE:
-                currentValue = sensorEvent.values;
+                currentValue = sensorEvent.values.clone();
                 dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
                 TextView textValueGyroscope = findViewById(R.id.value_gyroscope);
@@ -293,6 +294,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             default:
                 // nothing
         }
+//        SystemClock.sleep(50);
     }
 
     @Override
@@ -324,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         List<double[]> rowList = new ArrayList<>();
         try {
-            InputStream is = getResources().openRawResource(R.raw.neighbors);
+            InputStream is = getResources().openRawResource(R.raw.new_neighbors);
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 

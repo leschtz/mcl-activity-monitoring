@@ -36,7 +36,7 @@ public class DataProcessor {
         }
 
         if (this.sensorData == null) {
-            this.sensorData = data;
+            this.sensorData = data;            // 1651652618720
         } else {
             for (Map.Entry<String, Map<Long, float[]>> newSensorData : data.entrySet()) {
                 if (this.sensorData.containsKey(newSensorData.getKey())) {
