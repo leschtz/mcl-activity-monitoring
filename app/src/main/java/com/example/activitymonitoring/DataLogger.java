@@ -6,7 +6,9 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -123,7 +125,12 @@ public class DataLogger {
     public void record(long timestamp, float[] values, String sensorName) {
         if (!this.sensorSource.containsKey(sensorName)) {
             Map<Long, float[]> initial_data = new HashMap<>();
-            initial_data.put(timestamp, values);
+            float[] new_values = new float[values.length];
+            for (int i = 0; i < new_values.length; i++) {
+                new_values[i] = values[i];
+            }
+
+            initial_data.put(timestamp, new_values);
             this.sensorSource.put(sensorName, initial_data);
         }
         Map<Long, float[]> data = sensorSource.get(sensorName);
