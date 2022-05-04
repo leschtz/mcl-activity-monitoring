@@ -31,11 +31,13 @@ public class DataProcessor {
             return;
         }
 
+        if (data.size() == 0) {
+            return;
+        }
+
         if (this.sensorData == null) {
             this.sensorData = data;
         } else {
-            // todo: add raw data correctly
-
             for (Map.Entry<String, Map<Long, float[]>> newSensorData : data.entrySet()) {
                 if (this.sensorData.containsKey(newSensorData.getKey())) {
                     Map<Long, float[]> sensorSpecificData = this.sensorData.get(newSensorData.getKey());
@@ -43,13 +45,17 @@ public class DataProcessor {
                     if (sensorSpecificData == null) {
                         this.sensorData.put(newSensorData.getKey(), newSensorData.getValue());
                     } else {
-                        //data.get(newSensorData.getKey()).put(data.get(newSensorData.getKey()))
+                        // data.get(newSensorData.getKey()).put(data.get(newSensorData.getKey()))
                         // entrySet() is the mapping {timestamp: values[]}
                         for (Map.Entry<Long, float[]> sensorData : newSensorData.getValue().entrySet()) {
                             if ((sensorData == null) || (sensorData.getKey() == null)) {
                                 continue;
                             }
                             // sensorDate = {timestamp : values[]}
+                            Map<Long, float[]> t = this.sensorData.get(newSensorData.getKey());
+                            if (t == null) {
+                                continue;
+                            }
                             this.sensorData.get(newSensorData.getKey()).put(sensorData.getKey(), sensorData.getValue());
                         }
                     }
