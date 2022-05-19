@@ -1,10 +1,11 @@
 package com.example.activitymonitoring.DataStrategy;
 
-import java.util.List;
+import static java.lang.Math.max;
+
 import java.util.Arrays;
+import java.util.List;
 
-public class AverageStrategy implements Strategy {
-
+public class MaxStrategy implements Strategy {
     @Override
     public double[] execute(List<float[]> data) {
         if (data.size() == 0) {
@@ -14,26 +15,17 @@ public class AverageStrategy implements Strategy {
         double[] result = new double[data.get(0).length];
         Arrays.fill(result, 0);
 
-        // calculate the average for every entry and return
         for (int cnt = 0; cnt < data.size(); cnt++) {
-
-            //for (float[] entry : data) {
             float[] entry = data.get(cnt);
-            if (entry == null) {
+
+            if(entry == null) {
                 continue;
             }
 
             for (int i = 0; i < entry.length; i++) {
-                if (cnt == 0) {
-                    result[i] = ((double) entry[i]);
-                } else {
-                    result[i] = (result[i] + (double) entry[i]) / 2;
-
-                }
-                //System.out.println("excute loop: " + result[i]);
+                result[i] = max(((double) entry[i]), result[i]);
             }
         }
-
         return result;
     }
 }
