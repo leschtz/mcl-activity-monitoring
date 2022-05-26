@@ -217,20 +217,7 @@ def main():
 
     # print('§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§')
 
-    # Only ACC
-    # Best: 0.690780
-    # using
-    # {'activation': 'relu', 'optimizer': 'RMSprop', 'dropout_rate': 0.1, 'epochs': 30, 'batch_size': 25,
-    #  'steps_per_epoch': 323}
-    # model = Sequential()
-    # model.add(keras.Input(shape=(9,)))
-    # model.add(keras.layers.Dense(256, activation=param['activation']))
-    # # , kernel_regularizer=tf.keras.regularizers.L1(0.001)
-    # # model.add(keras.layers.Dropout(0.1))
-    # # model.add(keras.layers.Dense(256, activation=activation))
-    # model.add(Dropout(param['dropout_rate']))
-    # model.add(Dense(128, activation=param['activation']))
-    # model.add(Dense(6, activation='softmax'))
+
 
 
 def create_model(param=None):
