@@ -1,11 +1,9 @@
 package com.example.activitymonitoring.FeatureStrategies;
 
-import static java.lang.Math.max;
-
 import java.util.Arrays;
 import java.util.List;
 
-public class StdFeature implements BaseFeature {
+public class MadFeature implements BaseFeature {
     @Override
     public double[] execute(List<float[]> data) {
         if (data.size() == 0) {
@@ -17,8 +15,8 @@ public class StdFeature implements BaseFeature {
             return null;
         }
 
-        // formula taken from https://en.wikipedia.org/wiki/Standard_deviation#Uncorrected_sample_standard_deviation
-        // std = sqrt(1/N * sum((x_i - mean)^2)
+        // formula taken from https://de.wikipedia.org/wiki/Mittlere_absolute_Abweichung_vom_Median
+        // mad = 1/N * sum(x_i - mean)
 
         double[] result = new double[data.get(0).length];
         Arrays.fill(result, 0.0);
@@ -34,14 +32,14 @@ public class StdFeature implements BaseFeature {
                 if (i > mean.length) {
                     break;
                 }
-                // calculate sum((x_i - mean)^2) = v
-                result[i] += Math.pow(entry[i] - mean[i], 2);
+                // calculate sum(x_i - mean) = v
+                result[i] += (entry[i] - mean[i]);
             }
         }
 
         for (int i = 0; i < result.length; i++) {
-            // calculate sqrt(1/N * v)
-            result[i] = Math.sqrt(result[i] / data.size());
+            // calculate (1/N * v)
+            result[i] = result[i] / data.size();
         }
 
         return result;
