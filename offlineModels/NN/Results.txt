@@ -1,0 +1,25 @@
+
+MIN,MAX,AV,Sigma ACC
+ param = {'activation': 'relu', 'optimizer': 'Nadam', 'dropout_rate': 0.1, 'nodecount': 256}
+ epochs=100, batch_size=50,
+Epoch 100/100
+149/149 [==============================] - 0s 950us/step - loss: 0.5002 - categorical_accuracy: 0.7641
+
+Score from evaluate:
+94/94 [==============================] - 0s 504us/step - loss: 1.1060 - categorical_accuracy: 0.6132
+[1.1060010194778442, 0.6131508946418762]
+
+94/94 [==============================] - 0s 504us/step
+Classification report
+              precision    recall  f1-score   support
+
+           0       0.36      0.67      0.47       496
+           1       0.62      0.54      0.57       471
+           2       0.77      0.80      0.79       420
+           3       0.62      0.17      0.27       508
+           4       0.70      0.30      0.42       556
+           5       0.61      0.94      0.74       545
+
+    accuracy                           0.56      2996
+   macro avg       0.61      0.57      0.54      2996
+weighted avg       0.61      0.56      0.54      2996

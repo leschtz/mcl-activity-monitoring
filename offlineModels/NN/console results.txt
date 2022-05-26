@@ -1,0 +1,36 @@
+2022-05-26 11:44:53.748918: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'cudart64_110.dll'; dlerror: cudart64_110.dll not found
+2022-05-26 11:44:53.748996: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+Create random train-test-split
+2022-05-26 11:44:57.291748: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'nvcuda.dll'; dlerror: nvcuda.dll not found
+2022-05-26 11:44:57.291819: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+2022-05-26 11:44:57.293770: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: PC-Luca
+2022-05-26 11:44:57.293884: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: PC-Luca
+2022-05-26 11:44:57.294259: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX AVX2
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Index(['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3',
+       'tBodyAcc-STD-1', 'tBodyAcc-STD-2', 'tBodyAcc-STD-3', 'tBodyAcc-Mad-1',
+       'tBodyAcc-Mad-2', 'tBodyAcc-Mad-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
+       'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3'],
+      dtype='object')
+Restoring model weights from the end of the best epoch: 91.
+Epoch 96: early stopping
+
+Score from evaluate:
+ 1/64 [..............................] - ETA: 5s - loss: 0.8338 - categorical_accuracy: 0.718864/64 [==============================] - 0s 508us/step - loss: 0.5789 - categorical_accuracy: 0.7255
+[0.5789253115653992, 0.725470781326294]
+
+ 1/64 [..............................] - ETA: 2s64/64 [==============================] - 0s 429us/step
+Classification report
+              precision    recall  f1-score   support
+
+           0       0.39      0.93      0.55       317
+           1       0.89      0.81      0.85       313
+           2       0.96      0.90      0.93       288
+           3       0.61      0.06      0.10       348
+           4       0.68      0.50      0.57       381
+           5       0.73      0.80      0.76       371
+
+    accuracy                           0.65      2018
+   macro avg       0.71      0.66      0.63      2018
+weighted avg       0.70      0.65      0.62      2018
+
