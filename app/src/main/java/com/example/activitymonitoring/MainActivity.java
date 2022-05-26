@@ -10,22 +10,19 @@ import android.hardware.SensorManager;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.SystemClock;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.activitymonitoring.DataStrategy.AverageStrategy;
+import com.example.activitymonitoring.DataStrategy.Util;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -142,62 +139,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         });
 
-
-        Button classify_start_Btn = findViewById(R.id.classify_button_test);
-        classify_start_Btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (dataProcessor == null) {
-                    return;
-                }
-                //Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-                //dataProcessor.addRawData(dlData);
-                //double[] knnData = dataProcessor.getKnnData(new AverageStrategy());
-                //int result = classifier.classify(test);
-                double[] test = {-4.1922474, -3.466804, 2.006341, -0.54023397, -0.8074875, -1.6421585};
-
-                int result = classifier.classify(test);
-                System.out.println("Classification result is : " + result);
-
-                test = new double[]{-0.06849326, -0.08689558, -0.0388663, -1.364695, -0.7637503, 9.644144};
-                result = classifier.classify(test);
-                System.out.println("Classification result is : " + result);
-
-                test = new double[]{0, 0, 0, 0.020311269909143448, 0.04688390716910362, 0.07513642311096191};
-                result = classifier.classify(test);
-                System.out.println("Classification result is : " + result);
-            }
-        });
-
-        Button classifyBtn = findViewById(R.id.classify_start_button);
-        classifyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (dataLogger != null) {
-                    if (dataProcessor != null) {
-                        //Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-
-                        //dataProcessor.addRawData(dlData);
-                        // gets the last 10 seconds to classify
-                        double[] knnData = dataProcessor.getKnnData(new AverageStrategy(), 10 * 1000);
-
-                        int knnResult = -1;
-                        if (classifier != null) {
-
-                            knnResult = classifier.classify(knnData);
-                            System.out.println(knnResult);
-                        }
-
-                        TextView classification_result = findViewById(R.id.man_classification_result);
-                        classification_result.setText(getResources().getString(R.string.manual_classification_result, getActivityByNumber(knnResult)));
-                    }
-
-                }
-            }
-        });
-
-        this.classifier = new KNNClassifier(13, 7, readFile());
+        this.classifier = new KNNClassifier(25, 7, readFile());
     }
 
     @Override
@@ -228,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
 
-        float[] currentValue = new float[3];
+        float[] currentValue;
 
         // data gets written to /data/data/com.example.activitymonitoring/files
         if (dataLogger.isRecording()) {
@@ -243,33 +185,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             textSecondsLeft.setText(R.string.seconds_left_default);
         }
 
-        if (this.dataLogger != null) {
-            Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-            if (this.dataProcessor != null && dlData.size() > 0) {
-                this.dataProcessor.addRawData(dlData);
-            }
-        }
         if (dummyCounter >= 5) {
             dummyCounter = 0;
             if (this.dataLogger != null) {
-                Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
                 if (this.dataProcessor != null) {
-
-                    this.dataProcessor.addRawData(dlData);
-                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy(), 500);
-                    for (double d : knnData) {
-                        System.out.print(d + "\t");
-                    }
-                    System.out.println();
                     int knnResult = -1;
                     if (this.classifier != null) {
-
-                        knnResult = classifier.classify(knnData);
-                        System.out.println(knnResult);
+                        double[] knnData = this.dataProcessor.getKnnData();
+                        if (knnData != null) {
+                            knnResult = classifier.classify(this.dataProcessor.getKnnData());
+                            System.out.println(knnResult);
+                        }
                     }
 
                     TextView classification_result = findViewById(R.id.str_classification_result);
-                    classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
+                    classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
                 }
             }
         }
@@ -280,46 +210,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 currentValue = sensorEvent.values.clone();
                 dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
+                dataProcessor.addSensorData(timestamp, currentValue);
+
                 TextView textValueAccelerometer = findViewById(R.id.value_accelerometer);
                 textValueAccelerometer.setText(getResources().getString(R.string.label_accelerometer, currentValue[0], currentValue[1], currentValue[2]));
                 break;
 
+
             case Sensor.TYPE_GYROSCOPE:
                 currentValue = sensorEvent.values.clone();
-                dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
-
-                TextView textValueGyroscope = findViewById(R.id.value_gyroscope);
-                textValueGyroscope.setText(getResources().getString(R.string.label_gyroscope, currentValue[0], currentValue[1], currentValue[2]));
                 break;
             default:
                 // nothing
         }
-//        SystemClock.sleep(50);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
-    }
-
-    public String getActivityByNumber(int activity) {
-        switch (activity) {
-            case 1:
-                return "Walk";
-            case 2:
-                return "Run";
-            case 3:
-                return "Jump";
-            case 4:
-                return "Squat";
-            case 5:
-                return "Stand";
-            case 6:
-                return "Sit";
-
-            default:
-                return "None";
-        }
     }
 
     public List<double[]> readFile() {
