@@ -6,9 +6,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -99,13 +97,6 @@ public class DataLogger {
         return filePath;
     }
 
-    // collects the logged data and returns it to the collector.
-    public Map<String, Map<Long, float[]>> collect() {
-        Map<String, Map<Long, float[]>> data = new HashMap<>(this.sensorSource);
-        this.sensorSource = new HashMap<>();
-        return data;
-    }
-
     public String createDataString(long timestamp, float[] values, String sensorName) {
         // write sensorName to file
         StringBuilder output = new StringBuilder();
@@ -123,17 +114,6 @@ public class DataLogger {
     }
 
     public void record(long timestamp, float[] values, String sensorName) {
-        if (!this.sensorSource.containsKey(sensorName)) {
-            Map<Long, float[]> initial_data = new HashMap<>();
-
-            initial_data.put(timestamp, values.clone());
-            this.sensorSource.put(sensorName, initial_data);
-        }
-        Map<Long, float[]> data = sensorSource.get(sensorName);
-        if (data != null) {
-            data.put(timestamp, values);
-        }
-
         String dataString = createDataString(timestamp, values, sensorName);
         this.record(dataString);
     }

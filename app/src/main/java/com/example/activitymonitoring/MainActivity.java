@@ -187,20 +187,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (dummyCounter >= 5) {
             dummyCounter = 0;
-            if (this.dataLogger != null) {
-                if (this.dataProcessor != null) {
-                    int knnResult = -1;
-                    if (this.classifier != null) {
-                        double[] knnData = this.dataProcessor.getKnnData();
-                        if (knnData != null) {
-                            knnResult = classifier.classify(this.dataProcessor.getKnnData());
-                            System.out.println(knnResult);
-                        }
+            if (this.dataProcessor != null) {
+                int knnResult = -1;
+                if (this.classifier != null) {
+                    double[] knnData = this.dataProcessor.getKnnData();
+                    if (knnData != null) {
+                        knnResult = classifier.classify(this.dataProcessor.getKnnData());
+                        System.out.println(knnResult);
                     }
-
-                    TextView classification_result = findViewById(R.id.str_classification_result);
-                    classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
                 }
+
+                TextView classification_result = findViewById(R.id.str_classification_result);
+                classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
             }
         }
         dummyCounter++;
