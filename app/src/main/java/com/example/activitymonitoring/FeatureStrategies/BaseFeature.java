@@ -1,8 +1,8 @@
-package com.example.activitymonitoring.DataStrategy;
+package com.example.activitymonitoring.FeatureStrategies;
 
 import java.util.List;
 
-public interface Strategy {
+public interface BaseFeature {
     //double[] execute(List<float[]> data);
     double[] execute(List<float[]> data);
 }

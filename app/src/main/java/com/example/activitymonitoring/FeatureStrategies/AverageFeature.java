@@ -1,9 +1,9 @@
-package com.example.activitymonitoring.DataStrategy;
+package com.example.activitymonitoring.FeatureStrategies;
 
 import java.util.List;
 import java.util.Arrays;
 
-public class AverageStrategy implements Strategy {
+public class AverageFeature implements BaseFeature {
 
     @Override
     public double[] execute(List<float[]> data) {

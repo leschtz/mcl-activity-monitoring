@@ -17,7 +17,6 @@ public class DataLogger {
     private DataOutputStream dataOutputStream = null;
     private String filePath;
     private Boolean is_recording = Boolean.FALSE;
-    private Map<String, Map<Long, float[]>> sensorSource = new HashMap<>();
 
     public DataLogger(Context context) {
         filesDir = context.getFilesDir();

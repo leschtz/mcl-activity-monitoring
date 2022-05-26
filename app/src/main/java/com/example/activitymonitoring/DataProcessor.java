@@ -1,9 +1,9 @@
 package com.example.activitymonitoring;
 
 
-import com.example.activitymonitoring.DataStrategy.AverageStrategy;
-import com.example.activitymonitoring.DataStrategy.MaxStrategy;
-import com.example.activitymonitoring.DataStrategy.MinStrategy;
+import com.example.activitymonitoring.FeatureStrategies.AverageFeature;
+import com.example.activitymonitoring.FeatureStrategies.MaxFeature;
+import com.example.activitymonitoring.FeatureStrategies.MinFeature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,13 +42,13 @@ public class DataProcessor {
             List<Double> f = new ArrayList<>();
 
             // unnecessary complicated, I guess
-            double[] minFeature = new MinStrategy().execute(this.sensorData);
+            double[] minFeature = new MinFeature().execute(this.sensorData);
             f.addAll(Arrays.asList(Arrays.stream(minFeature).boxed().toArray(Double[]::new)));
 
-            double[] avgFeature = new AverageStrategy().execute(this.sensorData);
+            double[] avgFeature = new AverageFeature().execute(this.sensorData);
             f.addAll(Arrays.asList(Arrays.stream(avgFeature).boxed().toArray(Double[]::new)));
 
-            double[] maxFeature = new MaxStrategy().execute(this.sensorData);
+            double[] maxFeature = new MaxFeature().execute(this.sensorData);
             f.addAll(Arrays.asList(Arrays.stream(maxFeature).boxed().toArray(Double[]::new)));
             // todo: standard deviation feature
             // todo: mad feature
