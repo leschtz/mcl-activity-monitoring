@@ -10,7 +10,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DataProcessor {
-    final int param_timing = 20 * 1000; // 20ms timing
+    final int PARAM_TIMING = 20 * 1000; // 20ms timing
+    final double[] PARAM_MIN = {0, 0, 0};
+    final double[] PARAM_MAX = {0, 0, 0};
+
     long start = 0;
     private List<float[]> sensorData;
     private List<double[]> featureData;
@@ -23,11 +26,25 @@ public class DataProcessor {
     public void addSensorData(long timestamp, float[] values) {
         sensorData.add(values);
 
-        if ((timestamp - this.start) >= param_timing) {
+        if ((timestamp - this.start) >= PARAM_TIMING) {
             this.start = timestamp + 1;
             calculateFeatures();
             this.sensorData = new ArrayList<>();
         }
+    }
+
+    private double[] normalize(double[] data) {
+        // https://stats.stackexchange.com/questions/178626/how-to-normalize-data-between-1-and-1
+        if (data == null || data.length != 3) {
+            return null;
+        }
+        double[] normalized = new double[3];
+
+        for (int i = 0; i < data.length; i++) {
+            normalized[i] = 2 * ((data[i] - PARAM_MIN[i])/(PARAM_MAX[i] - PARAM_MIN[i])) - 1;
+        }
+
+        return normalized;
     }
 
     private void calculateFeatures() {
