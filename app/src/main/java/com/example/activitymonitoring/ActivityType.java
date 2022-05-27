@@ -1,11 +1,11 @@
 package com.example.activitymonitoring;
 
 public enum ActivityType {
-    NONE,
-    WALK,
-    RUN,
-    JUMP,
-    SQUAT,
-    STAND,
-    SIT
+    None,
+    Walk,
+    Run,
+    Jump,
+    Squat,
+    Stand,
+    Sit
 }

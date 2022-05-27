@@ -1,8 +1,11 @@
 package com.example.activitymonitoring;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -19,8 +22,12 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +35,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private SensorManager sensorManager;
     private Sensor sensorAccelerometer;
-    private Sensor sensorGyroscope;
     private DataLogger dataLogger;
     private KNNClassifier classifier;
     private DataProcessor dataProcessor;
@@ -80,7 +86,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         trainKnnFab.setOnClickListener(
                 view -> {
-                    Toast.makeText(MainActivity.this, "Alarm Added", Toast.LENGTH_SHORT).show();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle(R.string.train_title);
+                        builder.setItems(R.array.activityArray, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // The 'which' argument contains the index position
+                                // of the selected item
+                                // todo: add logic to classify the next 10s automatically
+                                String activityString = getResources().getStringArray(R.array.activityArray)[which];
+                                ActivityType activity = ActivityType.valueOf(activityString);
+                                String toastString = getResources().getString(R.string.automatic_classify, activity.name(), 10);
+                                Toast.makeText(MainActivity.this, toastString, Toast.LENGTH_LONG).show();
+
+                            }
+                        });
+                        builder.show();
+                });
+
+        logDataFab.setOnClickListener(
+                view -> {
+                    Toast.makeText(MainActivity.this, "Alarm Added", Toast.LENGTH_LONG).show();
                 }
         );
 
@@ -92,15 +117,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
         }
 
-        TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
-        textSensorAccelerometer.setText(R.string.seconds_left_default);
-
-        dataLogger = new
-
-                DataLogger(getApplicationContext());
-        this.dataProcessor = new
-
-                DataProcessor();
+        dataLogger = new DataLogger(getApplicationContext());
+        this.dataProcessor = new DataProcessor();
 
         Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
         ImageButton playBtn = findViewById(R.id.play_button);
@@ -160,8 +178,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         if (dataLogger == null || !dataLogger.isRecording()) {
                             return;
                         }
-                        TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
-                        textSensorAccelerometer.setText(getResources().getString(R.string.seconds_left, (timeLeftInMillis / 1000)));
                     }
 
                     @Override
@@ -183,9 +199,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
 
-        this.classifier = new
-
-                KNNClassifier(25, 7, readFile());
+        this.classifier = new KNNClassifier(25, 9, readFile());
     }
 
     @Override
@@ -215,19 +229,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         float[] currentValue;
 
-        // data gets written to /data/data/com.example.activitymonitoring/files
-        if (dataLogger.isRecording()) {
-            TextView textFilePath = findViewById(R.id.label_file_path);
-            String path = dataLogger.getFilePath();
-            textFilePath.setText(getResources().getString(R.string.file_path, path));
-        } else {
-            TextView textFilePath = findViewById(R.id.label_file_path);
-            textFilePath.setText(getResources().getString(R.string.file_path, "NOT_RECORDING"));
-
-            TextView textSecondsLeft = findViewById(R.id.timer_rest_time);
-            textSecondsLeft.setText(R.string.seconds_left_default);
-        }
-
         if (dummyCounter >= 5) {
             dummyCounter = 0;
             if (this.dataProcessor != null) {
@@ -235,8 +236,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (this.classifier != null) {
                     double[] knnData = this.dataProcessor.getKnnData();
                     if (knnData != null) {
-                        knnResult = classifier.classify(this.dataProcessor.getKnnData());
-                        System.out.println(knnResult);
+                        // todo: enable knn classifier
+                        //knnResult = classifier.classify(knnData);
+                        //System.out.println(knnResult);
                     }
                 }
 
@@ -293,6 +295,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         return rowList;
+    }
+
+    public void addFeatureSetToRawFile(int activity, double[] features) {
+        try {
+            StringBuilder stringBuilder = new StringBuilder();
+            for(int i = 0; i < features.length; i++) {
+                stringBuilder.append(features[i]);
+                stringBuilder.append(",");
+            }
+            stringBuilder.append(activity);
+
+            OutputStreamWriter streamWriter = new OutputStreamWriter(null);
+            streamWriter.write(stringBuilder.toString());
+            streamWriter.flush();
+            streamWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

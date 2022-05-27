@@ -22,4 +22,8 @@
     <string name="fab_train_description">kNN Training</string>
     <string name="fab_log_description">Data Logging</string>
     <string name="fab_main_description">Open Menu</string>
+
+    <string name="train_title">Activity Training</string>
+    <string name="automatic_classify">Automatically classifying as %1$s for the next %2$d seconds.</string>
+
 </resources>
