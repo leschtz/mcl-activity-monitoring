@@ -17,7 +17,7 @@
     <string name="toast_stop_recording">Stopped Recording</string>
     <string name="toast_activity_failed">Activity Failed</string>
 
-    <string name="classification_result">kNN Classification: %1$s.</string>
+    <string name="classification_result">%1$s.</string>
 
     <string name="fab_train_description">kNN Training</string>
     <string name="fab_log_description">Data Logging</string>

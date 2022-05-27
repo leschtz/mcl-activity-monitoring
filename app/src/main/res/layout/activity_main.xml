@@ -7,13 +7,55 @@
     android:layout_margin="20dp"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/value_accelerometer"
-        android:layout_width="wrap_content"
+
+    <!-- A CardView that contains a TextView -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/label_accelerometer"
-        app:layout_constraintLeft_toLeftOf="parent"
-        tools:layout_editor_absoluteY="32dp" />
+        app:cardElevation="5dp"
+        app:cardCornerRadius="10dp"
+        android:layout_margin="5dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardMaxElevation="12dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true"
+        >
+
+        <!--
+        In the above cardview widget
+        cardelevation property will give elevation to your card view
+        card corner radius will provide radius to your card view
+        card background color will give background color to your card view
+        card max elevation will give the cardview maximum elevation
+        card prevent corner overlap will add padding to CardView on v20 and before to prevent intersections between the Card content and rounded corners.
+        card use compact padding will add padding in API v21+ as well to have the same measurements with previous versions.
+        below are the two widgets imageview and text view we are displaying inside our card view.
+        -->
+        <TextView
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_margin="10dp"
+            android:textSize="40sp"
+            android:gravity="center"
+            android:textStyle="bold"
+            android:text="@string/classification_result"
+            android:id="@+id/img"
+            android:contentDescription="@string/app_name" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="kNN Monitoring"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            />
+    </androidx.cardview.widget.CardView>
+    <!-- A CardView that contains a TextView -->
+
 
 
     <ImageButton
@@ -71,16 +113,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/pause_button">Stop</ImageButton>
 
-    <TextView
-        android:id="@+id/str_classification_result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:text="@string/classification_result"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        app:layout_constraintLeft_toLeftOf="parent"
-        tools:layout_editor_absoluteY="277dp" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/data_log_fab"
         android:layout_width="wrap_content"

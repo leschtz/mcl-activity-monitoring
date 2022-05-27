@@ -112,11 +112,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (sensorAccelerometer == null) {
-            TextView textSensorAccelerometer = findViewById(R.id.value_accelerometer);
-            textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
-        }
-
         dataLogger = new DataLogger(getApplicationContext());
         this.dataProcessor = new DataProcessor();
 
@@ -242,8 +237,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }
 
-                TextView classification_result = findViewById(R.id.str_classification_result);
-                classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
+                //TextView classification_result = findViewById(R.id.str_classification_result);
+                //classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
             }
         }
         dummyCounter++;
@@ -254,9 +249,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
                 dataProcessor.addSensorData(timestamp, currentValue);
-
-                TextView textValueAccelerometer = findViewById(R.id.value_accelerometer);
-                textValueAccelerometer.setText(getResources().getString(R.string.label_accelerometer, currentValue[0], currentValue[1], currentValue[2]));
                 break;
 
 
