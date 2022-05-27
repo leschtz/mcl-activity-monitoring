@@ -35,41 +35,41 @@
         app:layout_constraintTop_toBottomOf="@+id/value_accelerometer" />
 
     <TextView
-        android:id="@+id/timer_rest_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:text="@string/seconds_left"
-        app:layout_constraintBottom_toTopOf="@id/timer_value"
-        app:layout_constraintLeft_toLeftOf="parent" />
-
-    <TextView
         android:id="@+id/str_classification_result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginLeft="36dp"
         android:text="@string/classification_result"
+        android:textSize="25dp"
         android:textStyle="bold"
-        android:textSize="50px"
-        app:layout_constraintBottom_toTopOf="@id/classify_button_test"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_editor_absoluteY="277dp" />
 
-    <TextView
-        android:id="@+id/man_classification_result"
+    <ImageButton
+        android:id="@+id/play_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
-        android:text="@string/manual_classification_result"
-        android:textStyle="bold"
-        android:textSize="50px"
-        app:layout_constraintBottom_toTopOf="@id/str_classification_result"
+        android:layout_marginEnd="44dp"
+        android:layout_marginBottom="340dp"
+        android:contentDescription="@string/play_icon_description"
+        android:src="@drawable/ic_baseline_play_circle_filled_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent">Play</ImageButton>
+
+    <TextView
+        android:id="@+id/timer_rest_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:text="@string/seconds_left"
+        app:layout_constraintBottom_toTopOf="@id/timer_value"
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <EditText
         android:id="@+id/timer_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="12dp"
+        android:layout_marginBottom="340dp"
         android:ems="7"
         android:hint="Timer Seconds"
         android:inputType="number"
@@ -77,58 +77,99 @@
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <ImageButton
-        android:id="@+id/play_button"
+        android:id="@+id/timed_log_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/play_icon_description"
-        android:src="@drawable/ic_baseline_play_circle_filled_24"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="340dp"
+        android:contentDescription="Timed Data Logging"
+        android:src="@drawable/ic_baseline_timer_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent">Play</ImageButton>
-
-    <ImageButton
-        android:id="@+id/stop_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="Stop Logging Data"
-        android:src="@drawable/ic_baseline_stop_circle_24"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/pause_button">Stop</ImageButton>
+        app:layout_constraintRight_toLeftOf="@+id/stop_button">Timed Logging</ImageButton>
 
     <ImageButton
         android:id="@+id/pause_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="340dp"
         android:contentDescription="Pause Logging Data"
         android:src="@drawable/ic_baseline_pause_circle_filled_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@+id/play_button">Pause</ImageButton>
 
     <ImageButton
-        android:id="@+id/timed_log_button"
+        android:id="@+id/stop_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="Timed Data Logging"
-        android:src="@drawable/ic_baseline_timer_24"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="340dp"
+        android:contentDescription="Stop Logging Data"
+        android:src="@drawable/ic_baseline_stop_circle_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/stop_button">Timed Logging</ImageButton>
+        app:layout_constraintRight_toLeftOf="@+id/pause_button">Stop</ImageButton>
 
-    <Button
-        android:id="@+id/classify_start_button"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/data_log_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start Classify"
-        app:layout_constraintBottom_toTopOf="@+id/timer_rest_time"
-        app:layout_constraintLeft_toLeftOf="parent"
-        tools:layout_editor_absoluteX="0dp" />
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/fab_train_description"
+        android:src="@drawable/ic_baseline_fiber_manual_record_24"
+        app:layout_constraintBottom_toTopOf="@+id/train_fab"
+        app:layout_constraintEnd_toEndOf="@+id/train_fab"
+        app:layout_constraintStart_toStartOf="@+id/train_fab"
 
-    <Button
-        android:id="@+id/classify_button_test"
+        app:fabSize="auto"/>
+
+    <TextView
+        android:id="@+id/data_log_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Test Classify"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/classify_start_button"
-        tools:layout_editor_absoluteX="229dp" />
+        android:layout_marginEnd="8dp"
+        android:text="@string/fab_log_description"
+        app:layout_constraintBottom_toBottomOf="@+id/data_log_fab"
+        app:layout_constraintEnd_toStartOf="@+id/data_log_fab"
+        app:layout_constraintTop_toTopOf="@+id/data_log_fab" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/train_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/fab_train_description"
+        android:src="@drawable/ic_baseline_model_training_24"
+        app:layout_constraintBottom_toTopOf="@+id/main_fab"
+        app:layout_constraintEnd_toEndOf="@+id/main_fab"
+        app:layout_constraintStart_toStartOf="@+id/main_fab"
+        app:fabSize="auto"/>
+
+    <TextView
+        android:id="@+id/train_model_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="@string/fab_train_description"
+        app:layout_constraintBottom_toBottomOf="@+id/train_fab"
+        app:layout_constraintEnd_toStartOf="@+id/train_fab"
+        app:layout_constraintTop_toTopOf="@+id/train_fab" />
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/main_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="@string/fab_main_description"
+        android:src="@drawable/ic_baseline_add_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:fabSize="auto"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+

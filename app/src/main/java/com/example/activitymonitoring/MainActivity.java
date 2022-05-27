@@ -16,6 +16,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,10 +34,55 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataProcessor dataProcessor;
     private int dummyCounter = 0;
 
+    FloatingActionButton menuFab, trainKnnFab, logDataFab;
+    TextView trainKnnText, logDataText;
+    Boolean fabIsVisible;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        menuFab = findViewById(R.id.main_fab);
+        trainKnnFab = findViewById(R.id.train_fab);
+        logDataFab = findViewById(R.id.data_log_fab);
+
+        trainKnnText = findViewById(R.id.train_model_text);
+        logDataText = findViewById(R.id.data_log_text);
+
+        trainKnnFab.setVisibility(View.GONE);
+        trainKnnText.setVisibility(View.GONE);
+        logDataFab.setVisibility(View.GONE);
+        logDataText.setVisibility(View.GONE);
+        fabIsVisible = Boolean.FALSE;
+
+        menuFab.setOnClickListener(
+                view -> {
+                    if (!fabIsVisible) {
+                        trainKnnFab.show();
+                        logDataFab.show();
+                        trainKnnText.setVisibility(View.VISIBLE);
+                        logDataText.setVisibility(View.VISIBLE);
+
+                        fabIsVisible = true;
+                    } else {
+
+                        trainKnnFab.hide();
+                        logDataFab.hide();
+                        trainKnnText.setVisibility(View.GONE);
+                        logDataText.setVisibility(View.GONE);
+
+                        fabIsVisible = false;
+                    }
+                }
+        );
+
+        trainKnnFab.setOnClickListener(
+                view -> {
+                    Toast.makeText(MainActivity.this, "Alarm Added", Toast.LENGTH_SHORT).show();
+                }
+        );
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -45,17 +92,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
         }
 
-        sensorGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (sensorGyroscope == null) {
-            TextView textSensorGyroscope = findViewById(R.id.value_gyroscope);
-            textSensorGyroscope.setText(getResources().getString(R.string.error_gyroscope_unavailable));
-        }
-
         TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
         textSensorAccelerometer.setText(R.string.seconds_left_default);
 
-        dataLogger = new DataLogger(getApplicationContext());
-        this.dataProcessor = new DataProcessor();
+        dataLogger = new
+
+                DataLogger(getApplicationContext());
+        this.dataProcessor = new
+
+                DataProcessor();
 
         Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
         ImageButton playBtn = findViewById(R.id.play_button);
@@ -137,7 +182,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         });
 
-        this.classifier = new KNNClassifier(25, 7, readFile());
+
+        this.classifier = new
+
+                KNNClassifier(25, 7, readFile());
     }
 
     @Override
@@ -148,9 +196,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
-        if (sensorGyroscope != null) {
-            sensorManager.registerListener(this, sensorGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
-        }
     }
 
     @Override
