@@ -14,7 +14,7 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="@string/fab_train_description"
-        android:src="@drawable/ic_baseline_fiber_manual_record_24"
+        android:src="@drawable/ic_baseline_play_arrow_24"
         app:layout_constraintBottom_toTopOf="@+id/train_fab"
         app:layout_constraintEnd_toEndOf="@+id/train_fab"
         app:layout_constraintStart_toStartOf="@+id/train_fab"
@@ -82,7 +82,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_margin="1dp"
                 app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="5dp"
@@ -116,7 +116,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_margin="1dp"
                 app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="5dp"
@@ -150,7 +150,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
+                android:layout_margin="1dp"
                 app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="5dp"
@@ -181,103 +181,24 @@
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
 
-            <EditText
-                android:id="@+id/timer_value"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="340dp"
-                android:ems="7"
-                android:hint="Timer Seconds"
-                android:inputType="number" />
-
-            <ImageButton
-                android:id="@+id/stop_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="340dp"
-                android:contentDescription="Stop Logging Data"
-                android:src="@drawable/ic_baseline_stop_circle_24">Stop</ImageButton>
-
-            <ImageButton
-                android:id="@+id/timed_log_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="16dp"
-                android:layout_marginBottom="340dp"
-                android:contentDescription="Timed Data Logging"
-                android:src="@drawable/ic_baseline_timer_24">Timed Logging
-            </ImageButton>
-
-            <ImageButton
-                android:id="@+id/play_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="340dp"
-                android:contentDescription="@string/play_icon_description"
-                android:src="@drawable/ic_baseline_play_circle_filled_24">Play
-            </ImageButton>
-
-            <ImageButton
-                android:id="@+id/pause_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:layout_marginBottom="340dp"
-                android:contentDescription="Pause Logging Data"
-                android:src="@drawable/ic_baseline_pause_circle_filled_24">Pause
-            </ImageButton>
-
 
         </LinearLayout>
     </ScrollView>
 
-    <!--
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/log_play_fab"
+        android:id="@+id/stop_log_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
         android:contentDescription="@string/fab_main_description"
-        android:src="@drawable/ic_baseline_add_24"
-        app:layout_constraintBottom_toBottomOf="@+id/data_log_fab"
-        app:layout_constraintEnd_toStartOf="@+id/data_log_fab"
-        app:layout_constraintTop_toTopOf="@+id/data_log_fab"
+        android:src="@drawable/ic_baseline_stop_24"
+        app:layout_constraintBottom_toTopOf="@+id/main_fab"
+        app:layout_constraintEnd_toEndOf="@+id/main_fab"
+        app:layout_constraintStart_toStartOf="@+id/main_fab"
         app:fabSize="mini"/>
 
-    <TextView
-        android:id="@+id/start_log_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:text="@string/fab_train_description"
-        app:layout_constraintBottom_toBottomOf="@+id/log_play_fab"
-        app:layout_constraintEnd_toStartOf="@+id/log_play_fab"
-        app:layout_constraintTop_toTopOf="@+id/log_play_fab" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/log_stop_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_marginRight="16dp"
-        android:contentDescription="@string/fab_main_description"
-        android:src="@drawable/ic_baseline_add_24"
-        app:layout_constraintBottom_toTopOf="@+id/log_play_fab"
-        app:layout_constraintStart_toStartOf="@+id/log_play_fab"
-        app:fabSize="mini"/>
-
-    <TextView
-        android:id="@+id/stop_log_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:text="@string/fab_train_description"
-        app:layout_constraintBottom_toBottomOf="@+id/log_stop_fab"
-        app:layout_constraintEnd_toStartOf="@+id/log_stop_fab"
-        app:layout_constraintTop_toTopOf="@+id/log_stop_fab" />
-        -->
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

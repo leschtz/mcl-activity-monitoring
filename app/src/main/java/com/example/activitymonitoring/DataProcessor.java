@@ -14,13 +14,15 @@ public class DataProcessor {
     final double[] PARAM_MIN = {0, 0, 0};
     final double[] PARAM_MAX = {0, 0, 0};
 
-    long start = 0;
+    private long start = 0;
+    private ActivityType type;
     private List<float[]> sensorData;
     private List<double[]> featureData;
 
     public DataProcessor() {
         this.sensorData = new ArrayList<>();
         this.featureData = new ArrayList<>();
+        type = ActivityType.None;
     }
 
     public void addSensorData(long timestamp, float[] values) {
@@ -75,6 +77,13 @@ public class DataProcessor {
         }
     }
 
+    public void setClassifyAs(ActivityType type) {
+        this.type = type;
+    }
+
+    public ActivityType getClassifyType() {
+        return this.type;
+    }
     public double[] getKnnData() {
         // returns always the earliest set of features, still in the list
         if(this.featureData.size() == 0) {
