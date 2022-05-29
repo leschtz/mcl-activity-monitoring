@@ -4,7 +4,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -160,8 +159,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
         );
 
-        stopLogFab.setOnClickListener(view -> stopLogging(view));
-        stopLogMainFab.setOnClickListener(view -> stopLogging(view));
+        stopLogFab.setOnClickListener(this::stopLogging);
+        stopLogMainFab.setOnClickListener(this::stopLogging);
 
         // todo: implement functionality to load R.raw file + custom_training_file
         this.classifier = new KNNClassifier(25, 9, readFile());
@@ -210,8 +209,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         //System.out.println(knnResult);
                     }
                 }
-                //TextView classification_result = findViewById(R.id.str_classification_result);
-                //classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
+                // todo: update text in GUI with the result
+                // TextView classification_result = findViewById(R.id.str_classification_result);
+                // classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
             }
         }
         dummyCounter++;
@@ -281,8 +281,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void addFeatureSetToRawFile(int activity, double[] features) {
         try {
             StringBuilder stringBuilder = new StringBuilder();
-            for (int i = 0; i < features.length; i++) {
-                stringBuilder.append(features[i]);
+            for (double feature : features) {
+                stringBuilder.append(feature);
                 stringBuilder.append(",");
             }
             stringBuilder.append(activity);
