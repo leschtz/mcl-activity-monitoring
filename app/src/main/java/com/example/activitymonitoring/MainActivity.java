@@ -13,8 +13,6 @@ import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,8 +35,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataProcessor dataProcessor;
     private int dummyCounter = 0;
 
-    FloatingActionButton menuFab, trainKnnFab, logDataFab, stopLogFab;
-    TextView trainKnnText, logDataText;
+    FloatingActionButton menuFab, trainKnnFab, logDataFab, stopLogFab, stopLogMainFab;
+    TextView trainKnnText, logDataText, stopLogText;
     Boolean fabIsVisible;
 
 
@@ -51,15 +49,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         trainKnnFab = findViewById(R.id.train_fab);
         logDataFab = findViewById(R.id.data_log_fab);
         stopLogFab = findViewById(R.id.stop_log_fab);
+        stopLogMainFab = findViewById(R.id.stop_data_log_fab);
 
         trainKnnText = findViewById(R.id.train_model_text);
         logDataText = findViewById(R.id.data_log_text);
+        stopLogText = findViewById(R.id.stop_data_log_text);
 
         stopLogFab.setVisibility(View.GONE);
         trainKnnFab.setVisibility(View.GONE);
         trainKnnText.setVisibility(View.GONE);
         logDataFab.setVisibility(View.GONE);
         logDataText.setVisibility(View.GONE);
+        stopLogMainFab.setVisibility(View.GONE);
+        stopLogText.setVisibility(View.GONE);
         fabIsVisible = Boolean.FALSE;
 
         Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
@@ -74,21 +76,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         menuFab.setOnClickListener(
                 view -> {
                     if (!fabIsVisible) {
-
+                        if (dataLogger != null && dataLogger.isRecording()) {
+                            logDataFab.hide();
+                            logDataText.setVisibility(View.GONE);
+                            stopLogMainFab.show();
+                            stopLogText.setVisibility(View.VISIBLE);
+                        } else {
+                            stopLogMainFab.hide();
+                            stopLogText.setVisibility(View.GONE);
+                            logDataFab.show();
+                            logDataText.setVisibility(View.VISIBLE);
+                        }
                         trainKnnFab.show();
-                        logDataFab.show();
                         trainKnnText.setVisibility(View.VISIBLE);
-                        logDataText.setVisibility(View.VISIBLE);
                         stopLogFab.hide();
 
                         fabIsVisible = true;
                     } else {
-
                         if (dataLogger != null && dataLogger.isRecording()) {
                             stopLogFab.show();
                         }
                         trainKnnFab.hide();
                         logDataFab.hide();
+                        stopLogMainFab.hide();
+                        stopLogText.setVisibility(View.GONE);
                         trainKnnText.setVisibility(View.GONE);
                         logDataText.setVisibility(View.GONE);
 
@@ -103,40 +114,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 view -> {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle(R.string.train_title);
-                    builder.setItems(R.array.activityArray, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            String activityString = getResources().getStringArray(R.array.activityArray)[which];
-                            ActivityType activity = ActivityType.valueOf(activityString);
-                            String toastString = getResources().getString(R.string.automatic_classify, activity.name(), 10);
-                            Toast.makeText(MainActivity.this, toastString, Toast.LENGTH_LONG).show();
+                    builder.setItems(R.array.activityArray, (dialog, which) -> {
+                        String activityString = getResources().getStringArray(R.array.activityArray)[which];
+                        ActivityType activity = ActivityType.valueOf(activityString);
+                        String toastString = getResources().getString(R.string.automatic_classify, activity.name(), 10);
+                        Toast.makeText(MainActivity.this, toastString, Toast.LENGTH_LONG).show();
 
-                            if (dataProcessor == null) {
-                                failureActivity.show();
-                                return;
-                            }
-                            Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
-                            dataProcessor.setClassifyAs(activity);
-
-                            new CountDownTimer(10 * 1000L, 1000) {
-                                @Override
-                                public void onTick(long timeLeftInMillis) {
-                                    if (dataProcessor == null) {
-                                        return;
-                                    }
-                                }
-
-                                @Override
-                                public void onFinish() {
-                                    if (dataProcessor == null) {
-                                        return;
-                                    }
-                                    dataProcessor.setClassifyAs(ActivityType.None);
-
-                                    RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
-                                    Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
-                                }
-                            }.start();
+                        if (dataProcessor == null) {
+                            failureActivity.show();
+                            return;
                         }
+                        Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
+                        dataProcessor.setClassifyAs(activity);
+
+                        new CountDownTimer(10 * 1000L, 1000) {
+                            @Override
+                            public void onTick(long timeLeftInMillis) {
+                            }
+
+                            @Override
+                            public void onFinish() {
+                                if (dataProcessor == null) {
+                                    return;
+                                }
+                                dataProcessor.setClassifyAs(ActivityType.None);
+                                // todo: reload classifier with new data
+                                RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
+                                Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+                            }
+                        }.start();
                     });
                     menuFab.performClick();
                     builder.show();
@@ -154,16 +160,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
         );
 
-        stopLogFab.setOnClickListener(
-                view -> {
-                    if (dataLogger != null && dataLogger.stopRecording()) {
-                        Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
-                        stopLogFab.hide();
-                    } else {
-                        failureActivity.show();
-                    }
-                }
-        );
+        stopLogFab.setOnClickListener(view -> stopLogging(view));
+        stopLogMainFab.setOnClickListener(view -> stopLogging(view));
+
+        // todo: implement functionality to load R.raw file + custom_training_file
         this.classifier = new KNNClassifier(25, 9, readFile());
     }
 
@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         // todo: enable knn classifier
                         //knnResult = classifier.classify(knnData);
 
-                        if (this.dataProcessor.getClassifyType() != ActivityType.None){
+                        if (this.dataProcessor.getClassifyType() != ActivityType.None) {
                             // addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
                         }
                         //System.out.println(knnResult);
@@ -238,8 +238,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public List<double[]> readFile() {
+    public void stopLogging(View view) {
+        if (dataLogger != null && dataLogger.stopRecording()) {
+            Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+            stopLogFab.hide();
+            stopLogMainFab.hide();
+            stopLogText.setVisibility(View.GONE);
+        } else {
+            Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT).show();
+        }
 
+        if(fabIsVisible) {
+            trainKnnFab.hide();
+            trainKnnText.setVisibility(View.GONE);
+            fabIsVisible = Boolean.FALSE;
+        }
+    }
+
+    public List<double[]> readFile() {
         List<double[]> rowList = new ArrayList<>();
         try {
             InputStream is = getResources().openRawResource(R.raw.new_neighbors);
