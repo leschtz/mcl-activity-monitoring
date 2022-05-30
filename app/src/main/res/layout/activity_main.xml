@@ -27,6 +27,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:text="@string/fab_log_description"
+        android:background="#B3FFFFFF"
+        android:translationZ="90dp"
         app:layout_constraintBottom_toBottomOf="@+id/data_log_fab"
         app:layout_constraintEnd_toStartOf="@+id/data_log_fab"
         app:layout_constraintTop_toTopOf="@+id/data_log_fab" />
@@ -51,6 +53,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:text="Stop Logging"
+        android:background="#B3FFFFFF"
+        android:translationZ="90dp"
         app:layout_constraintBottom_toBottomOf="@+id/stop_data_log_fab"
         app:layout_constraintEnd_toStartOf="@+id/stop_data_log_fab"
         app:layout_constraintTop_toTopOf="@+id/stop_data_log_fab" />
@@ -74,6 +78,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:text="@string/fab_train_description"
+        android:background="#B3FFFFFF"
+        android:translationZ="90dp"
         app:layout_constraintBottom_toBottomOf="@+id/train_fab"
         app:layout_constraintEnd_toStartOf="@+id/train_fab"
         app:layout_constraintTop_toTopOf="@+id/train_fab" />
@@ -205,6 +211,73 @@
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
 
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="1dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="5dp"
+                app:cardMaxElevation="12dp"
+                app:cardPreventCornerOverlap="true"
+                app:cardUseCompatPadding="true">
+
+                <TextView
+                    android:id="@+id/debug_acc"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="10dp"
+                    android:contentDescription="Debug Accelerometer"
+                    android:gravity="center"
+                    android:text="@string/three_axis_sensor"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="Accelerometer [m/s^2]"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="1dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="5dp"
+                app:cardMaxElevation="12dp"
+                app:cardPreventCornerOverlap="true"
+                app:cardUseCompatPadding="true">
+
+                <TextView
+                    android:id="@+id/debug_gravity"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="10dp"
+                    android:contentDescription="Debug Gravity"
+                    android:gravity="center"
+                    android:text="@string/three_axis_sensor"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="Gravity [G]"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
     </ScrollView>

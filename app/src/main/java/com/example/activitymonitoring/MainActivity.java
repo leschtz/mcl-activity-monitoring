@@ -65,10 +65,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
 
-
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
         dataLogger = new DataLogger(getApplicationContext());
         this.dataProcessor = new DataProcessor();
 
@@ -221,9 +220,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 currentValue = sensorEvent.values.clone();
                 dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
-                dataProcessor.addSensorData(timestamp, currentValue);
-                break;
+                TextView debugAccView = findViewById(R.id.debug_acc);
+                debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
 
+                dataProcessor.addSensorData(timestamp, currentValue);
+
+                TextView debugGravityView = findViewById(R.id.debug_gravity);
+                debugGravityView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0] / 9.80665, currentValue[1] / 9.80665, currentValue[2] / 9.80665));
+                break;
 
             case Sensor.TYPE_GYROSCOPE:
                 currentValue = sensorEvent.values.clone();
@@ -248,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT).show();
         }
 
-        if(fabIsVisible) {
+        if (fabIsVisible) {
             trainKnnFab.hide();
             trainKnnText.setVisibility(View.GONE);
             fabIsVisible = Boolean.FALSE;
