@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
                     outputStream.write(line);
+                    outputStream.write(System.lineSeparator());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -316,7 +317,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             stringBuilder.append(activity);
 
-            OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f));
+            OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));
+            streamWriter.write(System.lineSeparator());
             streamWriter.write(stringBuilder.toString());
             streamWriter.flush();
             streamWriter.close();
