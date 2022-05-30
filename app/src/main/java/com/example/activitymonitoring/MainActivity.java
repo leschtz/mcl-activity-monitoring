@@ -18,6 +18,10 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -136,11 +140,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                     return;
                                 }
                                 dataProcessor.setClassifyAs(ActivityType.None);
-                                // todo: reload classifier with new data
                                 RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
                                 Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+
                             }
                         }.start();
+                        // setting new data for neighbours.
+                        this.classifier.neighbors = readFile();
                     });
                     menuFab.performClick();
                     builder.show();
@@ -161,7 +167,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         stopLogFab.setOnClickListener(this::stopLogging);
         stopLogMainFab.setOnClickListener(this::stopLogging);
 
-        // todo: implement functionality to load R.raw file + custom_training_file
+        File f = new File(this.getFilesDir(), "custom_features.txt");
+        if (!f.exists()) {
+            // on first access, base features are copied to a writeable place
+            InputStream is = getResources().openRawResource(R.raw.new_neighbors);
+            try {
+                OutputStreamWriter outputStream = new OutputStreamWriter(new FileOutputStream(f));
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    outputStream.write(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         this.classifier = new KNNClassifier(25, 9, readFile());
     }
 
@@ -203,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         //knnResult = classifier.classify(knnData);
 
                         if (this.dataProcessor.getClassifyType() != ActivityType.None) {
-                            // addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
+                            addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
                         }
                         //System.out.println(knnResult);
                     }
@@ -262,7 +284,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public List<double[]> readFile() {
         List<double[]> rowList = new ArrayList<>();
         try {
-            InputStream is = getResources().openRawResource(R.raw.new_neighbors);
+            File f = new File(this.getFilesDir(), "custom_features.txt");
+            InputStream is = new DataInputStream(new FileInputStream(f));
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
@@ -284,6 +307,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void addFeatureSetToRawFile(int activity, double[] features) {
         try {
+            File f = new File(this.getFilesDir(), "custom_features.txt");
+
             StringBuilder stringBuilder = new StringBuilder();
             for (double feature : features) {
                 stringBuilder.append(feature);
@@ -291,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             stringBuilder.append(activity);
 
-            OutputStreamWriter streamWriter = new OutputStreamWriter(null);
+            OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f));
             streamWriter.write(stringBuilder.toString());
             streamWriter.flush();
             streamWriter.close();
@@ -299,6 +324,4 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             e.printStackTrace();
         }
     }
-
-
 }
