@@ -81,6 +81,19 @@ public class KNNClassifier {
         return result;
     }
 
+    private double[] calcEuclid(double[] vector, double[] neighbor) {
+        double sum = 0;
+        for (int i = 0; i < vector.length; i++) {
+            sum += Math.abs(vector[i] - neighbor[i]);
+        }
+
+        double[] result = {sqrt(sum), neighbor[neighbor.length - 1]};
+
+        return result;
+    }
+
+
+
     public int classify(double[] vector) {
 
         double[][] distances = createDistanceMatrix(vector);

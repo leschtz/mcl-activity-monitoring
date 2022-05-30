@@ -143,10 +143,11 @@ def main():
     es = EarlyStopping(patience=5, verbose=1, min_delta=0.001, monitor='loss', mode='auto',
                        restore_best_weights=True)
 
-    param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.0, 'nodecount': 128, 'nodecount2': 256}
+    param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.1, 'nodecount': 256, 'nodecount2': 256,
+             'nodecount3': 128}
     model = create_model(param=param)
-    # print(model.summary())
-    print(x_train.columns)
+    print(model.summary())
+    # print(x_train.columns)
     history = model.fit(x_train, y_train, epochs=200, batch_size=50, verbose=0, callbacks=[es])
 
     print()
@@ -166,6 +167,11 @@ def main():
     cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
     cm.plot()
     plt.show()
+    saved_model_dir = '../offlineModels/NN/savedModel'
+
+    model.save(saved_model_dir)
+
+    # convertToTFLiteModel(saved_model_dir)
 
     ### ????????????????????????????
 
@@ -218,11 +224,10 @@ def main():
     # print('§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§')
 
 
-
-
 def create_model(param=None):
     if param is None:
-        param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.0, 'nodecount': 64, 'nodecount2': 64}
+        param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.1, 'nodecount': 128, 'nodecount2': 256,
+                 'nodecount3': 128}
     set_seed(11)
     model = Sequential()
     model.add(keras.Input(shape=(num_features,)))
@@ -230,9 +235,10 @@ def create_model(param=None):
     model.add(Dropout(param['dropout_rate']))
     model.add(keras.layers.Dense(param['nodecount2'], activation=param['activation']))
     model.add(Dropout(param['dropout_rate']))
-    model.add(Dense(param['nodecount'] / 2, activation=param['activation']))
+    model.add(Dense(param['nodecount3'], activation=param['activation']))
+    model.add(Dropout(param['dropout_rate']))
+    model.add(Dense(param['nodecount3'], activation=param['activation']))
     model.add(Dense(6, activation='softmax'))
-    #
 
     # lr_schedule = ExponentialDecay(
     #     initial_learning_rate=1e-2,
@@ -244,6 +250,15 @@ def create_model(param=None):
     #
     model.compile(optimizer=param['optimizer'], loss=categorical_crossentropy, metrics=[categorical_accuracy])
     return model
+
+
+def convertToTFLiteModel(saved_model_dir):
+    converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)  # path to the SavedModel directory
+    tflite_model = converter.convert()
+
+    # Save the model.
+    with open('../offlineModels/NN/tfliteModel/model.tflite', 'wb') as f:
+        f.write(tflite_model)
 
 
 def set_seed(seed):

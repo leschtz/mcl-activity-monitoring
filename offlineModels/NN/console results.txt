@@ -1,36 +1,93 @@
-2022-05-26 11:44:53.748918: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'cudart64_110.dll'; dlerror: cudart64_110.dll not found
-2022-05-26 11:44:53.748996: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2022-05-30 13:27:46.656403: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'cudart64_110.dll'; dlerror: cudart64_110.dll not found
+2022-05-30 13:27:46.656487: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
 Create random train-test-split
-2022-05-26 11:44:57.291748: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'nvcuda.dll'; dlerror: nvcuda.dll not found
-2022-05-26 11:44:57.291819: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
-2022-05-26 11:44:57.293770: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: PC-Luca
-2022-05-26 11:44:57.293884: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: PC-Luca
-2022-05-26 11:44:57.294259: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX AVX2
+2022-05-30 13:27:50.177244: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'nvcuda.dll'; dlerror: nvcuda.dll not found
+2022-05-30 13:27:50.177319: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+2022-05-30 13:27:50.179135: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: PC-Luca
+2022-05-30 13:27:50.179229: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: PC-Luca
+2022-05-30 13:27:50.179459: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX AVX2
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-Index(['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3',
-       'tBodyAcc-STD-1', 'tBodyAcc-STD-2', 'tBodyAcc-STD-3', 'tBodyAcc-Mad-1',
-       'tBodyAcc-Mad-2', 'tBodyAcc-Mad-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
-       'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3'],
-      dtype='object')
-Restoring model weights from the end of the best epoch: 91.
-Epoch 96: early stopping
+Model: "sequential"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ dense (Dense)               (None, 256)               4096      
+                                                                 
+ dropout (Dropout)           (None, 256)               0         
+                                                                 
+ dense_1 (Dense)             (None, 256)               65792     
+                                                                 
+ dropout_1 (Dropout)         (None, 256)               0         
+                                                                 
+ dense_2 (Dense)             (None, 128)               32896     
+                                                                 
+ dropout_2 (Dropout)         (None, 128)               0         
+                                                                 
+ dense_3 (Dense)             (None, 128)               16512     
+                                                                 
+ dense_4 (Dense)             (None, 6)                 774       
+                                                                 
+=================================================================
+Total params: 120,070
+Trainable params: 120,070
+Non-trainable params: 0
+_________________________________________________________________
+None
+Restoring model weights from the end of the best epoch: 52.
+Epoch 57: early stopping
 
 Score from evaluate:
- 1/64 [..............................] - ETA: 5s - loss: 0.8338 - categorical_accuracy: 0.718864/64 [==============================] - 0s 508us/step - loss: 0.5789 - categorical_accuracy: 0.7255
-[0.5789253115653992, 0.725470781326294]
+ 1/64 [..............................] - ETA: 5s - loss: 0.7571 - categorical_accuracy: 0.687564/64 [==============================] - 0s 571us/step - loss: 0.5861 - categorical_accuracy: 0.7443
+[0.5860635638237, 0.7443012595176697]
 
- 1/64 [..............................] - ETA: 2s64/64 [==============================] - 0s 429us/step
+ 1/64 [..............................] - ETA: 3s64/64 [==============================] - 0s 476us/step
 Classification report
               precision    recall  f1-score   support
 
-           0       0.39      0.93      0.55       317
-           1       0.89      0.81      0.85       313
-           2       0.96      0.90      0.93       288
-           3       0.61      0.06      0.10       348
-           4       0.68      0.50      0.57       381
-           5       0.73      0.80      0.76       371
+           0       0.32      0.85      0.46       317
+           1       0.83      0.87      0.85       313
+           2       0.93      0.92      0.93       288
+           3       0.63      0.05      0.09       348
+           4       0.66      0.50      0.57       381
+           5       0.88      0.59      0.71       371
 
-    accuracy                           0.65      2018
-   macro avg       0.71      0.66      0.63      2018
-weighted avg       0.70      0.65      0.62      2018
+    accuracy                           0.61      2018
+   macro avg       0.71      0.63      0.60      2018
+weighted avg       0.71      0.61      0.59      2018
 
+Model: "sequential"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ dense (Dense)               (None, 256)               4096      
+                                                                 
+ dropout (Dropout)           (None, 256)               0         
+                                                                 
+ dense_1 (Dense)             (None, 256)               65792     
+                                                                 
+ dropout_1 (Dropout)         (None, 256)               0         
+                                                                 
+ dense_2 (Dense)             (None, 128)               32896     
+                                                                 
+ dropout_2 (Dropout)         (None, 128)               0         
+                                                                 
+ dense_3 (Dense)             (None, 128)               16512     
+                                                                 
+ dense_4 (Dense)             (None, 6)                 774       
+                                                                 
+=================================================================
+Total params: 120,070
+Trainable params: 120,070
+Non-trainable params: 0
+_________________________________________________________________
+None
+2022-05-30 13:28:06.100169: W tensorflow/compiler/mlir/lite/python/tf_tfl_flatbuffer_helpers.cc:362] Ignored output_format.
+2022-05-30 13:28:06.100222: W tensorflow/compiler/mlir/lite/python/tf_tfl_flatbuffer_helpers.cc:365] Ignored drop_control_dependency.
+2022-05-30 13:28:06.100693: I tensorflow/cc/saved_model/reader.cc:43] Reading SavedModel from: ../offlineModels/NN/savedModel
+2022-05-30 13:28:06.103395: I tensorflow/cc/saved_model/reader.cc:81] Reading meta graph with tags { serve }
+2022-05-30 13:28:06.103447: I tensorflow/cc/saved_model/reader.cc:122] Reading SavedModel debug info (if present) from: ../offlineModels/NN/savedModel
+2022-05-30 13:28:06.107774: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:354] MLIR V1 optimization pass is not enabled
+2022-05-30 13:28:06.108695: I tensorflow/cc/saved_model/loader.cc:228] Restoring SavedModel bundle.
+2022-05-30 13:28:06.146448: I tensorflow/cc/saved_model/loader.cc:212] Running initialization op on SavedModel bundle at path: ../offlineModels/NN/savedModel
+2022-05-30 13:28:06.158278: I tensorflow/cc/saved_model/loader.cc:301] SavedModel load for tags { serve }; Status: success: OK. Took 57576 microseconds.
+2022-05-30 13:28:06.183670: I tensorflow/compiler/mlir/tensorflow/utils/dump_mlir_util.cc:263] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
