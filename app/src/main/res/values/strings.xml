@@ -3,7 +3,7 @@
     <string name="error_accelerometer_unavailable">Accelerometer Sensor not available.</string>
     <string name="error_gyroscope_unavailable">Gyroscope Sensor not available</string>
     <string name="error_data_logging_unavailable">DataLogger not available.</string>
-    <string name="label_accelerometer">Accelerometer Values: x: %1$.2f, y: %2$.2f, z: %3$.2f</string>
+    <string name="three_axis_sensor">x: %1$.2f\ny: %2$.2f\nz: %3$.2f</string>
     <string name="label_gyroscope">Gyroscope Values: x: %1$.2f, y: %2$.2f, z: %3$.2f</string>
     <string name="file_path">File Path: %1$s</string>
 
@@ -17,6 +17,14 @@
     <string name="toast_stop_recording">Stopped Recording</string>
     <string name="toast_activity_failed">Activity Failed</string>
 
-    <string name="classification_result">Automatic Classification Result: %1$s.</string>
-    <string name="manual_classification_result">Manual Classification Result: %1$s.</string>
+    <string name="classification_result">%1$s.</string>
+
+
+    <string name="fab_train_description">kNN Training</string>
+    <string name="fab_log_description">Data Logging</string>
+    <string name="fab_main_description">Open Menu</string>
+
+    <string name="train_title">Activity Training</string>
+    <string name="automatic_classify">Automatically classifying as %1$s for the next %2$d seconds.</string>
+
 </resources>

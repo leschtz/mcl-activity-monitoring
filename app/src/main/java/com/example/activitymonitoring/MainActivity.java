@@ -1,5 +1,6 @@
 package com.example.activitymonitoring;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -10,194 +11,186 @@ import android.hardware.SensorManager;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.SystemClock;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.activitymonitoring.DataStrategy.AverageStrategy;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private SensorManager sensorManager;
     private Sensor sensorAccelerometer;
-    private Sensor sensorGyroscope;
     private DataLogger dataLogger;
     private KNNClassifier classifier;
     private DataProcessor dataProcessor;
     private int dummyCounter = 0;
+
+    FloatingActionButton menuFab, trainKnnFab, logDataFab, stopLogFab, stopLogMainFab;
+    TextView trainKnnText, logDataText, stopLogText;
+    Boolean fabIsVisible;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        menuFab = findViewById(R.id.main_fab);
+        trainKnnFab = findViewById(R.id.train_fab);
+        logDataFab = findViewById(R.id.data_log_fab);
+        stopLogFab = findViewById(R.id.stop_log_fab);
+        stopLogMainFab = findViewById(R.id.stop_data_log_fab);
+
+        trainKnnText = findViewById(R.id.train_model_text);
+        logDataText = findViewById(R.id.data_log_text);
+        stopLogText = findViewById(R.id.stop_data_log_text);
+
+        stopLogFab.setVisibility(View.GONE);
+        trainKnnFab.setVisibility(View.GONE);
+        trainKnnText.setVisibility(View.GONE);
+        logDataFab.setVisibility(View.GONE);
+        logDataText.setVisibility(View.GONE);
+        stopLogMainFab.setVisibility(View.GONE);
+        stopLogText.setVisibility(View.GONE);
+        fabIsVisible = Boolean.FALSE;
+
+        Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
+
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (sensorAccelerometer == null) {
-            TextView textSensorAccelerometer = findViewById(R.id.value_accelerometer);
-            textSensorAccelerometer.setText(getResources().getString(R.string.error_accelerometer_unavailable));
-        }
-
-        sensorGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (sensorGyroscope == null) {
-            TextView textSensorGyroscope = findViewById(R.id.value_gyroscope);
-            textSensorGyroscope.setText(getResources().getString(R.string.error_gyroscope_unavailable));
-        }
-
-        TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
-        textSensorAccelerometer.setText(R.string.seconds_left_default);
 
         dataLogger = new DataLogger(getApplicationContext());
         this.dataProcessor = new DataProcessor();
 
-        Toast failureActivity = Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT);
-        ImageButton playBtn = findViewById(R.id.play_button);
-        playBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                if (dataLogger.startRecording()) {
-                    Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
-                } else {
-                    failureActivity.show();
-                }
-            }
-        });
-
-        ImageButton pauseBtn = findViewById(R.id.pause_button);
-        pauseBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                if (dataLogger.pauseRecording()) {
-                    Toast.makeText(getApplicationContext(), R.string.toast_pause_recording, Toast.LENGTH_SHORT).show();
-                } else {
-                    failureActivity.show();
-                }
-            }
-        });
-        ImageButton stopBtn = findViewById(R.id.stop_button);
-        stopBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                if (dataLogger.stopRecording()) {
-                    Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
-                } else {
-                    failureActivity.show();
-                }
-            }
-        });
-
-        ImageButton timerBtn = findViewById(R.id.timed_log_button);
-        timerBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                if (!dataLogger.startRecording()) {
-                    failureActivity.show();
-                    return;
-                }
-                Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
-
-
-                // I'm sure this is not the nicest way to do this, but it works.
-                EditText editText = findViewById(R.id.timer_value);
-                long time;
-                try {
-                    time = Long.parseLong(editText.getText().toString()) * 1000L;
-                } catch (NumberFormatException nfe) {
-                    time = 10 * 1000L;
-                }
-                new CountDownTimer(time, 1000) {
-                    @Override
-                    public void onTick(long timeLeftInMillis) {
-
-                        if (dataLogger == null || !dataLogger.isRecording()) {
-                            return;
+        menuFab.setOnClickListener(
+                view -> {
+                    if (!fabIsVisible) {
+                        if (dataLogger != null && dataLogger.isRecording()) {
+                            logDataFab.hide();
+                            logDataText.setVisibility(View.GONE);
+                            stopLogMainFab.show();
+                            stopLogText.setVisibility(View.VISIBLE);
+                        } else {
+                            stopLogMainFab.hide();
+                            stopLogText.setVisibility(View.GONE);
+                            logDataFab.show();
+                            logDataText.setVisibility(View.VISIBLE);
                         }
-                        TextView textSensorAccelerometer = findViewById(R.id.timer_rest_time);
-                        textSensorAccelerometer.setText(getResources().getString(R.string.seconds_left, (timeLeftInMillis / 1000)));
+                        trainKnnFab.show();
+                        trainKnnText.setVisibility(View.VISIBLE);
+                        stopLogFab.hide();
+
+                        fabIsVisible = true;
+                    } else {
+                        if (dataLogger != null && dataLogger.isRecording()) {
+                            stopLogFab.show();
+                        }
+                        trainKnnFab.hide();
+                        logDataFab.hide();
+                        stopLogMainFab.hide();
+                        stopLogText.setVisibility(View.GONE);
+                        trainKnnText.setVisibility(View.GONE);
+                        logDataText.setVisibility(View.GONE);
+
+                        fabIsVisible = false;
                     }
 
-                    @Override
-                    public void onFinish() {
-                        if (dataLogger == null || !dataLogger.isRecording()) {
-                            return;
-                        }
-                        if (!dataLogger.stopRecording()) {
+
+                }
+        );
+
+        trainKnnFab.setOnClickListener(
+                view -> {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(R.string.train_title);
+                    builder.setItems(R.array.activityArray, (dialog, which) -> {
+                        String activityString = getResources().getStringArray(R.array.activityArray)[which];
+                        ActivityType activity = ActivityType.valueOf(activityString);
+                        String toastString = getResources().getString(R.string.automatic_classify, activity.name(), 10);
+                        Toast.makeText(MainActivity.this, toastString, Toast.LENGTH_LONG).show();
+
+                        if (dataProcessor == null) {
                             failureActivity.show();
                             return;
                         }
+                        Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
+                        dataProcessor.setClassifyAs(activity);
 
-                        RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
-                        Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+                        new CountDownTimer(10 * 1000L, 1000) {
+                            @Override
+                            public void onTick(long timeLeftInMillis) {
+                            }
+
+                            @Override
+                            public void onFinish() {
+                                if (dataProcessor == null) {
+                                    return;
+                                }
+                                dataProcessor.setClassifyAs(ActivityType.None);
+                                RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
+                                Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+
+                            }
+                        }.start();
+                        // setting new data for neighbours.
+                        this.classifier.neighbors = readFile();
+                    });
+                    menuFab.performClick();
+                    builder.show();
+
+                });
+
+        logDataFab.setOnClickListener(
+                view -> {
+                    if (dataLogger != null && dataLogger.startRecording()) {
+                        Toast.makeText(getApplicationContext(), R.string.toast_start_recording, Toast.LENGTH_SHORT).show();
+                    } else {
+                        failureActivity.show();
                     }
-                }.start();
-            }
-
-        });
-
-
-        Button classify_start_Btn = findViewById(R.id.classify_button_test);
-        classify_start_Btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (dataProcessor == null) {
-                    return;
+                    menuFab.performClick();
                 }
-                //Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-                //dataProcessor.addRawData(dlData);
-                //double[] knnData = dataProcessor.getKnnData(new AverageStrategy());
-                //int result = classifier.classify(test);
-                double[] test = {-4.1922474, -3.466804, 2.006341, -0.54023397, -0.8074875, -1.6421585};
+        );
 
-                int result = classifier.classify(test);
-                System.out.println("Classification result is : " + result);
+        stopLogFab.setOnClickListener(this::stopLogging);
+        stopLogMainFab.setOnClickListener(this::stopLogging);
 
-                test = new double[]{-0.06849326, -0.08689558, -0.0388663, -1.364695, -0.7637503, 9.644144};
-                result = classifier.classify(test);
-                System.out.println("Classification result is : " + result);
+        File f = new File(this.getFilesDir(), "custom_features.txt");
+        if (!f.exists()) {
+            // on first access, base features are copied to a writeable place
+            InputStream is = getResources().openRawResource(R.raw.neighbors);
+            try {
+                OutputStreamWriter outputStream = new OutputStreamWriter(new FileOutputStream(f));
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
 
-                test = new double[]{0, 0, 0, 0.020311269909143448, 0.04688390716910362, 0.07513642311096191};
-                result = classifier.classify(test);
-                System.out.println("Classification result is : " + result);
-            }
-        });
-
-        Button classifyBtn = findViewById(R.id.classify_start_button);
-        classifyBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (dataLogger != null) {
-                    if (dataProcessor != null) {
-                        //Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-
-                        //dataProcessor.addRawData(dlData);
-                        // gets the last 10 seconds to classify
-                        double[] knnData = dataProcessor.getKnnData(new AverageStrategy(), 10 * 1000);
-
-                        int knnResult = -1;
-                        if (classifier != null) {
-
-                            knnResult = classifier.classify(knnData);
-                            System.out.println(knnResult);
-                        }
-
-                        TextView classification_result = findViewById(R.id.man_classification_result);
-                        classification_result.setText(getResources().getString(R.string.manual_classification_result, getActivityByNumber(knnResult)));
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    String[] d = line.split(",");
+                    if (d.length != 16) {
+                        // todo: this is definitely a bug!
+                        continue;
                     }
-
+                    outputStream.write(line);
+                    outputStream.write(System.lineSeparator());
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
+        }
 
-        this.classifier = new KNNClassifier(13, 7, readFile());
+        this.classifier = new KNNClassifier(31, 15, readFile());
     }
 
     @Override
@@ -208,9 +201,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
-        if (sensorGyroscope != null) {
-            sensorManager.registerListener(this, sensorGyroscope, SensorManager.SENSOR_DELAY_NORMAL);
-        }
     }
 
     @Override
@@ -228,73 +218,48 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
 
-        float[] currentValue = new float[3];
+        float[] currentValue;
 
-        // data gets written to /data/data/com.example.activitymonitoring/files
-        if (dataLogger.isRecording()) {
-            TextView textFilePath = findViewById(R.id.label_file_path);
-            String path = dataLogger.getFilePath();
-            textFilePath.setText(getResources().getString(R.string.file_path, path));
-        } else {
-            TextView textFilePath = findViewById(R.id.label_file_path);
-            textFilePath.setText(getResources().getString(R.string.file_path, "NOT_RECORDING"));
+        if (this.dataProcessor != null) {
+            int knnResult = -1;
+            if (this.classifier != null) {
+                double[] knnData = this.dataProcessor.getKnnData();
+                if (knnData != null) {
+                    System.out.println("Got a new data sample");
+                    // todo: enable knn classifier
+                    knnResult = classifier.classify(knnData);
 
-            TextView textSecondsLeft = findViewById(R.id.timer_rest_time);
-            textSecondsLeft.setText(R.string.seconds_left_default);
-        }
-
-        if (this.dataLogger != null) {
-            Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-            if (this.dataProcessor != null && dlData.size() > 0) {
-                this.dataProcessor.addRawData(dlData);
-            }
-        }
-        if (dummyCounter >= 5) {
-            dummyCounter = 0;
-            if (this.dataLogger != null) {
-                Map<String, Map<Long, float[]>> dlData = dataLogger.collect();
-                if (this.dataProcessor != null) {
-
-                    this.dataProcessor.addRawData(dlData);
-                    double[] knnData = this.dataProcessor.getKnnData(new AverageStrategy(), 500);
-                    for (double d : knnData) {
-                        System.out.print(d + "\t");
+                    if (this.dataProcessor.getClassifyType() != ActivityType.None) {
+                        addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
                     }
-                    System.out.println();
-                    int knnResult = -1;
-                    if (this.classifier != null) {
-
-                        knnResult = classifier.classify(knnData);
-                        System.out.println(knnResult);
-                    }
-
-                    TextView classification_result = findViewById(R.id.str_classification_result);
-                    classification_result.setText(getResources().getString(R.string.classification_result, getActivityByNumber(knnResult)));
+                    System.out.println(knnResult);
+                    // todo: update text in GUI with the result
+                    TextView classification_result = findViewById(R.id.knn_model);
+                    classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
                 }
             }
+
         }
-        dummyCounter++;
 
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
                 currentValue = sensorEvent.values.clone();
                 dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
-                TextView textValueAccelerometer = findViewById(R.id.value_accelerometer);
-                textValueAccelerometer.setText(getResources().getString(R.string.label_accelerometer, currentValue[0], currentValue[1], currentValue[2]));
+                TextView debugAccView = findViewById(R.id.debug_acc);
+                debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
+
+                dataProcessor.addSensorData(timestamp, currentValue);
+                TextView debugGravityView = findViewById(R.id.debug_gravity);
+                debugGravityView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0] / 9.80665, currentValue[1] / 9.80665, currentValue[2] / 9.80665));
                 break;
 
             case Sensor.TYPE_GYROSCOPE:
                 currentValue = sensorEvent.values.clone();
-                dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
-
-                TextView textValueGyroscope = findViewById(R.id.value_gyroscope);
-                textValueGyroscope.setText(getResources().getString(R.string.label_gyroscope, currentValue[0], currentValue[1], currentValue[2]));
                 break;
             default:
                 // nothing
         }
-//        SystemClock.sleep(50);
     }
 
     @Override
@@ -302,31 +267,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public String getActivityByNumber(int activity) {
-        switch (activity) {
-            case 1:
-                return "Walk";
-            case 2:
-                return "Run";
-            case 3:
-                return "Jump";
-            case 4:
-                return "Squat";
-            case 5:
-                return "Stand";
-            case 6:
-                return "Sit";
+    public void stopLogging(View view) {
+        if (dataLogger != null && dataLogger.stopRecording()) {
+            Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
+            stopLogFab.hide();
+            stopLogMainFab.hide();
+            stopLogText.setVisibility(View.GONE);
+        } else {
+            Toast.makeText(getApplicationContext(), R.string.toast_activity_failed, Toast.LENGTH_SHORT).show();
+        }
 
-            default:
-                return "None";
+        if (fabIsVisible) {
+            trainKnnFab.hide();
+            trainKnnText.setVisibility(View.GONE);
+            fabIsVisible = Boolean.FALSE;
         }
     }
 
     public List<double[]> readFile() {
-
         List<double[]> rowList = new ArrayList<>();
         try {
-            InputStream is = getResources().openRawResource(R.raw.new_neighbors);
+            File f = new File(this.getFilesDir(), "custom_features.txt");
+            InputStream is = new DataInputStream(new FileInputStream(f));
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
@@ -334,6 +296,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             while ((line = br.readLine()) != null) {
                 String[] lineItemsStrings = line.split(",");
                 double[] lineItems = new double[lineItemsStrings.length];
+                if (lineItems.length < 10) {
+                    continue;
+                }
                 for (int i = 0; i < lineItemsStrings.length; i++) {
                     lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
                 }
@@ -346,5 +311,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return rowList;
     }
 
+    public void addFeatureSetToRawFile(int activity, double[] features) {
+        try {
+            File f = new File(this.getFilesDir(), "custom_features.txt");
 
+            StringBuilder stringBuilder = new StringBuilder();
+            for (double feature : features) {
+                stringBuilder.append(feature);
+                stringBuilder.append(",");
+            }
+            stringBuilder.append(activity);
+
+            OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));
+            streamWriter.write(System.lineSeparator());
+            streamWriter.write(stringBuilder.toString());
+            streamWriter.flush();
+            streamWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

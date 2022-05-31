@@ -57,9 +57,9 @@ def main():
     # create the header string
     header_string = ""
     for key, value in output_data.items():
-        header_string += (f"{key};")
+        header_string += (f"{key},")
         for index in range(len(value)):
-            header_string += (f"{index};")
+            header_string += (f"{index},")
     header_string += os.linesep
     final_output.append(header_string)
 
@@ -72,7 +72,7 @@ def main():
 
         data_string = ""
         for _, value in output_data.items():
-            data_string += ";".join(values)
+            data_string += ",".join(values)
 
         if args.label:
             data_string += f"{args.label}"

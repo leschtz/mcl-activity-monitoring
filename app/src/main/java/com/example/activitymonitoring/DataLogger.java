@@ -6,9 +6,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +17,6 @@ public class DataLogger {
     private DataOutputStream dataOutputStream = null;
     private String filePath;
     private Boolean is_recording = Boolean.FALSE;
-    private Map<String, Map<Long, float[]>> sensorSource = new HashMap<>();
 
     public DataLogger(Context context) {
         filesDir = context.getFilesDir();
@@ -28,11 +25,10 @@ public class DataLogger {
     public Boolean isRecording() {
         return is_recording;
     }
-
+    public void setRecording() {is_recording = Boolean.TRUE;}
+    public void clearRecording() {is_recording = Boolean.FALSE;}
     public Boolean startRecording() {
-
         try {
-            Thread.sleep(2000);
             if (is_recording == Boolean.FALSE) {
                 is_recording = Boolean.TRUE;
 
@@ -44,7 +40,7 @@ public class DataLogger {
                     filePath = f.getAbsoluteFile().toString();
                 }
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             resetValues();
             System.out.println("Could not setup file path, see stack trace below.");
             e.printStackTrace();
@@ -99,13 +95,6 @@ public class DataLogger {
         return filePath;
     }
 
-    // collects the logged data and returns it to the collector.
-    public Map<String, Map<Long, float[]>> collect() {
-        Map<String, Map<Long, float[]>> data = new HashMap<>(this.sensorSource);
-        this.sensorSource = new HashMap<>();
-        return data;
-    }
-
     public String createDataString(long timestamp, float[] values, String sensorName) {
         // write sensorName to file
         StringBuilder output = new StringBuilder();
@@ -123,17 +112,6 @@ public class DataLogger {
     }
 
     public void record(long timestamp, float[] values, String sensorName) {
-        if (!this.sensorSource.containsKey(sensorName)) {
-            Map<Long, float[]> initial_data = new HashMap<>();
-
-            initial_data.put(timestamp, values.clone());
-            this.sensorSource.put(sensorName, initial_data);
-        }
-        Map<Long, float[]> data = sensorSource.get(sensorName);
-        if (data != null) {
-            data.put(timestamp, values);
-        }
-
         String dataString = createDataString(timestamp, values, sensorName);
         this.record(dataString);
     }
