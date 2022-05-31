@@ -13,7 +13,7 @@ import java.util.List;
 
 public class DataProcessor {
     final float CONST_G = 9.80665f;
-    final int PARAM_TIMING = 20 * 1000; // 20ms timing
+    final long PARAM_TIMING = 1000L; // 20ms timing
     final float[] PARAM_MIN = {-1.976388870971105f, -2.009722276169204f, -1.837500071636558f};
     final float[] PARAM_MAX = {2.004166708636188f , 1.716666672288882f , 1.979166654737614f };
 
@@ -116,6 +116,7 @@ public class DataProcessor {
     public double[] getKnnData() {
         // returns always the earliest set of features, still in the list
         if(this.featureData.size() == 0) {
+            System.out.println("got no data to send");
             return null;
         }
 

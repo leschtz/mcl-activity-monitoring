@@ -177,6 +177,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
+                    String[] d = line.split(",");
+                    if (d.length != 16) {
+                        // todo: this is definitely a bug!
+                        continue;
+                    }
                     outputStream.write(line);
                     outputStream.write(System.lineSeparator());
                 }
@@ -185,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        this.classifier = new KNNClassifier(25, 15, readFile());
+        this.classifier = new KNNClassifier(31, 15, readFile());
     }
 
     @Override
@@ -215,28 +220,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         float[] currentValue;
 
-        if (dummyCounter >= 5) {
-            dummyCounter = 0;
-            if (this.dataProcessor != null) {
-                int knnResult = -1;
-                if (this.classifier != null) {
-                    double[] knnData = this.dataProcessor.getKnnData();
-                    if (knnData != null) {
-                        // todo: enable knn classifier
-                        //knnResult = classifier.classify(knnData);
+        if (this.dataProcessor != null) {
+            int knnResult = -1;
+            if (this.classifier != null) {
+                double[] knnData = this.dataProcessor.getKnnData();
+                if (knnData != null) {
+                    System.out.println("Got a new data sample");
+                    // todo: enable knn classifier
+                    knnResult = classifier.classify(knnData);
 
-                        if (this.dataProcessor.getClassifyType() != ActivityType.None) {
-                            addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
-                        }
-                        //System.out.println(knnResult);
+                    if (this.dataProcessor.getClassifyType() != ActivityType.None) {
+                        addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
                     }
+                    System.out.println(knnResult);
+                    // todo: update text in GUI with the result
+                    TextView classification_result = findViewById(R.id.knn_model);
+                    classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
                 }
-                // todo: update text in GUI with the result
-                // TextView classification_result = findViewById(R.id.str_classification_result);
-                // classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
             }
+
         }
-        dummyCounter++;
 
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
@@ -247,7 +250,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
 
                 dataProcessor.addSensorData(timestamp, currentValue);
-
                 TextView debugGravityView = findViewById(R.id.debug_gravity);
                 debugGravityView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0] / 9.80665, currentValue[1] / 9.80665, currentValue[2] / 9.80665));
                 break;
@@ -294,6 +296,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             while ((line = br.readLine()) != null) {
                 String[] lineItemsStrings = line.split(",");
                 double[] lineItems = new double[lineItemsStrings.length];
+                if (lineItems.length < 10) {
+                    continue;
+                }
                 for (int i = 0; i < lineItemsStrings.length; i++) {
                     lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
                 }
