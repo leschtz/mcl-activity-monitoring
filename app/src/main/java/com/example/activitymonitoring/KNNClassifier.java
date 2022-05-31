@@ -64,6 +64,9 @@ public class KNNClassifier {
         double[][] distanceMatrix = new double[neighbors.size()][features];
 
         for (int i = 0; i < neighbors.size(); i++) {
+            if(neighbors.get(i).length < 10) {
+                continue;
+            }
             distanceMatrix[i] = calcManhattan(vector, neighbors.get(i));
         }
 
@@ -82,7 +85,6 @@ public class KNNClassifier {
     }
 
     public int classify(double[] vector) {
-
         double[][] distances = createDistanceMatrix(vector);
 
         Arrays.sort(distances, Comparator.comparingDouble(a -> a[0]));
