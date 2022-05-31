@@ -2,17 +2,20 @@ package com.example.activitymonitoring;
 
 
 import com.example.activitymonitoring.FeatureStrategies.AverageFeature;
+import com.example.activitymonitoring.FeatureStrategies.MadFeature;
 import com.example.activitymonitoring.FeatureStrategies.MaxFeature;
 import com.example.activitymonitoring.FeatureStrategies.MinFeature;
+import com.example.activitymonitoring.FeatureStrategies.StdFeature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class DataProcessor {
+    final float CONST_G = 9.80665f;
     final int PARAM_TIMING = 20 * 1000; // 20ms timing
-    final double[] PARAM_MIN = {0, 0, 0};
-    final double[] PARAM_MAX = {0, 0, 0};
+    final float[] PARAM_MIN = {-1.976388870971105f, -2.009722276169204f, -1.837500071636558f};
+    final float[] PARAM_MAX = {2.004166708636188f , 1.716666672288882f , 1.979166654737614f };
 
     private long start = 0;
     private ActivityType type;
@@ -26,6 +29,9 @@ public class DataProcessor {
     }
 
     public void addSensorData(long timestamp, float[] values) {
+        for(int i = 0; i < values.length; i++) {
+            values[i] = values[i] / CONST_G;
+        }
         sensorData.add(values);
 
         if ((timestamp - this.start) >= PARAM_TIMING) {
@@ -35,18 +41,33 @@ public class DataProcessor {
         }
     }
 
-    private double[] normalize(double[] data) {
+    private List<float[]> normalize(List<float[]> sensorData) {
         // https://stats.stackexchange.com/questions/178626/how-to-normalize-data-between-1-and-1
-        if (data == null || data.length != 3) {
+
+        if (sensorData == null || sensorData.size() == 0){
             return null;
         }
-        double[] normalized = new double[3];
+        List<float[]> returnValue = new ArrayList<>();
+        for(float[] data : sensorData) {
+            if (data == null || data.length != 3) {
+                return null;
+            }
+            float[] normalized = new float[3];
 
-        for (int i = 0; i < data.length; i++) {
-            normalized[i] = 2 * ((data[i] - PARAM_MIN[i])/(PARAM_MAX[i] - PARAM_MIN[i])) - 1;
+            for (int i = 0; i < data.length; i++) {
+                normalized[i] = 2 * ((data[i] - PARAM_MIN[i])/(PARAM_MAX[i] - PARAM_MIN[i])) - 1;
+
+                // fallback solution to keep it normalized
+                if(normalized[i] > 1) {
+                    normalized[i] = 1;
+                } else if(normalized[i] < -1) {
+                    normalized[i] = -1;
+                }
+            }
+            returnValue.add(normalized);
         }
 
-        return normalized;
+        return returnValue;
     }
 
     private void calculateFeatures() {
@@ -57,20 +78,28 @@ public class DataProcessor {
                 continue;
             }
 
+            List<float[]> normalizedSensorData = this.normalize(this.sensorData);
+
             // features: {min: xyz, avg:  xyz, max: xyz, std: xyz, mad: xyz}
             List<Double> f = new ArrayList<>();
 
             // unnecessary complicated, I guess
-            double[] minFeature = new MinFeature().execute(this.sensorData);
-            f.addAll(Arrays.asList(Arrays.stream(minFeature).boxed().toArray(Double[]::new)));
-
-            double[] avgFeature = new AverageFeature().execute(this.sensorData);
+            double[] avgFeature = new AverageFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(avgFeature).boxed().toArray(Double[]::new)));
 
-            double[] maxFeature = new MaxFeature().execute(this.sensorData);
-            f.addAll(Arrays.asList(Arrays.stream(maxFeature).boxed().toArray(Double[]::new)));
             // todo: standard deviation feature
+            double[] stdFeature = new StdFeature().execute(normalizedSensorData);
+            f.addAll(Arrays.asList(Arrays.stream(stdFeature).boxed().toArray((Double[]::new))));
+
             // todo: mad feature
+            double[] madFeature = new MadFeature().execute(normalizedSensorData);
+            f.addAll(Arrays.asList(Arrays.stream(madFeature).boxed().toArray((Double[]::new))));
+
+            double[] maxFeature = new MaxFeature().execute(normalizedSensorData);
+            f.addAll(Arrays.asList(Arrays.stream(maxFeature).boxed().toArray(Double[]::new)));
+
+            double[] minFeature = new MinFeature().execute(normalizedSensorData);
+            f.addAll(Arrays.asList(Arrays.stream(minFeature).boxed().toArray(Double[]::new)));
 
             double[] features = f.stream().mapToDouble(Double::doubleValue).toArray();
             this.featureData.add(features);

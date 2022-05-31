@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         File f = new File(this.getFilesDir(), "custom_features.txt");
         if (!f.exists()) {
             // on first access, base features are copied to a writeable place
-            InputStream is = getResources().openRawResource(R.raw.new_neighbors);
+            InputStream is = getResources().openRawResource(R.raw.neighbors);
             try {
                 OutputStreamWriter outputStream = new OutputStreamWriter(new FileOutputStream(f));
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        this.classifier = new KNNClassifier(25, 9, readFile());
+        this.classifier = new KNNClassifier(25, 15, readFile());
     }
 
     @Override
