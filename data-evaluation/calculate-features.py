@@ -45,7 +45,7 @@ def main():
     concat_data = pd.concat([data, labels], axis=1)
     print(concat_data)
 
-    data.to_csv("acc-features.csv", index=False)
+    concat_data.to_csv("acc-features.csv", index=False)
 
 if __name__ == "__main__":
     main()
