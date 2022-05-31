@@ -17,7 +17,7 @@ Z_MAX = 1.979166654737614
 Z_MIN = -1.837500071636558
 
 def main():
-    frame = pd.read_csv('bigger-sample.csv')
+    frame = pd.read_csv('data/acc-sample.csv')
 
     normalized_frame = pd.DataFrame()
 
@@ -41,11 +41,11 @@ def main():
     df_mad = pd.DataFrame(group.mad())
     #print(df_min)
 
-    data = pd.concat([df_min, df_max, df_avg, df_std, df_mad], axis=1)#.drop("label", 1)
+    data = pd.concat([df_avg, df_std, df_mad, df_max, df_min], axis=1)#.drop("label", 1)
     concat_data = pd.concat([data, labels], axis=1)
     print(concat_data)
 
-    data.to_csv("final-data.csv", index=False)
+    data.to_csv("acc-features.csv", index=False)
 
 if __name__ == "__main__":
     main()
