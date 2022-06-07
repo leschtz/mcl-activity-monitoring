@@ -111,10 +111,11 @@ public class DataProcessor {
     public ActivityType getClassifyType() {
         return this.type;
     }
+
     public double[] getKnnData() {
         // returns always the earliest set of features, still in the list
         if(this.featureData.size() == 0) {
-            System.out.println("got no data to send");
+            System.err.println("Not featureData yet available.");
             return null;
         }
 
