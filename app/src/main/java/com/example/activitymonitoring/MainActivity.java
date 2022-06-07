@@ -180,6 +180,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     String[] d = line.split(",");
                     if (d.length != 16) {
                         // todo: this is definitely a bug!
+                        // bug description: when writing to the new file, the bufferedReader is not able to read beyond 401 lines.
+                        //                  and stops in the middle of the line. as a result, the last lines do not get copied over correctly.
+                        //                  For the last line it writes, it does not write the full line.
+                        //                  Therefor not the correct amount of features will be in this line.
                         continue;
                     }
                     outputStream.write(line);
@@ -226,14 +230,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 double[] knnData = this.dataProcessor.getKnnData();
                 if (knnData != null) {
                     System.out.println("Got a new data sample");
-                    // todo: enable knn classifier
                     knnResult = classifier.classify(knnData);
 
                     if (this.dataProcessor.getClassifyType() != ActivityType.None) {
                         addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
                     }
                     System.out.println(knnResult);
-                    // todo: update text in GUI with the result
                     TextView classification_result = findViewById(R.id.knn_model);
                     classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
                 }

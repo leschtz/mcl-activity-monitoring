@@ -87,11 +87,9 @@ public class DataProcessor {
             double[] avgFeature = new AverageFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(avgFeature).boxed().toArray(Double[]::new)));
 
-            // todo: standard deviation feature
             double[] stdFeature = new StdFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(stdFeature).boxed().toArray((Double[]::new))));
 
-            // todo: mad feature
             double[] madFeature = new MadFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(madFeature).boxed().toArray((Double[]::new))));
 
