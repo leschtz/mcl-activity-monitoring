@@ -90,7 +90,7 @@ public class KNNClassifier {
             sum += Math.abs(vector[i] - neighbor[i]);
         }
 
-        double[] result = {sqrt(sum), neighbor[neighbor.length - 1]};
+        double[] result = {Math.sqrt(sum), neighbor[neighbor.length - 1]};
 
         return result;
     }
