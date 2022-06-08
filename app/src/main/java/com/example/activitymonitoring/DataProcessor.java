@@ -87,11 +87,9 @@ public class DataProcessor {
             double[] avgFeature = new AverageFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(avgFeature).boxed().toArray(Double[]::new)));
 
-            // todo: standard deviation feature
             double[] stdFeature = new StdFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(stdFeature).boxed().toArray((Double[]::new))));
 
-            // todo: mad feature
             double[] madFeature = new MadFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(madFeature).boxed().toArray((Double[]::new))));
 
@@ -113,10 +111,11 @@ public class DataProcessor {
     public ActivityType getClassifyType() {
         return this.type;
     }
+
     public double[] getKnnData() {
         // returns always the earliest set of features, still in the list
         if(this.featureData.size() == 0) {
-            System.out.println("got no data to send");
+            System.err.println("Not featureData yet available.");
             return null;
         }
 

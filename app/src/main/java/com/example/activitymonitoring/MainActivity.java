@@ -27,7 +27,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -36,11 +39,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataLogger dataLogger;
     private KNNClassifier classifier;
     private DataProcessor dataProcessor;
-    private int dummyCounter = 0;
+    private Set<double[]> trainingData;
 
     FloatingActionButton menuFab, trainKnnFab, logDataFab, stopLogFab, stopLogMainFab;
     TextView trainKnnText, logDataText, stopLogText;
     Boolean fabIsVisible;
+
 
 
     @Override
@@ -74,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         dataLogger = new DataLogger(getApplicationContext());
         this.dataProcessor = new DataProcessor();
+
+        trainingData = new HashSet<>();
 
         menuFab.setOnClickListener(
                 view -> {
@@ -139,18 +145,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                 if (dataProcessor == null) {
                                     return;
                                 }
+                                if (trainingData != null && trainingData.size() > 0) {
+                                    addFeatureSetToRawFile(trainingData);
+                                    trainingData.clear();
+                                }
                                 dataProcessor.setClassifyAs(ActivityType.None);
+                                classifier.neighbors = readFile();
+
                                 RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
                                 Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
-
                             }
                         }.start();
                         // setting new data for neighbours.
-                        this.classifier.neighbors = readFile();
+
+
                     });
                     menuFab.performClick();
                     builder.show();
-
                 });
 
         logDataFab.setOnClickListener(
@@ -180,11 +191,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     String[] d = line.split(",");
                     if (d.length != 16) {
                         // todo: this is definitely a bug!
+                        // bug description: when writing to the new file, the bufferedReader is not able to read beyond 401 lines.
+                        //                  and stops in the middle of the line. as a result, the last lines do not get copied over correctly.
+                        //                  For the last line it writes, it does not write the full line.
+                        //                  Therefore not the correct amount of features will be in this line.
                         continue;
                     }
                     outputStream.write(line);
                     outputStream.write(System.lineSeparator());
                 }
+                outputStream.write(System.lineSeparator());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -221,19 +237,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float[] currentValue;
 
         if (this.dataProcessor != null) {
-            int knnResult = -1;
+            int knnResult;
             if (this.classifier != null) {
                 double[] knnData = this.dataProcessor.getKnnData();
                 if (knnData != null) {
-                    System.out.println("Got a new data sample");
-                    // todo: enable knn classifier
+                    //System.out.println("Got a new data sample");
                     knnResult = classifier.classify(knnData);
 
                     if (this.dataProcessor.getClassifyType() != ActivityType.None) {
-                        addFeatureSetToRawFile(this.dataProcessor.getClassifyType().ordinal(), knnData);
+                        double[] features = new double[knnData.length+1];
+                        for (int i = 0; i < knnData.length; i++) {
+                            features[i] = knnData[i];
+                        }
+                        features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
+                        this.trainingData.add(features.clone());
                     }
-                    System.out.println(knnResult);
-                    // todo: update text in GUI with the result
+                    //System.out.println(knnResult);
                     TextView classification_result = findViewById(R.id.knn_model);
                     classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
                 }
@@ -294,9 +313,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             String line;
             while ((line = br.readLine()) != null) {
+                //System.out.println("Reading: "+ line);
                 String[] lineItemsStrings = line.split(",");
                 double[] lineItems = new double[lineItemsStrings.length];
-                if (lineItems.length < 10) {
+                if (lineItems.length != 16) {
+                    System.err.println("Found an invalid line.");
                     continue;
                 }
                 for (int i = 0; i < lineItemsStrings.length; i++) {
@@ -305,26 +326,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 rowList.add(lineItems);
             }
         } catch (Exception e) {
-            System.out.println("Could not open neighbor file:   " + e);
+            System.err.println("Could not open neighbor file:   " + e);
         }
-
+        System.out.println("# of loaded features: " + rowList.size());
         return rowList;
     }
 
-    public void addFeatureSetToRawFile(int activity, double[] features) {
+    public void addFeatureSetToRawFile(Set<double[]> featureSet) {
         try {
             File f = new File(this.getFilesDir(), "custom_features.txt");
-
-            StringBuilder stringBuilder = new StringBuilder();
-            for (double feature : features) {
-                stringBuilder.append(feature);
-                stringBuilder.append(",");
-            }
-            stringBuilder.append(activity);
-
             OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));
             streamWriter.write(System.lineSeparator());
-            streamWriter.write(stringBuilder.toString());
+            for(double[] features : featureSet) {
+                StringJoiner stringJoiner = new StringJoiner(",", "", System.lineSeparator());
+                for (double feature : features) {
+                    stringJoiner.add(String.valueOf(feature));
+                }
+                streamWriter.write(stringJoiner.toString());
+            }
+
             streamWriter.flush();
             streamWriter.close();
         } catch (IOException e) {
