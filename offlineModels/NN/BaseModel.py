@@ -5,34 +5,49 @@ import keras
 import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from kerashypetune import KerasGridSearchCV, KerasGridSearch
-from sklearn.model_selection import train_test_split, GridSearchCV
+from kerashypetune import KerasGridSearch
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
-from keras.losses import sparse_categorical_crossentropy, categorical_crossentropy
+from keras.losses import categorical_crossentropy
 from keras.metrics import categorical_accuracy
 from keras.callbacks import EarlyStopping
-from keras.optimizers import Adam
-from keras.optimizers.schedules.learning_rate_schedule import ExponentialDecay
-from keras.utils import np_utils
 import numpy as np
-import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 
 from keras.utils import np_utils
-from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
-from scikeras.wrappers import KerasClassifier
 
 # https://tugraz.webex.com/meet/saukh
 # https://tugraz.webex.com/tugraz-de/url.php?frompanel=false&gourl=https%3A%2F%2Fgithub.com%2Fosaukh%2Fmobile_computing_lab%2Fblob%2Fmaster%2Fcolab%2FWS04_TransferLearning_Personalization.ipynb
 # https://tugraz.webex.com/tugraz-de/url.php?frompanel=false&gourl=https%3A%2F%2Fgithub.com%2Fosaukh%2Fmobile_computing_lab%2Ftree%2Fmaster%2Fcode%2FModelPersonalization
-fixedData = False
+from offlineModels.NN.tflitwrapper import TransferLearningModel
+
 num_features = None
 
 
 def main():
+    saved_basemodel_dir = '../offlineModels/NN/savedModel'
+
+    model = train_base_model()
+
+    model.save(saved_basemodel_dir)
+
+    model = cutOffHead(model)
+
+    convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
+
+
+# model = train_base_model()
+
+# model.save(saved_model_dir)
+
+
+# convertToTFLiteModelfromKeras(model)
+
+
+def train_base_model(noGrid=True, fixedData=False):
     x_train = pd.read_csv("../offlineModels/HAPT_Data_Set/Train/X_train.txt", sep=' ', index_col=False, header=None)
     y_train = pd.read_csv("../offlineModels/HAPT_Data_Set/Train/y_train.txt", sep=' ', index_col=False, header=None)
     x_test = pd.read_csv("../offlineModels/HAPT_Data_Set/Test/X_test.txt", sep=' ', index_col=False, header=None)
@@ -127,6 +142,8 @@ def main():
     encoded_Y_test = encoder.transform(y_test)
     y_test_hot = np_utils.to_categorical(encoded_Y_test)
 
+    print(x_train.columns)
+
     #
     # print(model.summary())
     # callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10)
@@ -140,65 +157,61 @@ def main():
     ### ????????????????????????????
     ### Single Train and test run
 
-    es = EarlyStopping(patience=5, verbose=1, min_delta=0.001, monitor='loss', mode='auto',
-                       restore_best_weights=True)
+    if (noGrid):
 
-    param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.1, 'nodecount': 256, 'nodecount2': 256,
-             'nodecount3': 128}
-    model = create_model(param=param)
-    print(model.summary())
-    # print(x_train.columns)
-    history = model.fit(x_train, y_train, epochs=200, batch_size=50, verbose=0, callbacks=[es])
+        es = EarlyStopping(patience=5, verbose=1, min_delta=0.001, monitor='loss', mode='auto',
+                           restore_best_weights=True)
 
-    print()
-    print('Score from evaluate:')
-    score = model.evaluate(x_test, y_test_hot)
+        param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.1, 'nodecount': 256, 'nodecount2': 256,
+                 'nodecount3': 128}
+        model = create_model(param=param)
+        # print(model.summary())
+        # print(x_train.columns)
+        history = model.fit(x_train, y_train, epochs=200, batch_size=50, verbose=0, callbacks=[es])
 
-    print(score)
-    print()
+        print()
+        print('Score from evaluate:')
+        score = model.evaluate(x_test, y_test_hot)
 
-    y_pred = model.predict(x_test)
-    y_pred = y_pred.round()
-    y_pred = y_pred.argmax(1)
+        print(score)
+        print()
 
-    print('Classification report')
-    print(classification_report(y_test, y_pred))
+        y_pred = model.predict(x_test)
+        y_pred = y_pred.round()
+        y_pred = y_pred.argmax(1)
 
-    cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
-    cm.plot()
-    plt.show()
-    saved_model_dir = '../offlineModels/NN/savedModel'
+        print('Classification report')
+        print(classification_report(y_test, y_pred))
 
-    model.save(saved_model_dir)
+        cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
+        cm.plot()
+        plt.show()
 
-    # convertToTFLiteModel(saved_model_dir)
+        return model
 
-    ### ????????????????????????????
+        ### Gridsearch Part
+    else:
 
-    ### !!!!!!!!!!!!!!
-    ### Gridsearch Part
+        param_grid = {'activation': 'relu',  # ['relu', 'tanh', 'sigmoid', 'linear', 'softmax'],
+                      'optimizer': ['Adam', 'Adamax', 'Nadam'],  # 'SGD', 'RMSprop', 'Adagrad', 'Adadelta',
+                      'dropout_rate': [0.0, 0.1, 0.2],
+                      'epochs': 150,
+                      'batch_size': [25, 50],
+                      'nodecount': [64, 128, 256, 512],
+                      'nodecount2': [64, 128, 256, 512]
+                      }
 
-    #
-    # param_grid = {'activation': 'relu',  # ['relu', 'tanh', 'sigmoid', 'linear', 'softmax'],
-    #               'optimizer': ['Adam', 'Adamax', 'Nadam'],  # 'SGD', 'RMSprop', 'Adagrad', 'Adadelta',
-    #               'dropout_rate': [0.0, 0.1, 0.2],
-    #               'epochs': 150,
-    #               'batch_size': [25, 50],
-    #               'nodecount': [ 64, 128, 256, 512],
-    #               'nodecount2': [ 64, 128, 256, 512]
-    #               }
-    #
-    # learning_rate = [0.01, 0.001, 0.0001]
-    #
-    # cv = KFold(n_splits=3, random_state=33, shuffle=True)
-    # es = EarlyStopping(patience=5, verbose=1, min_delta=0.001, monitor='val_loss', mode='auto',
-    #                    restore_best_weights=True)
-    #
-    # kgs = KerasGridSearch(create_model, param_grid, monitor='val_categorical_accuracy', greater_is_better=True,
-    #                       tuner_verbose=1)
-    # grid_result = kgs.search(x_train, y_train, validation_data=(x_test, y_test_hot), callbacks=[es])
-    #
-    # print("Best: %f using %s" % (kgs.best_score, kgs.best_params))
+        learning_rate = [0.01, 0.001, 0.0001]
+
+        cv = KFold(n_splits=3, random_state=33, shuffle=True)
+        es = EarlyStopping(patience=5, verbose=1, min_delta=0.001, monitor='val_loss', mode='auto',
+                           restore_best_weights=True)
+
+        kgs = KerasGridSearch(create_model, param_grid, monitor='val_categorical_accuracy', greater_is_better=True,
+                              tuner_verbose=1)
+        grid_result = kgs.search(x_train, y_train, validation_data=(x_test, y_test_hot), callbacks=[es])
+
+        print("Best: %f using %s" % (kgs.best_score, kgs.best_params))
 
     ### !!!!!!!!!!!!!!!
 
@@ -237,7 +250,7 @@ def create_model(param=None):
     model.add(Dropout(param['dropout_rate']))
     model.add(Dense(param['nodecount3'], activation=param['activation']))
     model.add(Dropout(param['dropout_rate']))
-    model.add(Dense(param['nodecount3'], activation=param['activation']))
+    model.add(Dense(param['nodecount3'], activation=param['activation'], name='base'))
     model.add(Dense(6, activation='softmax'))
 
     # lr_schedule = ExponentialDecay(
@@ -252,12 +265,47 @@ def create_model(param=None):
     return model
 
 
-def convertToTFLiteModel(saved_model_dir):
+def cutOffHead(model):
+    model2 = tf.keras.models.Model(model.input, model.get_layer('base').output)
+    print(model2.summary())
+    return model2
+
+
+def convertToTFLiteModelfromDisk(saved_model_dir):
     converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)  # path to the SavedModel directory
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+        tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
+    ]
     tflite_model = converter.convert()
 
+    interpreter = tf.lite.Interpreter(model_content=tflite_model)
+    interpreter.allocate_tensors()
+    signatures = interpreter.get_signature_list()
+    print(signatures)
+    # infer = interpreter.get_signature_runner("infer")
+
     # Save the model.
-    with open('../offlineModels/NN/tfliteModel/model.tflite', 'wb') as f:
+    with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
+        f.write(tflite_model)
+
+
+def convertToTFLiteModelfromKeras(model):
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+        tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
+    ]
+    tflite_model = converter.convert()
+
+    interpreter = tf.lite.Interpreter(model_content=tflite_model)
+    interpreter.allocate_tensors()
+    signatures = interpreter.get_signature_list()
+    print(signatures)
+    # infer = interpreter.get_signature_runner("infer")
+
+    # Save the model.
+    with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
         f.write(tflite_model)
 
 
@@ -266,6 +314,47 @@ def set_seed(seed):
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
     random.seed(seed)
+
+
+def convert_and_save(model, saved_model_dir):
+    """Converts and saves the TFLite Transfer Learning model.
+
+  Args:
+    saved_model_dir: A directory path to save a converted model.
+    model: model to convert
+  """
+    tl_model = TransferLearningModel(model)
+
+    tf.saved_model.save(
+        tl_model,
+        saved_model_dir,
+        signatures={
+            'load': tl_model.load.get_concrete_function(),
+            'train': tl_model.train.get_concrete_function(),
+            'infer': tl_model.infer.get_concrete_function(),
+            'save': tl_model.save.get_concrete_function(),
+            'restore': tl_model.restore.get_concrete_function(),
+            'initialize': tl_model.initialize_weights.get_concrete_function(),
+        })
+
+    # Convert the model
+    converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+        tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
+    ]
+    converter.experimental_enable_resource_variables = True
+    tflite_model = converter.convert()
+
+    interpreter = tf.lite.Interpreter(model_content=tflite_model)
+    interpreter.allocate_tensors()
+    signatures = interpreter.get_signature_list()
+    print(signatures)
+
+    # model_file_path = os.path.join('model.tflite')
+    model_file_path = '../offlineModels/NN/tfLite/tfLiteModelConverted/model.tflite'
+    with open(model_file_path, 'wb') as model_file:
+        model_file.write(tflite_model)
 
 
 if __name__ == '__main__':

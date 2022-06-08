@@ -1,0 +1,20 @@
+2022-05-31 15:17:36.277096: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'cudart64_110.dll'; dlerror: cudart64_110.dll not found
+2022-05-31 15:17:36.277186: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+Create random train-test-split
+2022-05-31 15:17:39.943804: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'nvcuda.dll'; dlerror: nvcuda.dll not found
+Index(['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3',
+2022-05-31 15:17:39.943876: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+       'tBodyAcc-STD-1', 'tBodyAcc-STD-2', 'tBodyAcc-STD-3', 'tBodyAcc-Mad-1',
+       'tBodyAcc-Mad-2', 'tBodyAcc-Mad-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
+2022-05-31 15:17:39.945816: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: PC-Luca
+       'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3'],
+2022-05-31 15:17:39.945908: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: PC-Luca
+      dtype='object')
+2022-05-31 15:17:39.946106: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX AVX2
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+forrtl: error (200): program aborting due to control-C event
+Image              PC                Routine            Line        Source             
+libifcoremd.dll    00007FFC38213B58  Unknown               Unknown  Unknown
+KERNELBASE.dll     00007FFCEE83B943  Unknown               Unknown  Unknown
+KERNEL32.DLL       00007FFCEFD37034  Unknown               Unknown  Unknown
+ntdll.dll          00007FFCF0EE2651  Unknown               Unknown  Unknown
