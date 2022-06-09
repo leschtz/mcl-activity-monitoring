@@ -131,10 +131,10 @@ public final class TransferLearningModel implements Closeable {
    * <p>Sample bottleneck is generated in a background thread, which resolves the returned Future
    * when the bottleneck is added to training samples.
    *
-   * @param image image RGB data.
-   * @param className ground truth label for image.
+   * @param activity_vector
+   * @param className ground truth label for activity_vector.
    */
-  public Future<Void> addSample(float[][][] image, String className) {
+  public Future<Void> addSample(float[] activity_vector, String className) {
     checkNotTerminating();
 
     if (!classes.containsKey(className)) {
@@ -150,7 +150,7 @@ public final class TransferLearningModel implements Closeable {
 
           trainingInferenceLock.lockInterruptibly();
           try {
-            float[] bottleneck = model.loadBottleneck(image);
+            float[] bottleneck = model.loadBottleneck(activity_vector);
             trainingSamples.add(new TrainingSample(bottleneck, oneHotEncodedClass.get(className)));
           } finally {
             trainingInferenceLock.unlock();
@@ -220,12 +220,12 @@ public final class TransferLearningModel implements Closeable {
   }
 
   /**
-   * Runs model inference on a given image.
+   * Runs model inference on a given activity_vector.
    *
-   * @param image image RGB data.
+   * @param activity_vector of sensor data
    * @return predictions sorted by confidence decreasing. Can be null if model is terminating.
    */
-  public Prediction[] predict(float[][][] image) {
+  public Prediction[] predict(float[] activity_vector) {
     checkNotTerminating();
     trainingInferenceLock.lock();
 
@@ -237,7 +237,7 @@ public final class TransferLearningModel implements Closeable {
       float[] confidences;
       parameterLock.readLock().lock();
       try {
-        confidences = this.model.runInference(image);
+        confidences = this.model.runInference(activity_vector);
       } finally {
         parameterLock.readLock().unlock();
       }
