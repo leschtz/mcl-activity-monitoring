@@ -298,9 +298,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return;
         }
 
-        int knnResult;
-        int baseResult;
-        int transferResult;
 
         double[] knnData = this.dataProcessor.getKnnData();
         if (knnData == null) {
@@ -320,7 +317,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.classifier != null) {
             //System.out.println("Got a new data sample");
-            knnResult = classifier.classify(knnData);
+            int knnResult = classifier.classify(knnData);
 
             //System.out.println(knnResult);
             TextView classification_result = findViewById(R.id.knn_model);
@@ -330,18 +327,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // todo: implement for base model
         if (this.baseModel != null) {
-            baseResult = this.baseModel.predict(knnData);
+            Prediction baseResult = this.baseModel.predict(knnData);
 
+            ActivityType activity = baseResult.getClassName();
             TextView base_classification_result = findViewById(R.id.base_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(baseResult)));
+            base_classification_result.setText(getResources().getString(R.string.classification_result, activity.name()));
         }
 
         // todo: implement for transfer learning model
         if (this.transferModel != null) {
-            transferResult = this.transferModel.predict(knnData);
+            Prediction transferResult = this.baseModel.predict(knnData);
+            ActivityType activity = baseResult.getClassName();
 
             TextView base_classification_result = findViewById(R.id.transfer_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(transferResult)));
+            base_classification_result.setText(getResources().getString(R.string.classification_result, activity.name()));
         }
     }
 
