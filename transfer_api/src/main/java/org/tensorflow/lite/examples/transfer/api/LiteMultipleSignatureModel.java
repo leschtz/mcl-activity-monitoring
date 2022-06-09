@@ -15,17 +15,18 @@ limitations under the License.
 
 package org.tensorflow.lite.examples.transfer.api;
 
+import org.tensorflow.lite.Interpreter;
+
 import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.tensorflow.lite.Interpreter;
 
 /** A wrapper for TFLite model with multiple signature runner. */
 public class LiteMultipleSignatureModel implements Closeable {
 
-  private static final int BOTTLENECK_SIZE = 128;
+  private static final int BOTTLENECK_SIZE = 7 * 7 * 1280;
   private static final int EXPECTED_BATCH_SIZE = 20;
 
   private final Interpreter interpreter;
@@ -48,9 +49,9 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param image 3-D float array of size (IMG_SIZE, IMG_SIZE, 3)
    * @return 1-D float array containing bottleneck features
    */
-  float[] loadBottleneck(float[][][] image) {
+  float[] loadBottleneck(float[] image) {
     Map<String, Object> inputs = new HashMap<>();
-    inputs.put("feature", new float[][][][] {image});
+    inputs.put("feature", new float[][] {image});
     Map<String, Object> outputs = new HashMap<>();
     float[][] bottleneck = new float[1][BOTTLENECK_SIZE];
     outputs.put("bottleneck", bottleneck);
@@ -85,10 +86,10 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param testImage 3-D float array of image of size (IMG_SIZE, IMG_SIZE, 3)
    * @return 1-D float array of softmax output of prediction
    */
-  float[] runInference(float[][][] testImage) {
+  float[] runInference(float[] testImage) {
     // Run the inference.
     Map<String, Object> inputs = new HashMap<>();
-    inputs.put("feature", new float[][][][] {testImage});
+    inputs.put("feature", new float[][] {testImage});
 
     Map<String, Object> outputs = new HashMap<>();
     float[][] output = new float[1][numClasses];

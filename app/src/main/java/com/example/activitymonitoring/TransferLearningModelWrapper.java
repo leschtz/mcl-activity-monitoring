@@ -18,10 +18,12 @@ package com.example.activitymonitoring;
 import android.content.Context;
 import android.os.ConditionVariable;
 
+
 import org.tensorflow.lite.examples.transfer.api.ModelLoader;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.LossConsumer;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.Prediction;
+
 
 import java.io.Closeable;
 import java.util.Arrays;
@@ -45,7 +47,7 @@ public class TransferLearningModelWrapper implements Closeable {
   TransferLearningModelWrapper(Context context) {
     model =
         new TransferLearningModel(
-            new ModelLoader(context, "model"), Arrays.asList("1", "2", "3", "4"));
+            new ModelLoader(context, "model"), Arrays.asList("1", "2", "3", "4","5","6"));
 
     new Thread(() -> {
       while (!Thread.interrupted()) {
@@ -62,12 +64,12 @@ public class TransferLearningModelWrapper implements Closeable {
   }
 
   // This method is thread-safe.
-  public Future<Void> addSample(float[][][] image, String className) {
+  public Future<Void> addSample(float[] image, String className) {
     return model.addSample(image, className);
   }
 
   // This method is thread-safe, but blocking.
-  public Prediction[] predict(float[][][] image) {
+  public Prediction[] predict(float[] image) {
     return model.predict(image);
   }
 
