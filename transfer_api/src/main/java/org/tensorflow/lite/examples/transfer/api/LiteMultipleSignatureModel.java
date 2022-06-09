@@ -25,7 +25,7 @@ import org.tensorflow.lite.Interpreter;
 /** A wrapper for TFLite model with multiple signature runner. */
 public class LiteMultipleSignatureModel implements Closeable {
 
-  private static final int BOTTLENECK_SIZE =15;
+  private static final int BOTTLENECK_SIZE = 128;
   private static final int EXPECTED_BATCH_SIZE = 20;
 
   private final Interpreter interpreter;
