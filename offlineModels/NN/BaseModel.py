@@ -30,9 +30,12 @@ num_features = None
 def main():
     saved_basemodel_dir = '../offlineModels/NN/savedModel'
 
-    model = train_base_model()
+    model = keras.models.load_model(saved_basemodel_dir)
+    print(model.summary())
 
-    model.save(saved_basemodel_dir)
+    # model = train_base_model()
+    #
+    # model.save(saved_basemodel_dir)
 
     model = cutOffHead(model)
 
@@ -98,24 +101,24 @@ def train_base_model(noGrid=True, fixedData=False):
     x_test.columns = features
     x_complete.columns = features
 
-    #   MIN,MAX,AV ACC+Gyro
-    wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
-                      'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3', 'tBodyGyro-Mean-1',
-                      'tBodyGyro-Mean-2', 'tBodyGyro-Mean-3', 'tBodyGyro-Max-1', 'tBodyGyro-Max-2', 'tBodyGyro-Max-3',
-                      'tBodyGyro-Min-1', 'tBodyGyro-Min-2', 'tBodyGyro-Min-3']
-    #   MIN,MAX,AV ACC
-    wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
-                      'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3']
-
-    #   MIN,MAX,AV,Sigma ACC
-    wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
-                      'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3', 'tBodyAcc-STD-1',
-                      'tBodyAcc-STD-2', 'tBodyAcc-STD-3']
-
-    #   MIN,MAX,AV,Sigma,en ACC
-    wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
-                      'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3', 'tBodyAcc-STD-1',
-                      'tBodyAcc-STD-2', 'tBodyAcc-STD-3', 'tBodyAcc-Energy-1', 'tBodyAcc-Energy-2', 'tBodyAcc-Energy-3']
+    # #   MIN,MAX,AV ACC+Gyro
+    # wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
+    #                   'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3', 'tBodyGyro-Mean-1',
+    #                   'tBodyGyro-Mean-2', 'tBodyGyro-Mean-3', 'tBodyGyro-Max-1', 'tBodyGyro-Max-2', 'tBodyGyro-Max-3',
+    #                   'tBodyGyro-Min-1', 'tBodyGyro-Min-2', 'tBodyGyro-Min-3']
+    # #   MIN,MAX,AV ACC
+    # wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
+    #                   'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3']
+    #
+    # #   MIN,MAX,AV,Sigma ACC
+    # wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
+    #                   'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3', 'tBodyAcc-STD-1',
+    #                   'tBodyAcc-STD-2', 'tBodyAcc-STD-3']
+    #
+    # #   MIN,MAX,AV,Sigma,en ACC
+    # wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
+    #                   'tBodyAcc-Max-3', 'tBodyAcc-Min-1', 'tBodyAcc-Min-2', 'tBodyAcc-Min-3', 'tBodyAcc-STD-1',
+    #                   'tBodyAcc-STD-2', 'tBodyAcc-STD-3', 'tBodyAcc-Energy-1', 'tBodyAcc-Energy-2', 'tBodyAcc-Energy-3']
 
     #   MIN,MAX,AV,Sigma,MAD ACC
     wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
@@ -142,19 +145,6 @@ def train_base_model(noGrid=True, fixedData=False):
     encoded_Y_test = encoder.transform(y_test)
     y_test_hot = np_utils.to_categorical(encoded_Y_test)
 
-    print(x_train.columns)
-
-    #
-    # print(model.summary())
-    # callback = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10)
-    #
-    # # estimator = KerasClassifier(model=model, epochs=100, batch_size=10, verbose=1, callbacks=[callback])
-    # # kfold = KFold(n_splits=5, shuffle=True)
-    # # results = cross_val_score(estimator, x_train, y_train, cv=kfold)
-    # # print("Baseline: %.2f%% (%.2f%%)" % (results.mean() * 100, results.std() * 100))
-    #
-
-    ### ????????????????????????????
     ### Single Train and test run
 
     if (noGrid):
@@ -165,8 +155,7 @@ def train_base_model(noGrid=True, fixedData=False):
         param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.1, 'nodecount': 256, 'nodecount2': 256,
                  'nodecount3': 128}
         model = create_model(param=param)
-        # print(model.summary())
-        # print(x_train.columns)
+
         history = model.fit(x_train, y_train, epochs=200, batch_size=50, verbose=0, callbacks=[es])
 
         print()
@@ -213,29 +202,6 @@ def train_base_model(noGrid=True, fixedData=False):
 
         print("Best: %f using %s" % (kgs.best_score, kgs.best_params))
 
-    ### !!!!!!!!!!!!!!!
-
-    # kgs.search(x=x_train, y=y_train)
-
-    # model = KerasClassifier(model=create_model(x_train.shape[1]), epochs=100, batch_size=10, verbose=1,
-    #                         activation='relu',
-    #                         optimizer='SGD',
-    #                         dropout_rate=0.0)
-
-    # param_grid = dict(optimizer=optimizer, dropout_rate=dropout_rate, activation=activation)
-    # grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv=3)
-    # grid_result = grid.fit(x_train, y_train)
-    # summarize results
-    # print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
-    # means = grid_result.cv_results_['mean_test_score']
-    # stds = grid_result.cv_results_['std_test_score']
-    # params = grid_result.cv_results_['params']
-    # for mean, stdev, param in zip(means, stds, params):
-    #     print("%f (%f) with: %r" % (mean, stdev, param))
-    #
-
-    # print('§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§')
-
 
 def create_model(param=None):
     if param is None:
@@ -253,60 +219,66 @@ def create_model(param=None):
     model.add(Dense(param['nodecount3'], activation=param['activation'], name='base'))
     model.add(Dense(6, activation='softmax'))
 
-    # lr_schedule = ExponentialDecay(
-    #     initial_learning_rate=1e-2,
-    #     decay_steps=10000,
-    #     decay_rate=0.9)
-    #
-    # optimizer = Adam(learning_rate=lr_schedule)
-    # optimizer = Adam(learning_rate=0.001)
-    #
     model.compile(optimizer=param['optimizer'], loss=categorical_crossentropy, metrics=[categorical_accuracy])
     return model
 
 
 def cutOffHead(model):
     model2 = tf.keras.models.Model(model.input, model.get_layer('base').output)
+    print()
+    print()
+    print()
+
+    print(model.input)
+    print()
+    print()
+    print()
+
     print(model2.summary())
+    print()
+    print()
+    print()
+    print()
+    print(model2.input)
     return model2
 
 
-def convertToTFLiteModelfromDisk(saved_model_dir):
-    converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)  # path to the SavedModel directory
-    converter.target_spec.supported_ops = [
-        tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
-        tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
-    ]
-    tflite_model = converter.convert()
-
-    interpreter = tf.lite.Interpreter(model_content=tflite_model)
-    interpreter.allocate_tensors()
-    signatures = interpreter.get_signature_list()
-    print(signatures)
-    # infer = interpreter.get_signature_runner("infer")
-
-    # Save the model.
-    with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
-        f.write(tflite_model)
-
-
-def convertToTFLiteModelfromKeras(model):
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.target_spec.supported_ops = [
-        tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
-        tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
-    ]
-    tflite_model = converter.convert()
-
-    interpreter = tf.lite.Interpreter(model_content=tflite_model)
-    interpreter.allocate_tensors()
-    signatures = interpreter.get_signature_list()
-    print(signatures)
-    # infer = interpreter.get_signature_runner("infer")
-
-    # Save the model.
-    with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
-        f.write(tflite_model)
+# def convertToTFLiteModelfromDisk(saved_model_dir):
+#     converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)  # path to the SavedModel directory
+#     converter.target_spec.supported_ops = [
+#         tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+#         tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
+#     ]
+#     tflite_model = converter.convert()
+#
+#     interpreter = tf.lite.Interpreter(model_content=tflite_model)
+#     interpreter.allocate_tensors()
+#     signatures = interpreter.get_signature_list()
+#     print(signatures)
+#     # infer = interpreter.get_signature_runner("infer")
+#
+#     # Save the model.
+#     with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
+#         f.write(tflite_model)
+#
+#
+# def convertToTFLiteModelfromKeras(model):
+#     converter = tf.lite.TFLiteConverter.from_keras_model(model)
+#     converter.target_spec.supported_ops = [
+#         tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+#         tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
+#     ]
+#     tflite_model = converter.convert()
+#
+#     interpreter = tf.lite.Interpreter(model_content=tflite_model)
+#     interpreter.allocate_tensors()
+#     signatures = interpreter.get_signature_list()
+#     print(signatures)
+#     # infer = interpreter.get_signature_runner("infer")
+#
+#     # Save the model.
+#     with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
+#         f.write(tflite_model)
 
 
 def set_seed(seed):

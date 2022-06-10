@@ -6,7 +6,9 @@ import tensorflow as tf
 # NUM_FEATURES = 84  # 7 * 7 * 1280
 # NUM_CLASSES = 4
 
-NUM_FEATURES = 15
+INPUT = 15
+NUM_FEATURES = 128
+
 NUM_CLASSES = 6
 
 
@@ -37,7 +39,7 @@ class TransferLearningModel(tf.Module):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
     @tf.function(input_signature=[
-        tf.TensorSpec([None, NUM_FEATURES], tf.float32),
+        tf.TensorSpec([None, INPUT], tf.float32),
     ])
     def load(self, feature):
         """Generates and loads bottleneck features from the given image batch.
@@ -78,7 +80,7 @@ class TransferLearningModel(tf.Module):
         return result
 
     @tf.function(input_signature=[
-        tf.TensorSpec([None, NUM_FEATURES], tf.float32)
+        tf.TensorSpec([None, INPUT], tf.float32)
     ])
     def infer(self, feature):
         """Invokes an inference on the given feature.

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.tensorflow.lite.examples.transfer.api;
+package com.example.transfer_api;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -111,7 +111,7 @@ public final class TransferLearningModel implements Closeable {
     try {
       this.model =
           new LiteMultipleSignatureModel(
-              modelLoader.loadMappedFile("model.tflite"), classes.size());
+              modelLoader.loadMappedFile("modelN.tflite"), classes.size());
     } catch (IOException e) {
       throw new RuntimeException("Couldn't read underlying model for TransferLearningModel", e);
     }
@@ -131,10 +131,10 @@ public final class TransferLearningModel implements Closeable {
    * <p>Sample bottleneck is generated in a background thread, which resolves the returned Future
    * when the bottleneck is added to training samples.
    *
-   * @param activity_vector
-   * @param className ground truth label for activity_vector.
+   * @param image image RGB data.
+   * @param className ground truth label for image.
    */
-  public Future<Void> addSample(float[] activity_vector, String className) {
+  public Future<Void> addSample(float[] image, String className) {
     checkNotTerminating();
 
     if (!classes.containsKey(className)) {
@@ -150,7 +150,7 @@ public final class TransferLearningModel implements Closeable {
 
           trainingInferenceLock.lockInterruptibly();
           try {
-            float[] bottleneck = model.loadBottleneck(activity_vector);
+            float[] bottleneck = model.loadBottleneck(image);
             trainingSamples.add(new TrainingSample(bottleneck, oneHotEncodedClass.get(className)));
           } finally {
             trainingInferenceLock.unlock();
@@ -220,12 +220,12 @@ public final class TransferLearningModel implements Closeable {
   }
 
   /**
-   * Runs model inference on a given activity_vector.
+   * Runs model inference on a given image.
    *
-   * @param activity_vector of sensor data
+   * @param image image RGB data.
    * @return predictions sorted by confidence decreasing. Can be null if model is terminating.
    */
-  public Prediction[] predict(float[] activity_vector) {
+  public Prediction[] predict(float[] image) {
     checkNotTerminating();
     trainingInferenceLock.lock();
 
@@ -237,7 +237,7 @@ public final class TransferLearningModel implements Closeable {
       float[] confidences;
       parameterLock.readLock().lock();
       try {
-        confidences = this.model.runInference(activity_vector);
+        confidences = this.model.runInference(image);
       } finally {
         parameterLock.readLock().unlock();
       }
@@ -255,7 +255,7 @@ public final class TransferLearningModel implements Closeable {
   }
 
   private float[] oneHotEncoding(int classIdx) {
-    float[] oneHot = new float[4];
+    float[] oneHot = new float[6];
     oneHot[classIdx] = 1;
     return oneHot;
   }
