@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.tensorflow.lite.examples.transfer.api;
+package com.example.transfer_api;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -111,7 +111,7 @@ public final class TransferLearningModel implements Closeable {
     try {
       this.model =
           new LiteMultipleSignatureModel(
-              modelLoader.loadMappedFile("model.tflite"), classes.size());
+              modelLoader.loadMappedFile("modelN.tflite"), classes.size());
     } catch (IOException e) {
       throw new RuntimeException("Couldn't read underlying model for TransferLearningModel", e);
     }

@@ -19,10 +19,10 @@ import android.content.Context;
 import android.os.ConditionVariable;
 
 
-import org.tensorflow.lite.examples.transfer.api.ModelLoader;
-import org.tensorflow.lite.examples.transfer.api.TransferLearningModel;
-import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.LossConsumer;
-import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.Prediction;
+import com.example.transfer_api.ModelLoader;
+import com.example.transfer_api.TransferLearningModel;
+import com.example.transfer_api.TransferLearningModel.LossConsumer;
+import com.example.transfer_api.TransferLearningModel.Prediction;
 
 
 import java.io.Closeable;

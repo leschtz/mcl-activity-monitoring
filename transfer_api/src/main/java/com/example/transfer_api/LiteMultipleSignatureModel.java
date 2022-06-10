@@ -13,20 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.tensorflow.lite.examples.transfer.api;
-
-import org.tensorflow.lite.Interpreter;
+package com.example.transfer_api;
 
 import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import org.tensorflow.lite.Interpreter;
 
 /** A wrapper for TFLite model with multiple signature runner. */
 public class LiteMultipleSignatureModel implements Closeable {
 
-  private static final int BOTTLENECK_SIZE = 7 * 7 * 1280;
+  private static final int BOTTLENECK_SIZE = 128;
   private static final int EXPECTED_BATCH_SIZE = 20;
 
   private final Interpreter interpreter;
