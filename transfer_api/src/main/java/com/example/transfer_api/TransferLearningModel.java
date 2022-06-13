@@ -111,7 +111,7 @@ public final class TransferLearningModel implements Closeable {
     try {
       this.model =
           new LiteMultipleSignatureModel(
-              modelLoader.loadMappedFile("modelN.tflite"), classes.size());
+              modelLoader.loadMappedFile("model.tflite"), classes.size());
     } catch (IOException e) {
       throw new RuntimeException("Couldn't read underlying model for TransferLearningModel", e);
     }

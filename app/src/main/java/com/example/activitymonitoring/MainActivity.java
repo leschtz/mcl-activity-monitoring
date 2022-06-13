@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         dataLogger = new DataLogger(getApplicationContext());
         this.dataProcessor = new DataProcessor();
-        this.transferModel = new TransferLearningModelWrapper(this.getApplicationContext());
+        this.transferModel = new TransferLearningModelWrapper(getApplicationContext());
 
         trainingData = new HashSet<>();
 
@@ -153,6 +153,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                     trainingData.clear();
                                 }
                                 dataProcessor.setClassifyAs(ActivityType.None);
+
+                                // todo: check if training is enabled and possible like this.
+                                transferModel.enableTraining((null));
                                 classifier.neighbors = readFile();
 
                                 RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
@@ -307,6 +310,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return;
         }
 
+        float[] f_knnData = new float[knnData.length];
+        for (int i = 0; i < knnData.length; i++) {
+            f_knnData[i] = (float) knnData[i];
+            System.out.print(f_knnData[i] + " : " + knnData[i] + "\t");
+        }
+        System.out.println();
+
+
         // Inference Step
         // todo: add inference step for transfer learning model
         if (this.dataProcessor.getClassifyType() != ActivityType.None) {
@@ -317,13 +328,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
             this.trainingData.add(features.clone());
 
-            // todo: check if training is enabled and possible like this.
-            this.transferModel.enableTraining((null));
-        }
-        
-        float[] f_knnData = new float[knnData.length];
-        for (int i = 0; i < knnData.length; i++) {
-            f_knnData[i] = (float) knnData[i];
+
+            String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
+            this.transferModel.addSample(f_knnData, className);
         }
 
         if (this.classifier != null) {
@@ -356,8 +363,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
+
+            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
             TextView base_classification_result = findViewById(R.id.base_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, activity));
+            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
 
         // todo: implement for transfer learning model
@@ -371,6 +380,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (prediction.getConfidence() > transferResult.getConfidence()) {
                     transferResult = prediction;
                 }
+                //System.out.println(prediction.getClassName() + ": " + prediction.getConfidence());
             }
 
             if (transferResult == null) {
@@ -381,8 +391,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
+            //System.out.println(transferResult.getClassName() + ": " + transferResult.getConfidence());
+            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
             TextView base_classification_result = findViewById(R.id.transfer_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, activity));
+            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
     }
 
