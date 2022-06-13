@@ -1,8 +1,5 @@
 package com.example.activitymonitoring;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,6 +12,10 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.transfer_api.TransferLearningModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
@@ -173,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     } else {
                         failureActivity.show();
                     }
+                    this.transferModel.enableTraining(null);
                     menuFab.performClick();
                 }
         );
@@ -276,6 +278,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void stopLogging(View view) {
+        this.transferModel.disableTraining();
         if (dataLogger != null && dataLogger.stopRecording()) {
             Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
             stopLogFab.hide();
@@ -313,6 +316,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
             this.trainingData.add(features.clone());
+
+            // todo: check if training is enabled and possible like this.
+            this.transferModel.enableTraining((null));
+        }
+        
+        float[] f_knnData = new float[knnData.length];
+        for (int i = 0; i < knnData.length; i++) {
+            f_knnData[i] = (float) knnData[i];
         }
 
         if (this.classifier != null) {
@@ -327,20 +338,51 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // todo: implement for base model
         if (this.baseModel != null) {
-            Prediction baseResult = this.baseModel.predict(knnData);
+            TransferLearningModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
+            TransferLearningModel.Prediction baseResult = null;
+            for (TransferLearningModel.Prediction prediction : possibleResults) {
+                if (baseResult == null) {
+                    baseResult = prediction;
+                }
+                if (prediction.getConfidence() > baseResult.getConfidence()) {
+                    baseResult = prediction;
+                }
+            }
 
-            ActivityType activity = baseResult.getClassName();
+            if (baseResult == null) {
+                return;
+            }
+            String activity = baseResult.getClassName();
+            if (activity == null) {
+                return;
+            }
             TextView base_classification_result = findViewById(R.id.base_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, activity.name()));
+            base_classification_result.setText(getResources().getString(R.string.classification_result, activity));
         }
 
         // todo: implement for transfer learning model
         if (this.transferModel != null) {
-            Prediction transferResult = this.baseModel.predict(knnData);
-            ActivityType activity = baseResult.getClassName();
+            TransferLearningModel.Prediction[] possibleResults = this.transferModel.predict(f_knnData);
+            TransferLearningModel.Prediction transferResult = null;
+            for (TransferLearningModel.Prediction prediction : possibleResults) {
+                if (transferResult == null) {
+                    transferResult = prediction;
+                }
+                if (prediction.getConfidence() > transferResult.getConfidence()) {
+                    transferResult = prediction;
+                }
+            }
 
+            if (transferResult == null) {
+                return;
+            }
+
+            String activity = transferResult.getClassName();
+            if (activity == null) {
+                return;
+            }
             TextView base_classification_result = findViewById(R.id.transfer_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, activity.name()));
+            base_classification_result.setText(getResources().getString(R.string.classification_result, activity));
         }
     }
 
