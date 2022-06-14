@@ -1,8 +1,5 @@
 package com.example.activitymonitoring;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -15,6 +12,10 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.transfer_api.TransferLearningModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
@@ -40,11 +41,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private KNNClassifier classifier;
     private DataProcessor dataProcessor;
     private Set<double[]> trainingData;
+    private TransferLearningModelWrapper baseModel;
+    private TransferLearningModelWrapper transferModel;
 
     FloatingActionButton menuFab, trainKnnFab, logDataFab, stopLogFab, stopLogMainFab;
     TextView trainKnnText, logDataText, stopLogText;
     Boolean fabIsVisible;
-
 
 
     @Override
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         dataLogger = new DataLogger(getApplicationContext());
         this.dataProcessor = new DataProcessor();
+        this.transferModel = new TransferLearningModelWrapper(getApplicationContext());
 
         trainingData = new HashSet<>();
 
@@ -150,6 +153,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                     trainingData.clear();
                                 }
                                 dataProcessor.setClassifyAs(ActivityType.None);
+
+                                // todo: check if training is enabled and possible like this.
+                                transferModel.enableTraining((null));
                                 classifier.neighbors = readFile();
 
                                 RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
@@ -171,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     } else {
                         failureActivity.show();
                     }
+                    this.transferModel.enableTraining(null);
                     menuFab.performClick();
                 }
         );
@@ -223,10 +230,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStop() {
         super.onStop();
         if (dataLogger != null) {
-            // ensure no data is lost and the logger is nicely ending.
             dataLogger.stopRecording();
         }
-        sensorManager.unregisterListener(this);
+
+        if (this.transferModel != null) {
+            this.transferModel.close();
+        }
+
+        if (this.baseModel != null) {
+            this.baseModel.close();
+        }
+        if (this.sensorManager != null) {
+            sensorManager.unregisterListener(this);
+        }
     }
 
     @Override
@@ -234,31 +250,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
 
+        this.classification();
+
         float[] currentValue;
-
-        if (this.dataProcessor != null) {
-            int knnResult;
-            if (this.classifier != null) {
-                double[] knnData = this.dataProcessor.getKnnData();
-                if (knnData != null) {
-                    //System.out.println("Got a new data sample");
-                    knnResult = classifier.classify(knnData);
-
-                    if (this.dataProcessor.getClassifyType() != ActivityType.None) {
-                        double[] features = new double[knnData.length+1];
-                        for (int i = 0; i < knnData.length; i++) {
-                            features[i] = knnData[i];
-                        }
-                        features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
-                        this.trainingData.add(features.clone());
-                    }
-                    //System.out.println(knnResult);
-                    TextView classification_result = findViewById(R.id.knn_model);
-                    classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
-                }
-            }
-
-        }
 
         switch (sensorType) {
             case Sensor.TYPE_ACCELEROMETER:
@@ -287,6 +281,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void stopLogging(View view) {
+        this.transferModel.disableTraining();
         if (dataLogger != null && dataLogger.stopRecording()) {
             Toast.makeText(getApplicationContext(), R.string.toast_stop_recording, Toast.LENGTH_SHORT).show();
             stopLogFab.hide();
@@ -300,6 +295,106 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             trainKnnFab.hide();
             trainKnnText.setVisibility(View.GONE);
             fabIsVisible = Boolean.FALSE;
+        }
+    }
+
+    public void classification() {
+
+        if (this.dataProcessor == null) {
+            return;
+        }
+
+
+        double[] knnData = this.dataProcessor.getKnnData();
+        if (knnData == null) {
+            return;
+        }
+
+        float[] f_knnData = new float[knnData.length];
+        for (int i = 0; i < knnData.length; i++) {
+            f_knnData[i] = (float) knnData[i];
+            System.out.print(f_knnData[i] + " : " + knnData[i] + "\t");
+        }
+        System.out.println();
+
+
+        // Inference Step
+        // todo: add inference step for transfer learning model
+        if (this.dataProcessor.getClassifyType() != ActivityType.None) {
+            double[] features = new double[knnData.length + 1];
+            for (int i = 0; i < knnData.length; i++) {
+                features[i] = knnData[i];
+            }
+            features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
+            this.trainingData.add(features.clone());
+
+
+            String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
+            this.transferModel.addSample(f_knnData, className);
+        }
+
+        if (this.classifier != null) {
+            //System.out.println("Got a new data sample");
+            int knnResult = classifier.classify(knnData);
+
+            //System.out.println(knnResult);
+            TextView classification_result = findViewById(R.id.knn_model);
+            classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
+
+        }
+
+        // todo: implement for base model
+        if (this.baseModel != null) {
+            TransferLearningModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
+            TransferLearningModel.Prediction baseResult = null;
+            for (TransferLearningModel.Prediction prediction : possibleResults) {
+                if (baseResult == null) {
+                    baseResult = prediction;
+                }
+                if (prediction.getConfidence() > baseResult.getConfidence()) {
+                    baseResult = prediction;
+                }
+            }
+
+            if (baseResult == null) {
+                return;
+            }
+            String activity = baseResult.getClassName();
+            if (activity == null) {
+                return;
+            }
+
+            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
+            TextView base_classification_result = findViewById(R.id.base_model);
+            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+        }
+
+        // todo: implement for transfer learning model
+        if (this.transferModel != null) {
+            TransferLearningModel.Prediction[] possibleResults = this.transferModel.predict(f_knnData);
+            TransferLearningModel.Prediction transferResult = null;
+            for (TransferLearningModel.Prediction prediction : possibleResults) {
+                if (transferResult == null) {
+                    transferResult = prediction;
+                }
+                if (prediction.getConfidence() > transferResult.getConfidence()) {
+                    transferResult = prediction;
+                }
+                //System.out.println(prediction.getClassName() + ": " + prediction.getConfidence());
+            }
+
+            if (transferResult == null) {
+                return;
+            }
+
+            String activity = transferResult.getClassName();
+            if (activity == null) {
+                return;
+            }
+            //System.out.println(transferResult.getClassName() + ": " + transferResult.getConfidence());
+            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
+            TextView base_classification_result = findViewById(R.id.transfer_model);
+            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
     }
 
@@ -337,7 +432,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             File f = new File(this.getFilesDir(), "custom_features.txt");
             OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));
             streamWriter.write(System.lineSeparator());
-            for(double[] features : featureSet) {
+            for (double[] features : featureSet) {
                 StringJoiner stringJoiner = new StringJoiner(",", "", System.lineSeparator());
                 for (double feature : features) {
                     stringJoiner.add(String.valueOf(feature));

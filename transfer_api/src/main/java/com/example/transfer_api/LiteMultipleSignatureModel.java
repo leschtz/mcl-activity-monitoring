@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.tensorflow.lite.examples.transfer.api;
+package com.example.transfer_api;
 
 import java.io.Closeable;
 import java.nio.ByteBuffer;
@@ -48,9 +48,9 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param image 3-D float array of size (IMG_SIZE, IMG_SIZE, 3)
    * @return 1-D float array containing bottleneck features
    */
-  float[] loadBottleneck(float[][][] image) {
+  float[] loadBottleneck(float[] image) {
     Map<String, Object> inputs = new HashMap<>();
-    inputs.put("feature", new float[][][][] {image});
+    inputs.put("feature", new float[][] {image});
     Map<String, Object> outputs = new HashMap<>();
     float[][] bottleneck = new float[1][BOTTLENECK_SIZE];
     outputs.put("bottleneck", bottleneck);
@@ -85,10 +85,10 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param testImage 3-D float array of image of size (IMG_SIZE, IMG_SIZE, 3)
    * @return 1-D float array of softmax output of prediction
    */
-  float[] runInference(float[][][] testImage) {
+  float[] runInference(float[] testImage) {
     // Run the inference.
     Map<String, Object> inputs = new HashMap<>();
-    inputs.put("feature", new float[][][][] {testImage});
+    inputs.put("feature", new float[][] {testImage});
 
     Map<String, Object> outputs = new HashMap<>();
     float[][] output = new float[1][numClasses];
