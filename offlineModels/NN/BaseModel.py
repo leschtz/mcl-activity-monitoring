@@ -30,24 +30,17 @@ num_features = None
 def main():
     saved_basemodel_dir = '../offlineModels/NN/savedModel'
 
-    model = keras.models.load_model(saved_basemodel_dir)
-    print(model.summary())
+    # model = keras.models.load_model(saved_basemodel_dir)
+    # print(model.summary())
 
-    # model = train_base_model()
+    model = train_base_model()
     #
     # model.save(saved_basemodel_dir)
 
     model = cutOffHead(model)
-
-    convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
-
-
-# model = train_base_model()
-
-# model.save(saved_model_dir)
-
-
-# convertToTFLiteModelfromKeras(model)
+    #
+    # convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
+    convert_and_save(model, '../offlineModels/NN/tfLite/test')
 
 
 def train_base_model(noGrid=True, fixedData=False):
@@ -137,6 +130,8 @@ def train_base_model(noGrid=True, fixedData=False):
     global num_features
     num_features = x_train.shape[1]
 
+    # print(x_train.columns)
+
     encoder = LabelEncoder()
     encoder.fit(y_train)
     encoded_Y_train = encoder.transform(y_train)
@@ -174,6 +169,41 @@ def train_base_model(noGrid=True, fixedData=False):
 
         cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
         cm.plot()
+        plt.show()
+        best_epoch = es.best_epoch + 1
+
+        # print(epochs)
+        plt.plot(history.history['loss'], 'g', label='Training loss')
+        plt.plot(history.history['val_loss'], 'b', label='validation loss')
+        plt.axvline(x=best_epoch, color='r', label='best_epoch')
+        plt.title('Training and Validation loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_loss.png')
+        plt.show()
+
+        # epochs = range(1, num_epochs+1)
+        plt.plot(history.history['precision'], 'g', label='Training precision')
+        plt.plot(history.history['val_precision'], 'b', label='validation precision')
+        plt.axvline(x=best_epoch, color='r', label='best_epoch')
+        plt.title('Training and Validation precision')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_precision.png')
+        # plt.savefig('../Bert/Data/bert_precision.png')
+        plt.show()
+
+        plt.plot(history.history['accuracy'], 'g', label='Training accuracy')
+        plt.plot(history.history['val_accuracy'], 'b', label='validation accuracy')
+        plt.axvline(x=best_epoch, color='r', label='best_epoch')
+        plt.title('Training and Validation accuracy')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_accuracy.png')
+        # plt.savefig('../Bert/Data/bert_accuracy.png')
         plt.show()
 
         return model
@@ -322,7 +352,13 @@ def convert_and_save(model, saved_model_dir):
     interpreter.allocate_tensors()
     signatures = interpreter.get_signature_list()
     print(signatures)
+    infer = interpreter.get_signature_runner("infer")
+    train = interpreter.get_signature_runner("train")
 
+
+    # interpreter.invoke()
+
+    return
     # model_file_path = os.path.join('model.tflite')
     model_file_path = '../offlineModels/NN/tfLite/tfLiteModelConverted/model.tflite'
     with open(model_file_path, 'wb') as model_file:
