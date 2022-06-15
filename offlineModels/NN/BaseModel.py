@@ -34,13 +34,14 @@ def main():
     # print(model.summary())
 
     model = train_base_model()
+
     #
-    # model.save(saved_basemodel_dir)
+    model.save(saved_basemodel_dir)
 
     model = cutOffHead(model)
     #
-    # convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
-    convert_and_save(model, '../offlineModels/NN/tfLite/test')
+    convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
+    #convert_and_save(model, '../offlineModels/NN/tfLite/test')
 
 
 def train_base_model(noGrid=True, fixedData=False):
@@ -138,26 +139,28 @@ def train_base_model(noGrid=True, fixedData=False):
     # convert integers to dummy variables (i.e. one hot encoded)
     y_train = np_utils.to_categorical(encoded_Y_train)
     encoded_Y_test = encoder.transform(y_test)
+
     y_test_hot = np_utils.to_categorical(encoded_Y_test)
 
     ### Single Train and test run
 
     if (noGrid):
 
-        es = EarlyStopping(patience=5, verbose=1, min_delta=0.001, monitor='loss', mode='auto',
+        es = EarlyStopping(patience=15, verbose=1, min_delta=0.001, monitor='val_loss', mode='auto',
                            restore_best_weights=True)
 
         param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.1, 'nodecount': 256, 'nodecount2': 256,
                  'nodecount3': 128}
         model = create_model(param=param)
 
-        history = model.fit(x_train, y_train, epochs=200, batch_size=50, verbose=0, callbacks=[es])
+        history = model.fit(x_train, y_train, epochs=250, batch_size=50, validation_data=(x_test, y_test_hot),
+                            verbose=1, callbacks=[es])
 
         print()
-        print('Score from evaluate:')
-        score = model.evaluate(x_test, y_test_hot)
+        print('Score from model evaluation:')
+        score = model.evaluate(x_test, y_test_hot,verbose=1)
 
-        print(score)
+
         print()
 
         y_pred = model.predict(x_test)
@@ -167,10 +170,17 @@ def train_base_model(noGrid=True, fixedData=False):
         print('Classification report')
         print(classification_report(y_test, y_pred))
 
+        figure_path = '../offlineModels/NN/Results/'
+
+        tf.keras.utils.plot_model(model, figure_path + 'Modelplot.png', show_shapes=True)
+
         cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
         cm.plot()
+        plt.savefig(figure_path + 'CM.png')
         plt.show()
-        best_epoch = es.best_epoch + 1
+        best_epoch = es.best_epoch
+
+        print(history.history.keys())
 
         # print(epochs)
         plt.plot(history.history['loss'], 'g', label='Training loss')
@@ -180,7 +190,7 @@ def train_base_model(noGrid=True, fixedData=False):
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend()
-        # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_loss.png')
+        plt.savefig(figure_path + 'loss.png')
         plt.show()
 
         # epochs = range(1, num_epochs+1)
@@ -192,18 +202,18 @@ def train_base_model(noGrid=True, fixedData=False):
         plt.ylabel('Loss')
         plt.legend()
         # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_precision.png')
-        # plt.savefig('../Bert/Data/bert_precision.png')
+        plt.savefig(figure_path + 'precision.png')
         plt.show()
 
-        plt.plot(history.history['accuracy'], 'g', label='Training accuracy')
-        plt.plot(history.history['val_accuracy'], 'b', label='validation accuracy')
+        plt.plot(history.history['categorical_accuracy'], 'g', label='Training categorical_accuracy')
+        plt.plot(history.history['val_categorical_accuracy'], 'b', label='validation categorical_accuracy')
         plt.axvline(x=best_epoch, color='r', label='best_epoch')
         plt.title('Training and Validation accuracy')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend()
         # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_accuracy.png')
-        # plt.savefig('../Bert/Data/bert_accuracy.png')
+        plt.savefig(figure_path + 'accuracy.png')
         plt.show()
 
         return model
@@ -249,7 +259,9 @@ def create_model(param=None):
     model.add(Dense(param['nodecount3'], activation=param['activation'], name='base'))
     model.add(Dense(6, activation='softmax'))
 
-    model.compile(optimizer=param['optimizer'], loss=categorical_crossentropy, metrics=[categorical_accuracy])
+    model.compile(optimizer=param['optimizer'], loss=categorical_crossentropy,
+                  metrics=[categorical_accuracy, tf.keras.metrics.Precision(name='precision'),
+                           tf.keras.metrics.Recall(name='recall')])
     return model
 
 
@@ -354,7 +366,6 @@ def convert_and_save(model, saved_model_dir):
     print(signatures)
     infer = interpreter.get_signature_runner("infer")
     train = interpreter.get_signature_runner("train")
-
 
     # interpreter.invoke()
 
