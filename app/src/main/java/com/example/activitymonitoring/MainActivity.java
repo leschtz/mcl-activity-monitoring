@@ -9,14 +9,19 @@ import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.transfer_api.GenericModel;
 import com.example.transfer_api.TransferLearningModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import java.util.HashMap;
+import java.util.Map;
+
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -30,6 +35,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -41,12 +47,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private KNNClassifier classifier;
     private DataProcessor dataProcessor;
     private Set<double[]> trainingData;
-    private TransferLearningModelWrapper baseModel;
+    private GenericModelWrapper baseModel;
     private TransferLearningModelWrapper transferModel;
 
     FloatingActionButton menuFab, trainKnnFab, logDataFab, stopLogFab, stopLogMainFab;
     TextView trainKnnText, logDataText, stopLogText;
     Boolean fabIsVisible;
+    Button test;
 
 
     @Override
@@ -59,6 +66,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         logDataFab = findViewById(R.id.data_log_fab);
         stopLogFab = findViewById(R.id.stop_log_fab);
         stopLogMainFab = findViewById(R.id.stop_data_log_fab);
+
+        test = findViewById(R.id.testclass);
+        test.setOnClickListener(
+                view -> { this.classification();});
 
         trainKnnText = findViewById(R.id.train_model_text);
         logDataText = findViewById(R.id.data_log_text);
@@ -81,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dataLogger = new DataLogger(getApplicationContext());
         this.dataProcessor = new DataProcessor();
         this.transferModel = new TransferLearningModelWrapper(getApplicationContext());
+        this.baseModel = new GenericModelWrapper(getApplicationContext());
 
         trainingData = new HashSet<>();
 
@@ -250,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
 
-        this.classification();
+        //this.classification();
 
         float[] currentValue;
 
@@ -311,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         float[] f_knnData = new float[knnData.length];
+        System.out.print("Feature vector: ");
         for (int i = 0; i < knnData.length; i++) {
             f_knnData[i] = (float) knnData[i];
             System.out.print(f_knnData[i] + " : " + knnData[i] + "\t");
@@ -333,6 +346,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.transferModel.addSample(f_knnData, className);
         }
 
+
+
         if (this.classifier != null) {
             //System.out.println("Got a new data sample");
             int knnResult = classifier.classify(knnData);
@@ -345,16 +360,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // todo: implement for base model
         if (this.baseModel != null) {
-            TransferLearningModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
-            TransferLearningModel.Prediction baseResult = null;
-            for (TransferLearningModel.Prediction prediction : possibleResults) {
+            GenericModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
+            GenericModel.Prediction baseResult = null;
+            System.out.print("Basemodel predictions: ");
+            for (GenericModel.Prediction prediction : possibleResults) {
                 if (baseResult == null) {
                     baseResult = prediction;
                 }
                 if (prediction.getConfidence() > baseResult.getConfidence()) {
                     baseResult = prediction;
                 }
+                System.out.print(prediction.getClassName() + ": " + prediction.getConfidence()+"  ;  ");
             }
+            System.out.println();
 
             if (baseResult == null) {
                 return;
@@ -373,6 +391,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (this.transferModel != null) {
             TransferLearningModel.Prediction[] possibleResults = this.transferModel.predict(f_knnData);
             TransferLearningModel.Prediction transferResult = null;
+            System.out.print("TransferModel predictions: ");
             for (TransferLearningModel.Prediction prediction : possibleResults) {
                 if (transferResult == null) {
                     transferResult = prediction;
@@ -380,8 +399,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (prediction.getConfidence() > transferResult.getConfidence()) {
                     transferResult = prediction;
                 }
-                //System.out.println(prediction.getClassName() + ": " + prediction.getConfidence());
+                System.out.print(prediction.getClassName() + ": " + prediction.getConfidence()+"  ;  ");
             }
+            System.out.println();
 
             if (transferResult == null) {
                 return;

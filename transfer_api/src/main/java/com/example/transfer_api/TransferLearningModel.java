@@ -248,6 +248,11 @@ public final class TransferLearningModel implements Closeable {
       }
 
       Arrays.sort(predictions, (a, b) -> -Float.compare(a.confidence, b.confidence));
+
+      for (Prediction x :predictions
+           ) {
+        System.out.println(x.confidence);
+      }
       return predictions;
     } finally {
       trainingInferenceLock.unlock();

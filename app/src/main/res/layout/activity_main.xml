@@ -175,6 +175,12 @@
                     android:text="Base"
                     android:textSize="12sp"
                     android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/testclass"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Button" />
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
