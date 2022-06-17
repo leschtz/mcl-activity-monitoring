@@ -41,7 +41,7 @@ def main():
     model = cutOffHead(model)
     #
     convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
-    #convert_and_save(model, '../offlineModels/NN/tfLite/test')
+    # convert_and_save(model, '../offlineModels/NN/tfLite/test')
 
 
 def train_base_model(noGrid=True, fixedData=False):
@@ -158,8 +158,7 @@ def train_base_model(noGrid=True, fixedData=False):
 
         print()
         print('Score from model evaluation:')
-        score = model.evaluate(x_test, y_test_hot,verbose=1)
-
+        score = model.evaluate(x_test, y_test_hot, verbose=1)
 
         print()
 
@@ -221,13 +220,14 @@ def train_base_model(noGrid=True, fixedData=False):
         ### Gridsearch Part
     else:
 
-        param_grid = {'activation': 'relu',  # ['relu', 'tanh', 'sigmoid', 'linear', 'softmax'],
-                      'optimizer': ['Adam', 'Adamax', 'Nadam'],  # 'SGD', 'RMSprop', 'Adagrad', 'Adadelta',
-                      'dropout_rate': [0.0, 0.1, 0.2],
+        param_grid = {'activation': ['relu', 'tanh', 'sigmoid', 'linear', 'softmax'],
+                      'optimizer': ['Adam', 'Adamax', 'Nadam', 'SGD', 'RMSprop', 'Adagrad', 'Adadelta'],
+                      'dropout_rate': [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
                       'epochs': 150,
                       'batch_size': [25, 50],
                       'nodecount': [64, 128, 256, 512],
-                      'nodecount2': [64, 128, 256, 512]
+                      'nodecount2': [64, 128, 256, 512],
+                      'nodecount3': [64, 128, 256, 512]
                       }
 
         learning_rate = [0.01, 0.001, 0.0001]
