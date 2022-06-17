@@ -267,21 +267,7 @@ def create_model(param=None):
 
 def cutOffHead(model):
     model2 = tf.keras.models.Model(model.input, model.get_layer('base').output)
-    print()
-    print()
-    print()
 
-    print(model.input)
-    print()
-    print()
-    print()
-
-    print(model2.summary())
-    print()
-    print()
-    print()
-    print()
-    print(model2.input)
     return model2
 
 
