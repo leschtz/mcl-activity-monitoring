@@ -342,7 +342,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
         }
 
-        // todo: implement for base model
         if (this.baseModel != null) {
             GenericModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
             GenericModel.Prediction baseResult = null;
@@ -355,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
 
-            // this.debugPredictions(possibleResults);
+            // Util.debugPredictions(possibleResults);
 
             if (baseResult == null) {
                 return;
@@ -382,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
 
-            // this.debugPredictions(possibleResults);
+            // Util.debugPredictions(possibleResults);
 
             if (transferResult == null) {
                 return;
@@ -447,19 +446,4 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    public void debugPredictions(TransferLearningModel.Prediction[] predictions) {
-        System.out.print("TransferModel Predictions: ");
-        for (TransferLearningModel.Prediction predict : predictions) {
-            System.out.print(predict.getClassName() + ": " + predict.getConfidence() + "  ;  ");
-        }
-        System.out.println();
-    }
-
-    public void debugPredictions(GenericModel.Prediction[] predictions) {
-        System.out.print("GenericModel Predictions: ");
-        for (GenericModel.Prediction predict : predictions) {
-            System.out.print(predict.getClassName() + ": " + predict.getConfidence() + "  ;  ");
-        }
-        System.out.println();
-    }
 }
