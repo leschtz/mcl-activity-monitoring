@@ -275,13 +275,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (sensorType == Sensor.TYPE_ACCELEROMETER) {
             currentValue = sensorEvent.values.clone();
             dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
-
-            TextView debugAccView = findViewById(R.id.debug_acc);
-            debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
-
             dataProcessor.addSensorData(timestamp, currentValue);
-            TextView debugGravityView = findViewById(R.id.debug_gravity);
-            debugGravityView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0] / 9.80665, currentValue[1] / 9.80665, currentValue[2] / 9.80665));
+
+            if (System.currentTimeMillis() % 1000L < 900L) {
+                TextView debugAccView = findViewById(R.id.debug_acc);
+                debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
+
+                TextView debugGravityView = findViewById(R.id.debug_gravity);
+                debugGravityView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0] / 9.80665, currentValue[1] / 9.80665, currentValue[2] / 9.80665));
+            }
         }
     }
 
