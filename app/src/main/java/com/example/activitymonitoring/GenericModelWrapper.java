@@ -16,45 +16,32 @@ limitations under the License.
 package com.example.activitymonitoring;
 
 import android.content.Context;
-import android.os.ConditionVariable;
-
 
 import com.example.transfer_api.GenericModel;
-import com.example.transfer_api.ModelLoader;
-import com.example.transfer_api.TransferLearningModel;
-import com.example.transfer_api.TransferLearningModel.LossConsumer;
 import com.example.transfer_api.GenericModel.Prediction;
-
+import com.example.transfer_api.ModelLoader;
 
 import java.io.Closeable;
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 
 public class GenericModelWrapper implements Closeable {
-
     private final GenericModel model;
-
-
     GenericModelWrapper(Context context) {
-        model =
-                new GenericModel(
-                        new ModelLoader(context, "model"), Arrays.asList("1", "2", "3", "4","5","6"));
-
+        model = new GenericModel(
+                new ModelLoader(context, "model"),
+                Arrays.asList("1", "2", "3", "4", "5", "6")
+        );
     }
-
 
     // This method is thread-safe, but blocking.
     public Prediction[] predict(float[] image) {
         return model.predict(image);
     }
 
-
-
-
-
-    /** Frees all model resources and shuts down all background threads. */
+    /**
+     * Frees all model resources and shuts down all background threads.
+     */
     public void close() {
         model.close();
     }
