@@ -9,7 +9,6 @@ import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,9 +18,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.transfer_api.GenericModel;
 import com.example.transfer_api.TransferLearningModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import java.util.HashMap;
-import java.util.Map;
-
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -35,7 +31,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -53,8 +48,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     FloatingActionButton menuFab, trainKnnFab, logDataFab, stopLogFab, stopLogMainFab;
     TextView trainKnnText, logDataText, stopLogText;
     Boolean fabIsVisible;
-    Button test;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +59,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         logDataFab = findViewById(R.id.data_log_fab);
         stopLogFab = findViewById(R.id.stop_log_fab);
         stopLogMainFab = findViewById(R.id.stop_data_log_fab);
-
-        test = findViewById(R.id.testclass);
-        test.setOnClickListener(
-                view -> { this.classification();});
 
         trainKnnText = findViewById(R.id.train_model_text);
         logDataText = findViewById(R.id.data_log_text);
@@ -88,11 +77,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
-        dataLogger = new DataLogger(getApplicationContext());
-        this.dataProcessor = new DataProcessor();
-        this.transferModel = new TransferLearningModelWrapper(getApplicationContext());
-        this.baseModel = new GenericModelWrapper(getApplicationContext());
 
         trainingData = new HashSet<>();
 
@@ -166,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                 }
                                 dataProcessor.setClassifyAs(ActivityType.None);
 
-                                // todo: check if training is enabled and possible like this.
                                 transferModel.enableTraining((null));
                                 classifier.neighbors = readFile();
 
@@ -175,8 +158,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             }
                         }.start();
                         // setting new data for neighbours.
-
-
                     });
                     menuFab.performClick();
                     builder.show();
@@ -231,26 +212,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStart() {
         super.onStart();
+        if (this.dataLogger == null) {
+            this.dataLogger = new DataLogger(getApplicationContext());
+        }
+        if (this.dataProcessor == null) {
+            this.dataProcessor = new DataProcessor();
+        }
+
+        if (this.transferModel == null) {
+            this.transferModel = new TransferLearningModelWrapper(getApplicationContext());
+        }
+
+        if (this.baseModel == null) {
+            this.baseModel = new GenericModelWrapper(getApplicationContext());
+        }
 
         if (sensorAccelerometer != null) {
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         }
-
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
+        if (this.dataProcessor != null) {
+            this.dataProcessor = null;
+        }
+
         if (dataLogger != null) {
             dataLogger.stopRecording();
+            this.dataLogger = null;
         }
 
         if (this.transferModel != null) {
             this.transferModel.close();
+            this.transferModel = null;
         }
 
         if (this.baseModel != null) {
             this.baseModel.close();
+            this.baseModel = null;
         }
         if (this.sensorManager != null) {
             sensorManager.unregisterListener(this);
@@ -262,28 +264,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int sensorType = sensorEvent.sensor.getType();
         long timestamp = System.currentTimeMillis();
 
-        //this.classification();
+        try {
+            this.classification();
+        } catch (IllegalStateException | NullPointerException exception) {
+            System.err.println("classification() went wrong.");
+        }
 
         float[] currentValue;
 
-        switch (sensorType) {
-            case Sensor.TYPE_ACCELEROMETER:
-                currentValue = sensorEvent.values.clone();
-                dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
+        if (sensorType == Sensor.TYPE_ACCELEROMETER) {
+            currentValue = sensorEvent.values.clone();
+            dataLogger.record(timestamp, currentValue, sensorEvent.sensor.getName());
 
-                TextView debugAccView = findViewById(R.id.debug_acc);
-                debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
+            TextView debugAccView = findViewById(R.id.debug_acc);
+            debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
 
-                dataProcessor.addSensorData(timestamp, currentValue);
-                TextView debugGravityView = findViewById(R.id.debug_gravity);
-                debugGravityView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0] / 9.80665, currentValue[1] / 9.80665, currentValue[2] / 9.80665));
-                break;
-
-            case Sensor.TYPE_GYROSCOPE:
-                currentValue = sensorEvent.values.clone();
-                break;
-            default:
-                // nothing
+            dataProcessor.addSensorData(timestamp, currentValue);
+            TextView debugGravityView = findViewById(R.id.debug_gravity);
+            debugGravityView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0] / 9.80665, currentValue[1] / 9.80665, currentValue[2] / 9.80665));
         }
     }
 
@@ -311,11 +309,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void classification() {
-
         if (this.dataProcessor == null) {
             return;
         }
-
 
         double[] knnData = this.dataProcessor.getKnnData();
         if (knnData == null) {
@@ -323,16 +319,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         float[] f_knnData = new float[knnData.length];
-        System.out.print("Feature vector: ");
-        for (int i = 0; i < knnData.length; i++) {
-            f_knnData[i] = (float) knnData[i];
-            System.out.print(f_knnData[i] + " : " + knnData[i] + "\t");
-        }
-        System.out.println();
 
-
-        // Inference Step
-        // todo: add inference step for transfer learning model
+        // Inference
+        // Train the kNN and the TransferLearning Model
         if (this.dataProcessor.getClassifyType() != ActivityType.None) {
             double[] features = new double[knnData.length + 1];
             for (int i = 0; i < knnData.length; i++) {
@@ -341,28 +330,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
             this.trainingData.add(features.clone());
 
-
             String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
             this.transferModel.addSample(f_knnData, className);
         }
 
 
-
         if (this.classifier != null) {
-            //System.out.println("Got a new data sample");
             int knnResult = classifier.classify(knnData);
 
-            //System.out.println(knnResult);
             TextView classification_result = findViewById(R.id.knn_model);
             classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
-
         }
 
         // todo: implement for base model
         if (this.baseModel != null) {
             GenericModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
             GenericModel.Prediction baseResult = null;
-            System.out.print("Basemodel predictions: ");
             for (GenericModel.Prediction prediction : possibleResults) {
                 if (baseResult == null) {
                     baseResult = prediction;
@@ -370,9 +353,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (prediction.getConfidence() > baseResult.getConfidence()) {
                     baseResult = prediction;
                 }
-                System.out.print(prediction.getClassName() + ": " + prediction.getConfidence()+"  ;  ");
             }
-            System.out.println();
+
+            // this.debugPredictions(possibleResults);
 
             if (baseResult == null) {
                 return;
@@ -387,11 +370,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
 
-        // todo: implement for transfer learning model
         if (this.transferModel != null) {
             TransferLearningModel.Prediction[] possibleResults = this.transferModel.predict(f_knnData);
             TransferLearningModel.Prediction transferResult = null;
-            System.out.print("TransferModel predictions: ");
             for (TransferLearningModel.Prediction prediction : possibleResults) {
                 if (transferResult == null) {
                     transferResult = prediction;
@@ -399,9 +380,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (prediction.getConfidence() > transferResult.getConfidence()) {
                     transferResult = prediction;
                 }
-                System.out.print(prediction.getClassName() + ": " + prediction.getConfidence()+"  ;  ");
             }
-            System.out.println();
+
+            // this.debugPredictions(possibleResults);
 
             if (transferResult == null) {
                 return;
@@ -411,7 +392,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
-            //System.out.println(transferResult.getClassName() + ": " + transferResult.getConfidence());
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
             TextView base_classification_result = findViewById(R.id.transfer_model);
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
@@ -465,5 +445,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void debugPredictions(TransferLearningModel.Prediction[] predictions) {
+        System.out.print("TransferModel Predictions: ");
+        for (TransferLearningModel.Prediction predict : predictions) {
+            System.out.print(predict.getClassName() + ": " + predict.getConfidence() + "  ;  ");
+        }
+        System.out.println();
+    }
+
+    public void debugPredictions(GenericModel.Prediction[] predictions) {
+        System.out.print("GenericModel Predictions: ");
+        for (GenericModel.Prediction predict : predictions) {
+            System.out.print(predict.getClassName() + ": " + predict.getConfidence() + "  ;  ");
+        }
+        System.out.println();
     }
 }
