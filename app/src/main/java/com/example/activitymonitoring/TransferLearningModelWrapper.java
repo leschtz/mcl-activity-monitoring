@@ -44,6 +44,7 @@ public class TransferLearningModelWrapper implements Closeable {
   private final ConditionVariable shouldTrain = new ConditionVariable();
   private volatile LossConsumer lossConsumer;
   private Boolean isLearning = false;
+  private Integer samples = 0;
 
   TransferLearningModelWrapper(Context context) {
     model =
@@ -66,6 +67,7 @@ public class TransferLearningModelWrapper implements Closeable {
 
   // This method is thread-safe.
   public Future<Void> addSample(float[] image, String className) {
+    samples++;
     return model.addSample(image, className);
   }
 
@@ -86,8 +88,9 @@ public class TransferLearningModelWrapper implements Closeable {
    */
   public void enableTraining(LossConsumer lossConsumer) {
     this.lossConsumer = lossConsumer;
-    shouldTrain.open();
     isLearning = true;
+    shouldTrain.open();
+
   }
 
   /**
@@ -96,10 +99,22 @@ public class TransferLearningModelWrapper implements Closeable {
   public void disableTraining() {
     shouldTrain.close();
     isLearning = false;
+    samples = 0;
   }
 
   public Boolean getIsLearning() {
     return isLearning;
+  }
+  public void setIsLearning() {
+    isLearning = true;
+  }
+
+  public void clearIsLearning() {
+    isLearning = false;
+  }
+
+  public Integer getSamples() {
+    return samples;
   }
 
   /** Frees all model resources and shuts down all background threads. */

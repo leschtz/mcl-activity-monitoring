@@ -19,11 +19,12 @@
     <string name="transfer_learning_stop_text">Stop Transfer Learning</string>
     <string name="classification_result">%1$s.</string>
 
+    <string name="error_already_learning">The device is already learning.</string>
     <string name="fab_train_description">kNN Training</string>
     <string name="fab_transfer_learn_description">Transfer Learning</string>
     <string name="fab_main_description">Open Menu</string>
 
     <string name="train_title">Activity Training</string>
-    <string name="automatic_classify">Automatically classifying as %1$s for the next %2$d seconds.</string>
+    <string name="automatic_classify">Automatically learning the kNN model as %1$s for the next %2$d seconds.</string>
 
 </resources>

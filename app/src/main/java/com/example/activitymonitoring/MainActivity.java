@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -201,50 +202,69 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             String activityString = getResources().getStringArray(R.array.activityArray)[which];
             ActivityType activity = ActivityType.valueOf(activityString);
-            String toastString = getResources().getString(R.string.automatic_classify, activity.name(), 10);
-            Toast.makeText(MainActivity.this, toastString, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
 
-            Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_SHORT).show();
             dataProcessor.setClassifyAs(activity);
         });
 
         return builder;
     }
 
-    private void startKnnLearning(View view) {
-        AlertDialog.Builder builder = this.createActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_knn_learning));
-        builder.show();
+    private AlertDialog.Builder createTimedActivityDialog(String dialogTitle, long millisInFuture) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
-        this.isKnnLearning = true;
+        builder.setTitle(dialogTitle);
+        builder.setItems(R.array.activityArray, (dialog, which) -> {
+            String activityString = getResources().getStringArray(R.array.activityArray)[which];
+            ActivityType activity = ActivityType.valueOf(activityString);
+            String toastString = getResources().getString(R.string.automatic_classify, activity.name(), 10);
+            Toast.makeText(getApplicationContext(), toastString, Toast.LENGTH_LONG).show();
+
+            dataProcessor.setClassifyAs(activity);
+
+            new CountDownTimer(millisInFuture, 1000) {
+                @Override
+                public void onTick(long timeLeftInMillis) {
+                }
+
+                @Override
+                public void onFinish() {
+                    if (dataProcessor == null) {
+                        return;
+                    }
+                    if (trainingData != null && trainingData.size() > 0) {
+                        addFeatureSetToRawFile(trainingData);
+                        trainingData.clear();
+                    }
+
+                    dataProcessor.setClassifyAs(ActivityType.None);
+                    classifier.neighbors = readFile();
+
+                    RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
+                    Toast.makeText(getApplicationContext(), R.string.toast_stop_knn_learning, Toast.LENGTH_SHORT).show();
+                }
+            }.start();
+        });
+
+        return builder;
+    }
+
+    private void startKnnLearning(View view) {
+        if(!isKnnLearning) {
+            AlertDialog.Builder builder = this.createTimedActivityDialog(getString(R.string.train_title), 10 * 1000L);
+            builder.show();
+
+            this.isKnnLearning = true;
+        } else {
+            Toast.makeText(getApplicationContext(), R.string.error_already_learning, Toast.LENGTH_SHORT).show();
+        }
         menuFab.performClick();
 
-        new CountDownTimer(10 * 1000L, 1000) {
-            @Override
-            public void onTick(long timeLeftInMillis) {
-            }
-
-            @Override
-            public void onFinish() {
-                if (dataProcessor == null) {
-                    return;
-                }
-                if (trainingData != null && trainingData.size() > 0) {
-                    addFeatureSetToRawFile(trainingData);
-                    trainingData.clear();
-                }
-
-                dataProcessor.setClassifyAs(ActivityType.None);
-                classifier.neighbors = readFile();
-
-                RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
-                Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
-            }
-        }.start();
     }
 
     private void startTransferLearning(View view) {
         if (transferModel != null && !transferModel.getIsLearning()) {
-            transferModel.enableTraining(null);
+            transferModel.setIsLearning();
             AlertDialog.Builder builder = this.createActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning));
 
             builder.show();
@@ -260,6 +280,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (transferModel != null && transferModel.getIsLearning()) {
             dataProcessor.setClassifyAs(ActivityType.None);
 
+            if(this.transferModel.getSamples() > 0) {
+                this.transferModel.enableTraining(null);
+            }
+
+            // todo how long should I wait for the training to happen???
             this.transferModel.disableTraining();
 
             Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
@@ -302,7 +327,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (transferModel != null && transferModel.getIsLearning() && this.dataProcessor.getClassifyType() != ActivityType.None) {
             String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
-            this.transferModel.addSample(f_knnData, className);
+            try {
+                this.transferModel.addSample(f_knnData, className).get();
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
 
