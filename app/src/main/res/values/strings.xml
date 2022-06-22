@@ -1,27 +1,26 @@
 <resources>
     <string name="app_name">Activity Monitoring</string>
     <string name="error_accelerometer_unavailable">Accelerometer Sensor not available.</string>
-    <string name="error_gyroscope_unavailable">Gyroscope Sensor not available</string>
-    <string name="error_data_logging_unavailable">DataLogger not available.</string>
     <string name="three_axis_sensor">x: %1$.2f\ny: %2$.2f\nz: %3$.2f</string>
-    <string name="label_gyroscope">Gyroscope Values: x: %1$.2f, y: %2$.2f, z: %3$.2f</string>
-    <string name="file_path">File Path: %1$s</string>
 
     <string name="seconds_left_default">seconds left.</string>
     <string name="seconds_left">%1$d seconds left.</string>
 
     <string name="play_icon_description">Start Logging Data</string>
 
-    <string name="toast_start_recording">Started Recording</string>
-    <string name="toast_pause_recording">Paused Recording</string>
-    <string name="toast_stop_recording">Stopped Recording</string>
-    <string name="toast_activity_failed">Activity Failed</string>
+    <string name="toast_start_transfer_learning">Started Transfer Learning.</string>
+    <string name="toast_stop_transfer_learning">Stopped Transfer Learning.</string>
+    <string name="toast_failed_stop_transfer_learning">Stopping Transfer Learning failed.</string>
 
+    <string name="toast_start_knn_learning">Started kNN Learning.</string>
+    <string name="toast_stop_knn_learning">Stopped kNN Learning.</string>
+    <string name="toast_failed_stop_knn_learning">Stopping kNN Learning failed.</string>
+
+    <string name="transfer_learning_stop_text">Stop Transfer Learning</string>
     <string name="classification_result">%1$s.</string>
 
-
     <string name="fab_train_description">kNN Training</string>
-    <string name="fab_log_description">Data Logging</string>
+    <string name="fab_transfer_learn_description">Transfer Learning</string>
     <string name="fab_main_description">Open Menu</string>
 
     <string name="train_title">Activity Training</string>
