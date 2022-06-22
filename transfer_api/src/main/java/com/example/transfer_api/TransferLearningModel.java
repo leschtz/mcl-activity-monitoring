@@ -18,7 +18,6 @@ package com.example.transfer_api;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -249,7 +248,7 @@ public final class TransferLearningModel implements Closeable {
                 predictions[classIdx] = new Prediction(classesByIdx[classIdx], confidences[classIdx]);
             }
 
-            Arrays.sort(predictions, (a, b) -> -Float.compare(a.confidence, b.confidence));
+            //Arrays.sort(predictions, (a, b) -> -Float.compare(a.confidence, b.confidence));
 
             /*
             for (Prediction x : predictions) {
