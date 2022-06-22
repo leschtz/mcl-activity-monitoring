@@ -171,7 +171,7 @@
                     android:layout_gravity="bottom|center_horizontal"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
-                    android:text="Base"
+                    android:text="Generic Model"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
@@ -206,7 +206,41 @@
                     android:layout_gravity="bottom|center_horizontal"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
-                    android:text="Transfer"
+                    android:text="Transfer Model"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="1dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="5dp"
+                app:cardMaxElevation="12dp"
+                app:cardPreventCornerOverlap="true"
+                app:cardUseCompatPadding="true">
+
+                <TextView
+                    android:id="@+id/predictions"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="10dp"
+                    android:contentDescription="@string/transfer_learning_predictions"
+                    android:gravity="center"
+                    android:text="@string/prediction_templates"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="@string/predictions_transfer_learning"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
@@ -228,7 +262,7 @@
                     android:layout_height="200dp"
                     android:layout_gravity="center"
                     android:layout_margin="10dp"
-                    android:contentDescription="Debug Accelerometer"
+                    android:contentDescription="Transfer Learning Predictions"
                     android:gravity="center"
                     android:text="@string/three_axis_sensor"
                     android:textSize="40sp"

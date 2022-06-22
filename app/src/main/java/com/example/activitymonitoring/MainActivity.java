@@ -237,6 +237,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         trainingData.clear();
                     }
 
+                    isKnnLearning = false;
                     dataProcessor.setClassifyAs(ActivityType.None);
                     classifier.neighbors = readFile();
 
@@ -281,11 +282,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             dataProcessor.setClassifyAs(ActivityType.None);
 
             if(this.transferModel.getSamples() > 0) {
-                this.transferModel.enableTraining(null);
+                System.out.println("Enabling Training.");
+                this.transferModel.enableTraining(null); //((epoch, loss) -> System.out.println(loss)));
+                this.transferModel.clearIsLearning();
             }
+            this.transferModel.clearIsLearning();
 
             // todo how long should I wait for the training to happen???
-            this.transferModel.disableTraining();
+            // this.transferModel.disableTraining();
 
             Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
             stopTransferLearningFab.hide();
@@ -327,13 +331,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (transferModel != null && transferModel.getIsLearning() && this.dataProcessor.getClassifyType() != ActivityType.None) {
             String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
+            System.out.println(className);
             try {
                 this.transferModel.addSample(f_knnData, className).get();
             } catch (ExecutionException | InterruptedException e) {
                 e.printStackTrace();
             }
         }
-
 
         if (this.classifier != null) {
             int knnResult = classifier.classify(knnData);
@@ -380,8 +384,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     transferResult = prediction;
                 }
             }
-
             // Util.debugPredictions(possibleResults);
+
+            // todo: possibleResults is sorted by class.\
+            //System.out.println(possibleResults[0].getClassName());
+            TextView pred_values = findViewById(R.id.predictions);
+            pred_values.setText(getResources()
+                    .getString(
+                            R.string.prediction_templates,
+                            possibleResults[0].getConfidence(),
+                            possibleResults[1].getConfidence(),
+                            possibleResults[2].getConfidence(),
+                            possibleResults[3].getConfidence(),
+                            possibleResults[4].getConfidence(),
+                            possibleResults[5].getConfidence()
+                    )
+            );
 
             if (transferResult == null) {
                 return;

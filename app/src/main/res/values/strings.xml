@@ -2,6 +2,7 @@
     <string name="app_name">Activity Monitoring</string>
     <string name="error_accelerometer_unavailable">Accelerometer Sensor not available.</string>
     <string name="three_axis_sensor">x: %1$.2f\ny: %2$.2f\nz: %3$.2f</string>
+    <string name="prediction_templates">Walk: %1$.2f\nRun %2$.2f\nJump %3$.2f\nSquat %4$.2f\n Stand %5$.2f\nSit %6$.2f\n</string>
 
     <string name="seconds_left_default">seconds left.</string>
     <string name="seconds_left">%1$d seconds left.</string>
@@ -23,8 +24,10 @@
     <string name="fab_train_description">kNN Training</string>
     <string name="fab_transfer_learn_description">Transfer Learning</string>
     <string name="fab_main_description">Open Menu</string>
-
+    <string name="loss_value">%1$.2f.</string>
     <string name="train_title">Activity Training</string>
     <string name="automatic_classify">Automatically learning the kNN model as %1$s for the next %2$d seconds.</string>
+    <string name="predictions_transfer_learning">Predictions: Transfer Learning</string>
+    <string name="transfer_learning_predictions">Transfer Learning Predictions</string>
 
 </resources>
