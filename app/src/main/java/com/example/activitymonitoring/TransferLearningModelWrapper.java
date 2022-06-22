@@ -43,6 +43,7 @@ public class TransferLearningModelWrapper implements Closeable {
 
   private final ConditionVariable shouldTrain = new ConditionVariable();
   private volatile LossConsumer lossConsumer;
+  private Boolean isLearning = false;
 
   TransferLearningModelWrapper(Context context) {
     model =
@@ -86,6 +87,7 @@ public class TransferLearningModelWrapper implements Closeable {
   public void enableTraining(LossConsumer lossConsumer) {
     this.lossConsumer = lossConsumer;
     shouldTrain.open();
+    isLearning = true;
   }
 
   /**
@@ -93,6 +95,11 @@ public class TransferLearningModelWrapper implements Closeable {
    */
   public void disableTraining() {
     shouldTrain.close();
+    isLearning = false;
+  }
+
+  public Boolean getIsLearning() {
+    return isLearning;
   }
 
   /** Frees all model resources and shuts down all background threads. */

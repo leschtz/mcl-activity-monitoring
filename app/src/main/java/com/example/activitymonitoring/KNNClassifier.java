@@ -7,64 +7,21 @@ import java.util.List;
 
 public class KNNClassifier {
     List<double[]> neighbors;
-    private int k;
-    private int features;
+    private final int k;
+    private final int features;
 
-
-
-    public void setFeatures(int features) {
-        this.features = features;
-    }
-
-    public KNNClassifier(int k, int features, List<double[]> neighbors ) {
-
+    public KNNClassifier(int k, int features, List<double[]> neighbors) {
         this.k = k;
         this.features = features;
         this.neighbors = neighbors;
 
     }
 
-    public void setK(int k) {
-        this.k = k;
-    }
-
-//    private void createNeighborMatrix() {
-//
-//        List<double[]> rowList = new ArrayList<double[]>();
-//
-//
-//        try (
-//
-//
-//                BufferedReader br = new BufferedReader(new InputStreamReader(inpustream))) {
-//
-//            String line;
-//            while ((line = br.readLine()) != null) {
-//                String[] lineItemsStrings = line.split(",");
-//                double[] lineItems = new double[lineItemsStrings.length];
-//                for (int i = 0; i < lineItemsStrings.length; i++) {
-//                    lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
-//                }
-//                rowList.add(lineItems);
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Could not create neighbors:    "+e.toString());
-//        }
-//
-//        neighbors = new double[rowList.size()][features];
-//
-//        for (int i = 0; i < rowList.size(); i++) {
-//            double[] row = rowList.get(i);
-//            neighbors[i] = row;
-//        }
-//    }
-
     private double[][] createDistanceMatrix(double[] vector) {
-
         double[][] distanceMatrix = new double[neighbors.size()][features];
 
         for (int i = 0; i < neighbors.size(); i++) {
-            if(neighbors.get(i).length < 10) {
+            if (neighbors.get(i).length < 10) {
                 continue;
             }
             distanceMatrix[i] = calcManhattan(vector, neighbors.get(i));
@@ -79,9 +36,8 @@ public class KNNClassifier {
         for (int i = 0; i < vector.length; i++) {
             sum += Math.abs(vector[i] - neighbor[i]);
         }
-        double[] result = {sum, neighbor[neighbor.length - 1]};
 
-        return result;
+        return new double[]{sum, neighbor[neighbor.length - 1]};
     }
 
     private double[] calcEuclid(double[] vector, double[] neighbor) {
@@ -90,11 +46,8 @@ public class KNNClassifier {
             sum += Math.abs(vector[i] - neighbor[i]);
         }
 
-        double[] result = {Math.sqrt(sum), neighbor[neighbor.length - 1]};
-
-        return result;
+        return new double[]{Math.sqrt(sum), neighbor[neighbor.length - 1]};
     }
-
 
 
     public int classify(double[] vector) {
@@ -111,7 +64,7 @@ public class KNNClassifier {
         return mostFrequent(kNeighbors);
     }
 
-    private int mostFrequent(int arr[]) {
+    private int mostFrequent(int[] arr) {
 
         Arrays.sort(arr);
 
