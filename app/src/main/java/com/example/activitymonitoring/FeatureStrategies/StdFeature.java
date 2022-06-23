@@ -1,7 +1,5 @@
 package com.example.activitymonitoring.FeatureStrategies;
 
-import static java.lang.Math.max;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,7 +33,8 @@ public class StdFeature implements BaseFeature {
                     break;
                 }
                 // calculate sum((x_i - mean)^2) = v
-                result[i] += Math.pow(entry[i] - mean[i], 2);
+                double intermediate = (entry[i] - mean[i]);
+                result[i] += Math.pow(intermediate, 2);
             }
         }
 

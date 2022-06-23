@@ -9,9 +9,9 @@
 
     <string name="play_icon_description">Start Logging Data</string>
 
-    <string name="toast_start_transfer_learning">Started Transfer Learning.</string>
-    <string name="toast_stop_transfer_learning">Stopped Transfer Learning.</string>
-    <string name="toast_failed_stop_transfer_learning">Stopping Transfer Learning failed.</string>
+    <string name="toast_start_transfer_learning">Started adding samples for Transfer Learning.</string>
+    <string name="toast_stop_transfer_learning">Stopped adding samples for Transfer Learning.</string>
+    <string name="toast_failed_stop_transfer_learning">Stop adding samples for Transfer Learning failed.</string>
 
     <string name="toast_start_knn_learning">Started kNN Learning.</string>
     <string name="toast_stop_knn_learning">Stopped kNN Learning.</string>
@@ -22,12 +22,12 @@
 
     <string name="error_already_learning">The device is already learning.</string>
     <string name="fab_train_description">kNN Training</string>
-    <string name="fab_transfer_learn_description">Transfer Learning</string>
+    <string name="fab_transfer_learn_description">Add Samples</string>
     <string name="fab_main_description">Open Menu</string>
     <string name="loss_value">%1$.2f.</string>
     <string name="train_title">Activity Training</string>
     <string name="automatic_classify">Automatically learning the kNN model as %1$s for the next %2$d seconds.</string>
     <string name="predictions_transfer_learning">Predictions: Transfer Learning</string>
     <string name="transfer_learning_predictions">Transfer Learning Predictions</string>
-
+    <string name="enable_training">Enable Training</string>
 </resources>

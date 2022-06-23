@@ -13,7 +13,7 @@ public class MinFeature implements BaseFeature {
         }
 
         double[] result = new double[data.get(0).length];
-        Arrays.fill(result, 0);
+        Arrays.fill(result, 100);
 
         for (int cnt = 0; cnt < data.size(); cnt++) {
             float[] entry = data.get(cnt);

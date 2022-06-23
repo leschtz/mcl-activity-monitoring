@@ -13,7 +13,7 @@ import java.util.List;
 
 public class DataProcessor {
     final float CONST_G = 9.80665f;
-    final long PARAM_TIMING = 1000L; // 20ms timing
+    final long PARAM_TIMING = 200L; // 20ms timing
     final float[] PARAM_MIN = {-1.976388870971105f, -2.009722276169204f, -1.837500071636558f};
     final float[] PARAM_MAX = {2.004166708636188f , 1.716666672288882f , 1.979166654737614f };
 
@@ -87,9 +87,11 @@ public class DataProcessor {
             double[] avgFeature = new AverageFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(avgFeature).boxed().toArray(Double[]::new)));
 
+            // fails
             double[] stdFeature = new StdFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(stdFeature).boxed().toArray((Double[]::new))));
 
+            // fails
             double[] madFeature = new MadFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(madFeature).boxed().toArray((Double[]::new))));
 
