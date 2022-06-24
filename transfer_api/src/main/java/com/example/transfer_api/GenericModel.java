@@ -5,18 +5,13 @@ import org.tensorflow.lite.Interpreter;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -25,28 +20,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /** Represents a "partially" trainable model that is based on some other, base model. */
 public final class GenericModel implements Closeable {
-
-    /**
-     * Prediction for a single class produced by the model.
-     */
-    public static class Prediction {
-        private final String className;
-        private final float confidence;
-
-        public Prediction(String className, float confidence) {
-            this.className = className;
-            this.confidence = confidence;
-        }
-
-        public String getClassName() {
-            return className;
-        }
-
-        public float getConfidence() {
-            return confidence;
-        }
-    }
-
     private final Interpreter interpreter;
     private final int numClasses;
 

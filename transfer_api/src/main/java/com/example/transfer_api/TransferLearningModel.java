@@ -38,28 +38,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Represents a "partially" trainable model that is based on some other, base model.
  */
 public final class TransferLearningModel implements Closeable {
-
-    /**
-     * Prediction for a single class produced by the model.
-     */
-    public static class Prediction {
-        private final String className;
-        private final float confidence;
-
-        public Prediction(String className, float confidence) {
-            this.className = className;
-            this.confidence = confidence;
-        }
-
-        public String getClassName() {
-            return className;
-        }
-
-        public float getConfidence() {
-            return confidence;
-        }
-    }
-
     private static class TrainingSample {
         float[] bottleneck;
         float[] label;

@@ -8,6 +8,32 @@
     tools:context=".MainActivity">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/start_transfer_training_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/fab_train_description"
+        android:src="@drawable/ic_baseline_play_arrow_24"
+        app:layout_constraintBottom_toTopOf="@+id/transfer_learn_fab"
+        app:layout_constraintEnd_toEndOf="@+id/transfer_learn_fab"
+        app:layout_constraintStart_toStartOf="@+id/transfer_learn_fab"
+
+        app:fabSize="auto"/>
+
+    <TextView
+        android:id="@+id/enable_training"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="@string/enable_training"
+        android:background="#B3FFFFFF"
+        android:translationZ="90dp"
+        app:layout_constraintBottom_toBottomOf="@+id/start_transfer_training_fab"
+        app:layout_constraintEnd_toStartOf="@+id/start_transfer_training_fab"
+        app:layout_constraintTop_toTopOf="@+id/start_transfer_training_fab" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/transfer_learn_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

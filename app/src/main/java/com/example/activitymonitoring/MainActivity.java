@@ -15,8 +15,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.transfer_api.GenericModel;
-import com.example.transfer_api.TransferLearningModel;
+import com.example.transfer_api.Prediction;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
@@ -29,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,8 +46,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TransferLearningModelWrapper transferModel;
     private Boolean isKnnLearning = false;
 
-    FloatingActionButton menuFab, trainKnnFab, transferLearnFab, stopTransferLearningFab, stopTransferLearningMainFab;
-    TextView trainKnnText, transferLearningText, stopTransferLearningText;
+    FloatingActionButton menuFab, trainKnnFab, transferLearnFab, stopTransferLearningFab,
+            stopTransferLearningMainFab, enableTrainingFab;
+    TextView trainKnnText, transferLearningText, stopTransferLearningText, enableTrainingText;
     Boolean fabIsVisible;
 
     @Override
@@ -61,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         stopTransferLearningMainFab = findViewById(R.id.stop_data_log_fab);
         transferLearningText = findViewById(R.id.transfer_learning_text);
         stopTransferLearningText = findViewById(R.id.stop_transfer_learning_text);
+        enableTrainingText = findViewById(R.id.enable_training);
+        enableTrainingFab = findViewById(R.id.start_transfer_training_fab);
 
         trainKnnFab = findViewById(R.id.train_fab);
         trainKnnText = findViewById(R.id.train_model_text);
@@ -70,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         stopTransferLearningFab.setVisibility(View.GONE);
         stopTransferLearningMainFab.setVisibility(View.GONE);
         stopTransferLearningText.setVisibility(View.GONE);
+        enableTrainingFab.setVisibility(View.GONE);
+        enableTrainingText.setVisibility(View.GONE);
 
         trainKnnFab.setVisibility(View.GONE);
         trainKnnText.setVisibility(View.GONE);
@@ -85,9 +90,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         trainKnnFab.setOnClickListener(this::startKnnLearning);
 
-        transferLearnFab.setOnClickListener(this::startTransferLearning);
-        stopTransferLearningFab.setOnClickListener(this::stopTransferLearning);
-        stopTransferLearningMainFab.setOnClickListener(this::stopTransferLearning);
+        transferLearnFab.setOnClickListener(this::startAddingSamplesTransferLearning);
+        stopTransferLearningFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
+        stopTransferLearningMainFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
+
+        enableTrainingFab.setOnLongClickListener(this::hiddenTrainingKnnData);
+
+        if (this.transferModel == null) {
+            this.transferModel = new TransferLearningModelWrapper(getBaseContext());
+        }
+
+        if (this.dataProcessor == null) {
+            this.dataProcessor = new DataProcessor();
+        }
+
+        if (this.baseModel == null) {
+            this.baseModel = new GenericModelWrapper(getApplicationContext());
+        }
 
         File f = new File(this.getFilesDir(), "custom_features.txt");
         if (!f.exists()) {
@@ -101,7 +120,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 while ((line = bufferedReader.readLine()) != null) {
                     String[] d = line.split(",");
                     if (d.length != 16) {
-                        // todo: this is definitely a bug!
                         // bug description: when writing to the new file, the bufferedReader is not able to read beyond 401 lines.
                         //                  and stops in the middle of the line. as a result, the last lines do not get copied over correctly.
                         //                  For the last line it writes, it does not write the full line.
@@ -124,20 +142,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStart() {
         super.onStart();
 
-        if (this.dataProcessor == null) {
-            this.dataProcessor = new DataProcessor();
-        }
-
-        if (this.transferModel == null) {
-            this.transferModel = new TransferLearningModelWrapper(getApplicationContext());
-        }
-
-        if (this.baseModel == null) {
-            this.baseModel = new GenericModelWrapper(getApplicationContext());
-        }
-
         if (sensorAccelerometer != null) {
-            sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_GAME);
         }
     }
 
@@ -145,19 +151,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStop() {
         super.onStop();
 
-        if (this.dataProcessor != null) {
-            this.dataProcessor = null;
-        }
-
-        if (this.transferModel != null) {
-            this.transferModel.close();
-            this.transferModel = null;
-        }
-
-        if (this.baseModel != null) {
-            this.baseModel.close();
-            this.baseModel = null;
-        }
         if (this.sensorManager != null) {
             sensorManager.unregisterListener(this);
         }
@@ -180,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             currentValue = sensorEvent.values.clone();
             dataProcessor.addSensorData(timestamp, currentValue);
 
-            if (System.currentTimeMillis() % 1000L < 900L) {
+            if (System.currentTimeMillis() % 100L == 0L) {
                 TextView debugAccView = findViewById(R.id.debug_acc);
                 debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
 
@@ -194,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int i) {
     }
 
-    private AlertDialog.Builder createActivityDialog(String dialogTitle, String toastMessage) {
+    private AlertDialog.Builder createActivityDialog(String dialogTitle, String toastMessage, long millisInFuture) {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
         builder.setTitle(dialogTitle);
@@ -205,6 +198,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
 
             dataProcessor.setClassifyAs(activity);
+
+            new CountDownTimer(millisInFuture, 1000) {
+                @Override
+                public void onTick(long timeLeftInMillis) {
+                }
+
+                @Override
+                public void onFinish() {
+                    if (dataProcessor == null) {
+                        return;
+                    }
+                    dataProcessor.setClassifyAs(ActivityType.None);
+
+                    if (transferModel == null || !transferModel.getIsLearning()) {
+                        return;
+                    }
+                    transferModel.clearIsLearning();
+
+                    RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
+                    Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
+                }
+            }.start();
         });
 
         return builder;
@@ -232,8 +247,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     if (dataProcessor == null) {
                         return;
                     }
+
                     if (trainingData != null && trainingData.size() > 0) {
-                        addFeatureSetToRawFile(trainingData);
+                        addFeatureSetToCustomFeaturesFile(trainingData);
                         trainingData.clear();
                     }
 
@@ -251,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void startKnnLearning(View view) {
-        if(!isKnnLearning) {
+        if (!isKnnLearning) {
             AlertDialog.Builder builder = this.createTimedActivityDialog(getString(R.string.train_title), 10 * 1000L);
             builder.show();
 
@@ -263,10 +279,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    private void startTransferLearning(View view) {
+    private void disableTransferLearning(View view) {
+        if (this.transferModel == null) {
+            return;
+        }
+
+        this.transferModel.disableTraining();
+    }
+
+    private void enableLearning(View view) {
+        if (this.transferModel == null) {
+            return;
+        }
+
+        if (this.transferModel.getSamples() == 0) {
+            return;
+        }
+
+        System.out.println("Enabling Training.");
+        this.transferModel.enableTraining((epoch, loss) -> {
+            System.out.println(loss);
+            if (loss < 0.01) {
+                this.transferModel.disableTraining();
+            }
+        });
+    }
+
+    private void startAddingSamplesTransferLearning(View view) {
         if (transferModel != null && !transferModel.getIsLearning()) {
             transferModel.setIsLearning();
-            AlertDialog.Builder builder = this.createActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning));
+            AlertDialog.Builder builder = this.createActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning), 10 * 1000L);
 
             builder.show();
         } else {
@@ -276,20 +318,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         menuFab.performClick();
     }
 
-
-    private void stopTransferLearning(View view) {
+    private void stopAddingSamplesTransferLearning(View view) {
         if (transferModel != null && transferModel.getIsLearning()) {
             dataProcessor.setClassifyAs(ActivityType.None);
-
-            if(this.transferModel.getSamples() > 0) {
-                System.out.println("Enabling Training.");
-                this.transferModel.enableTraining(null); //((epoch, loss) -> System.out.println(loss)));
-                this.transferModel.clearIsLearning();
-            }
             this.transferModel.clearIsLearning();
-
-            // todo how long should I wait for the training to happen???
-            // this.transferModel.disableTraining();
 
             Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
             stopTransferLearningFab.hide();
@@ -321,6 +353,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Train the kNN and the TransferLearning Model
         if (this.isKnnLearning && this.dataProcessor.getClassifyType() != ActivityType.None) {
             double[] features = new double[knnData.length + 1];
+
+            // manual copy is needed, as for the features, the last element has to be the className
+            // with a `Array.clone()` the array would have the wrong dimension
             for (int i = 0; i < knnData.length; i++) {
                 features[i] = knnData[i];
             }
@@ -335,34 +370,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 this.transferModel.addSample(f_knnData, className).get();
             } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+                System.err.println("addSample raised an issue: " + e.getCause());
             }
         }
 
         if (this.classifier != null) {
             int knnResult = classifier.classify(knnData);
-
-            TextView classification_result = findViewById(R.id.knn_model);
-            classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
+            if (System.currentTimeMillis() % 100L == 0L) {
+                TextView classification_result = findViewById(R.id.knn_model);
+                classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
+            }
         }
 
         if (this.baseModel != null) {
-            GenericModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
-            GenericModel.Prediction baseResult = null;
-            for (GenericModel.Prediction prediction : possibleResults) {
-                if (baseResult == null) {
-                    baseResult = prediction;
-                }
-                if (prediction.getConfidence() > baseResult.getConfidence()) {
-                    baseResult = prediction;
-                }
-            }
-
+            Prediction[] possibleResults = this.baseModel.predict(f_knnData);
+            Prediction baseResult = getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
 
             if (baseResult == null) {
                 return;
             }
+
             String activity = baseResult.getClassName();
             if (activity == null) {
                 return;
@@ -374,32 +402,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if (this.transferModel != null) {
-            TransferLearningModel.Prediction[] possibleResults = this.transferModel.predict(f_knnData);
-            TransferLearningModel.Prediction transferResult = null;
-            for (TransferLearningModel.Prediction prediction : possibleResults) {
-                if (transferResult == null) {
-                    transferResult = prediction;
-                }
-                if (prediction.getConfidence() > transferResult.getConfidence()) {
-                    transferResult = prediction;
-                }
-            }
+            Prediction[] possibleResults = this.transferModel.predict(f_knnData);
+            Prediction transferResult = getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
 
-            // todo: possibleResults is sorted by class.\
-            //System.out.println(possibleResults[0].getClassName());
-            TextView pred_values = findViewById(R.id.predictions);
-            pred_values.setText(getResources()
-                    .getString(
-                            R.string.prediction_templates,
-                            possibleResults[0].getConfidence(),
-                            possibleResults[1].getConfidence(),
-                            possibleResults[2].getConfidence(),
-                            possibleResults[3].getConfidence(),
-                            possibleResults[4].getConfidence(),
-                            possibleResults[5].getConfidence()
-                    )
-            );
+            TextView predictionProbabilities = findViewById(R.id.predictions);
+            predictionProbabilities.setText(buildPredictionProbabilityString(possibleResults));
 
             if (transferResult == null) {
                 return;
@@ -409,10 +417,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
+
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
             TextView base_classification_result = findViewById(R.id.transfer_model);
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
+    }
+
+    private Prediction getMostLikelyPrediction(Prediction[] possiblePredictions) {
+        Prediction mostLikely = null;
+
+        for (Prediction prediction : possiblePredictions) {
+            if (mostLikely == null) {
+                mostLikely = prediction;
+            }
+            if (prediction.getConfidence() > mostLikely.getConfidence()) {
+                mostLikely = prediction;
+            }
+        }
+
+        return mostLikely;
     }
 
     public List<double[]> readFile() {
@@ -452,11 +476,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 stopTransferLearningMainFab.show();
                 stopTransferLearningText.setVisibility(View.VISIBLE);
             } else {
+
                 stopTransferLearningMainFab.hide();
                 stopTransferLearningText.setVisibility(View.GONE);
                 transferLearnFab.show();
                 transferLearningText.setVisibility(View.VISIBLE);
             }
+
+            enableTrainingFab.show();
+            enableTrainingText.setVisibility(View.VISIBLE);
+
             trainKnnFab.show();
             trainKnnText.setVisibility(View.VISIBLE);
             stopTransferLearningFab.hide();
@@ -466,6 +495,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (transferModel != null && transferModel.getIsLearning()) {
                 stopTransferLearningFab.show();
             }
+
+            enableTrainingFab.hide();
+            enableTrainingText.setVisibility(View.GONE);
             trainKnnFab.hide();
             transferLearnFab.hide();
             stopTransferLearningMainFab.hide();
@@ -477,7 +509,93 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    public void addFeatureSetToRawFile(Set<double[]> featureSet) {
+    private String buildPredictionProbabilityString(Prediction[] predictions) {
+        if (predictions.length != 6) {
+            return "";
+        }
+
+        return getResources()
+                .getString(
+                        R.string.prediction_templates,
+                        predictions[0].getConfidence(),
+                        predictions[1].getConfidence(),
+                        predictions[2].getConfidence(),
+                        predictions[3].getConfidence(),
+                        predictions[4].getConfidence(),
+                        predictions[5].getConfidence()
+                );
+    }
+
+    private Boolean hiddenTrainingKnnData(View view) {
+        // stopping the transferModel learning after `millisInFuture` time
+        new CountDownTimer(3 * 1000L, 1000) {
+            @Override
+            public void onTick(long timeLeftInMillis) {
+            }
+
+            @Override
+            public void onFinish() {
+                if (transferModel == null) {
+                    return;
+                }
+                transferModel.disableTraining();
+            }
+        }.start();
+
+        Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
+        new Thread(() -> {
+            List<double[]> knnData = readFile();
+
+            // knnData is a big file, with a lot features of the same class consecutively.
+            // to mix this up, it has to be shuffled
+            Collections.shuffle(knnData);
+
+            if (transferModel == null) {
+                return;
+            }
+
+            // add training samples to the transferModel.
+            // starts by taking the first 20 samples on the first execution
+            // assumes that data is shuffled randomly each time and the first 20 elements
+            // in `knnData` are different every time.
+            int sampleSize = 0;
+            for (double[] data : knnData) {
+                float[] f_data = new float[data.length - 1];
+                for (int i = 0; i < f_data.length; i++) {
+                    f_data[i] = (float) data[i];
+                }
+
+                int classInt = (int) data[data.length - 1];
+                String className = String.valueOf(classInt);
+                ///*
+                System.out.print("Adding Sample: ");
+                for (float d : f_data) {
+                    System.out.print(d + ", ");
+                }
+                System.out.println("class: " + className);
+                //*/
+                transferModel.addSample(f_data, className);
+                if (sampleSize++ > 20) break;
+            }
+
+            if (transferModel.getSamples() == 0) {
+                return;
+            }
+            System.out.println("Samples: " + sampleSize);
+
+            transferModel.enableTraining((epoch, loss) -> {
+                System.out.println("Loss per Epoch: " + loss);
+                if (loss < 0.1) {
+                    transferModel.disableTraining();
+                    System.out.println("Trained for " + epoch + " epochs with loss " + loss + ".");
+                }
+            });
+        }).start();
+
+        return true;
+    }
+
+    public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet) {
         try {
             File f = new File(this.getFilesDir(), "custom_features.txt");
             OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));

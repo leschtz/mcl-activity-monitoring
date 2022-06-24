@@ -27,7 +27,7 @@ public class AverageFeature implements BaseFeature {
                 if (cnt == 0) {
                     result[i] = ((double) entry[i]);
                 } else {
-                    result[i] = (result[i] + (double) entry[i]) / 2;
+                    result[i] = (result[i] + (double) entry[i]) / (double) 2.0;
 
                 }
                 //System.out.println("excute loop: " + result[i]);
