@@ -42,12 +42,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private KNNClassifier classifier;
     private DataProcessor dataProcessor;
     private Set<double[]> trainingData;
-    private GenericModelWrapper baseModel;
+    private GenericModelWrapper genericModel;
     private TransferLearningModelWrapper transferModel;
+    private CustomModelWrapper customModel;
     private Boolean isKnnLearning = false;
+    private float prevLoss = 0.0f;
+    private int stopTrain = 0;
 
-    FloatingActionButton menuFab, trainKnnFab, transferLearnFab, stopTransferLearningFab,
-            stopTransferLearningMainFab, enableTrainingFab;
+    FloatingActionButton mainMenuBtn, knnAddSampleBtn, transferAddSampleBtn, stopTransferLearningFab,
+            stopTransferLearningMainFab, enableTrainingBtn;
     TextView trainKnnText, transferLearningText, stopTransferLearningText, enableTrainingText;
     Boolean fabIsVisible;
 
@@ -56,27 +59,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        menuFab = findViewById(R.id.main_fab);
-        transferLearnFab = findViewById(R.id.transfer_learn_fab);
+        mainMenuBtn = findViewById(R.id.main_fab);
+        transferAddSampleBtn = findViewById(R.id.transfer_learn_fab);
         //stopTransferLearningFab = findViewById(R.id.stop_log_fab);
         //stopTransferLearningMainFab = findViewById(R.id.stop_data_log_fab);
         transferLearningText = findViewById(R.id.transfer_learning_text);
         //stopTransferLearningText = findViewById(R.id.stop_transfer_learning_text);
         enableTrainingText = findViewById(R.id.enable_training);
-        enableTrainingFab = findViewById(R.id.start_transfer_training_fab);
+        enableTrainingBtn = findViewById(R.id.start_transfer_training_fab);
 
-        trainKnnFab = findViewById(R.id.train_fab);
+        knnAddSampleBtn = findViewById(R.id.train_fab);
         trainKnnText = findViewById(R.id.train_model_text);
 
-        transferLearnFab.setVisibility(View.GONE);
+        transferAddSampleBtn.setVisibility(View.GONE);
         transferLearningText.setVisibility(View.GONE);
         //stopTransferLearningFab.setVisibility(View.GONE);
         //stopTransferLearningMainFab.setVisibility(View.GONE);
         //stopTransferLearningText.setVisibility(View.GONE);
-        enableTrainingFab.setVisibility(View.GONE);
+        enableTrainingBtn.setVisibility(View.GONE);
         enableTrainingText.setVisibility(View.GONE);
 
-        trainKnnFab.setVisibility(View.GONE);
+        knnAddSampleBtn.setVisibility(View.GONE);
         trainKnnText.setVisibility(View.GONE);
 
         fabIsVisible = Boolean.FALSE;
@@ -86,15 +89,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         trainingData = new HashSet<>();
 
-        menuFab.setOnClickListener(this::fabViewButtonHandler);
-
-        trainKnnFab.setOnClickListener(this::startKnnLearning);
-
-        transferLearnFab.setOnClickListener(this::startAddingSamplesTransferLearning);
+        mainMenuBtn.setOnClickListener(this::fabViewButtonHandler);
+        knnAddSampleBtn.setOnClickListener(this::startKnnLearning);
+        transferAddSampleBtn.setOnClickListener(this::startAddingSamplesTransferLearning);
         //stopTransferLearningFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
         //stopTransferLearningMainFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
-
-        enableTrainingFab.setOnLongClickListener(this::hiddenTrainingKnnData);
+        enableTrainingBtn.setOnLongClickListener(this::trainWithRecordedData);
 
         if (this.transferModel == null) {
             this.transferModel = new TransferLearningModelWrapper(getBaseContext());
@@ -104,8 +104,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.dataProcessor = new DataProcessor();
         }
 
-        if (this.baseModel == null) {
-            this.baseModel = new GenericModelWrapper(getApplicationContext());
+        if (this.genericModel == null) {
+            this.genericModel = new GenericModelWrapper(getApplicationContext());
+        }
+
+        if (this.customModel == null) {
+            this.customModel = new CustomModelWrapper(getApplicationContext());
         }
 
         File f = new File(this.getFilesDir(), "custom_features.txt");
@@ -187,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int i) {
     }
 
-    private AlertDialog.Builder createActivityDialog(String dialogTitle, String toastMessage, long millisInFuture) {
+    private AlertDialog.Builder createTransferActivityDialog(String dialogTitle, String toastMessage, long millisInFuture) {
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
         builder.setTitle(dialogTitle);
@@ -211,10 +215,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                     dataProcessor.setClassifyAs(ActivityType.None);
 
-                    if (transferModel == null || !transferModel.getIsLearning()) {
+                    if (customModel == null || !customModel.getIsLearning()) {
                         return;
                     }
-                    transferModel.clearIsLearning();
+
+
+                    addFeatureSetToCustomFeaturesFile(trainingData, "transfer_learning_features.txt");
+                    trainingData.clear();
+                    customModel.clearIsLearning();
 
                     RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
                     Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
@@ -275,47 +283,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else {
             Toast.makeText(getApplicationContext(), R.string.error_already_learning, Toast.LENGTH_SHORT).show();
         }
-        menuFab.performClick();
+        mainMenuBtn.performClick();
 
-    }
-
-    private void disableTransferLearning(View view) {
-        if (this.transferModel == null) {
-            return;
-        }
-
-        this.transferModel.disableTraining();
-    }
-
-    private void enableLearning(View view) {
-        if (this.transferModel == null) {
-            return;
-        }
-
-        if (this.transferModel.getSamples() == 0) {
-            return;
-        }
-
-        System.out.println("Enabling Training.");
-        this.transferModel.enableTraining((epoch, loss) -> {
-            System.out.println(loss);
-            if (loss < 0.01) {
-                this.transferModel.disableTraining();
-            }
-        });
     }
 
     private void startAddingSamplesTransferLearning(View view) {
-        if (transferModel != null && !transferModel.getIsLearning()) {
-            transferModel.setIsLearning();
-            AlertDialog.Builder builder = this.createActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning), 10 * 1000L);
 
+        if (customModel != null && !customModel.getIsLearning()) {
+            customModel.setIsLearning();
+            AlertDialog.Builder builder = this.createTransferActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning), 10 * 1000L);
             builder.show();
         } else {
             Toast.makeText(getApplicationContext(), R.string.toast_failed_stop_transfer_learning, Toast.LENGTH_SHORT).show();
         }
 
-        menuFab.performClick();
+        mainMenuBtn.performClick();
     }
 
     private void stopAddingSamplesTransferLearning(View view) {
@@ -331,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Toast.makeText(getApplicationContext(), R.string.toast_failed_stop_transfer_learning, Toast.LENGTH_SHORT).show();
         }
         if (fabIsVisible) {
-            trainKnnFab.hide();
+            knnAddSampleBtn.hide();
             trainKnnText.setVisibility(View.GONE);
             fabIsVisible = Boolean.FALSE;
         }
@@ -364,6 +346,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.trainingData.add(features.clone());
         }
 
+        /*
         if (transferModel != null && transferModel.getIsLearning() && this.dataProcessor.getClassifyType() != ActivityType.None) {
             String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
             System.out.println(className);
@@ -373,6 +356,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 System.err.println("addSample raised an issue: " + e.getCause());
             }
         }
+        */
+
+        if (customModel != null && this.dataProcessor.getClassifyType() != ActivityType.None) {
+            String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
+            //System.out.println(className);
+            try {
+                double[] features = new double[knnData.length + 1];
+
+                // manual copy is needed, as for the features, the last element has to be the className
+                // with a `Array.clone()` the array would have the wrong dimension
+                for (int i = 0; i < knnData.length; i++) {
+                    features[i] = knnData[i];
+                }
+
+                features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
+                this.trainingData.add(features.clone());
+
+                this.customModel.addSample(f_knnData, className).get();
+            } catch (ExecutionException | InterruptedException e) {
+                System.err.println("addSample raised an issue: " + e.getCause());
+            }
+        }
+
 
         if (this.classifier != null) {
             int knnResult = classifier.classify(knnData);
@@ -382,22 +388,59 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        if (this.baseModel != null) {
-            Prediction[] possibleResults = this.baseModel.predict(f_knnData);
-            Prediction baseResult = getMostLikelyPrediction(possibleResults);
+        if (this.customModel != null) {
+            Prediction[] possibleResults = this.customModel.predict(f_knnData);
+            Prediction predictionResult = getMostLikelyPrediction(possibleResults);
+            //System.out.println("Generic Prediction: " + genericResult.className);
+
             // Util.debugPredictions(possibleResults);
 
-            if (baseResult == null) {
+            if (predictionResult == null) {
                 return;
             }
 
-            String activity = baseResult.getClassName();
+            String activity = predictionResult.getClassName();
             if (activity == null) {
                 return;
             }
 
+
+            TextView predictionProbabilities = findViewById(R.id.custom_model_predictions);
+            predictionProbabilities.setText(buildPredictionProbabilityString(possibleResults));
+
+
+            TextView confidencePrediction = findViewById(R.id.custom_model_confidence_text);
+            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, predictionResult.confidence));
+
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
-            TextView base_classification_result = findViewById(R.id.base_model);
+            TextView base_classification_result = findViewById(R.id.custom_model);
+            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+        }
+
+        if (this.genericModel != null) {
+            Prediction[] possibleResults = this.genericModel.predict(f_knnData);
+            Prediction genericResult = getMostLikelyPrediction(possibleResults);
+            //System.out.println("Generic Prediction: " + genericResult.className);
+
+            // Util.debugPredictions(possibleResults);
+
+            if (genericResult == null) {
+                return;
+            }
+
+            String activity = genericResult.getClassName();
+            if (activity == null) {
+                return;
+            }
+
+            TextView predictionProbabilities = findViewById(R.id.generic_model_predictions);
+            predictionProbabilities.setText(buildPredictionProbabilityString(possibleResults));
+
+            TextView confidencePrediction = findViewById(R.id.generic_model_confidence_text);
+            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, genericResult.confidence));
+
+            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
+            TextView base_classification_result = findViewById(R.id.generic_model);
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
 
@@ -405,10 +448,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Prediction[] possibleResults = this.transferModel.predict(f_knnData);
             Prediction transferResult = getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
-
-            TextView predictionProbabilities = findViewById(R.id.predictions);
-            predictionProbabilities.setText(buildPredictionProbabilityString(possibleResults));
-
+            //System.out.println("Transfer Prediction: " + transferResult.className);
             if (transferResult == null) {
                 return;
             }
@@ -417,6 +457,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
+
+            TextView predictionProbabilities = findViewById(R.id.transfer_model_predictions);
+            predictionProbabilities.setText(buildPredictionProbabilityString(possibleResults));
+
+            TextView confidencePrediction = findViewById(R.id.transfer_model_confidence_text);
+            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, transferResult.confidence));
 
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
             TextView base_classification_result = findViewById(R.id.transfer_model);
@@ -468,25 +514,66 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return rowList;
     }
 
+    public List<double[]> readFile(String filename) {
+        List<double[]> rowList = new ArrayList<>();
+        try {
+            File f = new File(this.getFilesDir(), filename);
+            InputStream is = new DataInputStream(new FileInputStream(f));
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                //System.out.println("Reading: "+ line);
+                String[] lineItemsStrings = line.split(",");
+                double[] lineItems = new double[lineItemsStrings.length];
+                if (lineItems.length != 16) {
+                    System.err.println("Found an invalid line.");
+                    continue;
+                }
+                for (int i = 0; i < lineItemsStrings.length; i++) {
+                    lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
+                }
+                rowList.add(lineItems);
+            }
+        } catch (Exception e) {
+            System.err.println("Could not open neighbor file:   " + e);
+        }
+        System.out.println("# of loaded features: " + rowList.size());
+        return rowList;
+    }
+
     private void fabViewButtonHandler(View view) {
         if (!fabIsVisible) {
             if (transferModel != null && transferModel.getIsLearning()) {
-                transferLearnFab.hide();
-                transferLearningText.setVisibility(View.GONE);
+                //transferLearnFab.hide();
+                //transferLearningText.setVisibility(View.GONE);
                 //stopTransferLearningMainFab.show();
                 //stopTransferLearningText.setVisibility(View.VISIBLE);
             } else {
 
                 //stopTransferLearningMainFab.hide();
                 //stopTransferLearningText.setVisibility(View.GONE);
-                transferLearnFab.show();
+                transferAddSampleBtn.show();
                 transferLearningText.setVisibility(View.VISIBLE);
             }
 
-            enableTrainingFab.show();
+            /*
+            ScrollView main = (ScrollView) findViewById(R.id.scrollViewMain);
+            if (main != null) {
+                Drawable background = main.getBackground();
+                if (background != null) {
+                    background.setAlpha(50);
+
+                }
+            }
+
+             */
+
+            enableTrainingBtn.show();
             enableTrainingText.setVisibility(View.VISIBLE);
 
-            trainKnnFab.show();
+            knnAddSampleBtn.show();
             trainKnnText.setVisibility(View.VISIBLE);
             //stopTransferLearningFab.hide();
 
@@ -496,14 +583,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 //stopTransferLearningFab.show();
             }
 
-            enableTrainingFab.hide();
+            enableTrainingBtn.hide();
             enableTrainingText.setVisibility(View.GONE);
-            trainKnnFab.hide();
-            transferLearnFab.hide();
+            knnAddSampleBtn.hide();
+            transferAddSampleBtn.hide();
             //stopTransferLearningMainFab.hide();
             //stopTransferLearningText.setVisibility(View.GONE);
             trainKnnText.setVisibility(View.GONE);
             transferLearningText.setVisibility(View.GONE);
+
+            /*
+            ScrollView main = (ScrollView) findViewById(R.id.scrollViewMain);
+            if (main != null) {
+                Drawable background = main.getBackground();
+                if (background != null) {
+                    background.setAlpha(100);
+
+                }
+            }
+
+             */
 
             fabIsVisible = false;
         }
@@ -526,31 +625,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 );
     }
 
-    private Boolean hiddenTrainingKnnData(View view) {
-        // stopping the transferModel learning after `millisInFuture` time
-        new CountDownTimer(3 * 1000L, 1000) {
-            @Override
-            public void onTick(long timeLeftInMillis) {
-            }
+    private Boolean trainWithRecordedData(View view) {
+        // close the menu
+        this.mainMenuBtn.performClick();
 
-            @Override
-            public void onFinish() {
-                if (transferModel == null) {
-                    return;
-                }
-                transferModel.disableTraining();
-            }
-        }.start();
-
+        // informing the user about the data learning
         Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
         new Thread(() -> {
-            List<double[]> knnData = readFile();
+            List<double[]> knnData = readFile("transfer_learning_features.txt");
 
             // knnData is a big file, with a lot features of the same class consecutively.
             // to mix this up, it has to be shuffled
             Collections.shuffle(knnData);
 
-            if (transferModel == null) {
+            if (customModel == null) {
                 return;
             }
 
@@ -574,30 +662,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
                 System.out.println("class: " + className);
                 //*/
-                transferModel.addSample(f_data, className);
-                if (sampleSize++ > 20) break;
+                customModel.addSample(f_data, className);
+                if (sampleSize++ > 100) break;
             }
 
-            if (transferModel.getSamples() == 0) {
+            if (customModel.getSamples() == 0) {
                 return;
             }
             System.out.println("Samples: " + sampleSize);
-
-            transferModel.enableTraining((epoch, loss) -> {
-                System.out.println("Loss per Epoch: " + loss);
-                if (loss < 0.1) {
-                    transferModel.disableTraining();
-                    System.out.println("Trained for " + epoch + " epochs with loss " + loss + ".");
+            customModel.enableTraining((epoch, loss) -> {
+                System.out.println("Loss: " + loss + " with error: " + Math.abs(loss - prevLoss));
+                if (Math.abs(loss - prevLoss) < 0.01) {
+                    if (stopTrain++ == 5) {
+                        this.customModel.disableTraining();
+                    }
+                } else {
+                    if (stopTrain > 0) {
+                        stopTrain--;
+                    }
                 }
+                prevLoss = loss;
             });
         }).start();
 
         return true;
     }
 
-    public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet) {
+
+    public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet, String filename) {
         try {
-            File f = new File(this.getFilesDir(), "custom_features.txt");
+            File f = new File(this.getFilesDir(), filename);
             OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));
             streamWriter.write(System.lineSeparator());
             for (double[] features : featureSet) {
@@ -615,4 +709,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet) {
+        addFeatureSetToCustomFeaturesFile(featureSet, "custom_features.txt");
+    }
 }

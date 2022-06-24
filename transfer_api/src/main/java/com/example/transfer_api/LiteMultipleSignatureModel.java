@@ -15,12 +15,13 @@ limitations under the License.
 
 package com.example.transfer_api;
 
+import org.tensorflow.lite.Interpreter;
+
 import java.io.Closeable;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.tensorflow.lite.Interpreter;
 
 /** A wrapper for TFLite model with multiple signature runner. */
 public class LiteMultipleSignatureModel implements Closeable {
