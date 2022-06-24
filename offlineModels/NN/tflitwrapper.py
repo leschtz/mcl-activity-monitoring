@@ -8,7 +8,6 @@ import tensorflow as tf
 
 INPUT = 15
 NUM_FEATURES = 128
-
 NUM_CLASSES = 6
 
 
