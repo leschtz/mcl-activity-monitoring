@@ -35,7 +35,7 @@ import java.util.concurrent.Future;
  * run-once API of {@link TransferLearningModel}.
  */
 public class TransferLearningModelWrapper implements Closeable {
-  public static final int IMAGE_SIZE = 224;
+
 
   private final TransferLearningModel model;
 

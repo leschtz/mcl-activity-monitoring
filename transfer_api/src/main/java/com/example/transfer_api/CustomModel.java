@@ -90,7 +90,7 @@ public final class CustomModel implements Closeable {
         try {
             this.model =
                     new LiteMultipleSignatureModel(
-                            modelLoader.loadMappedFile("model.tflite"), classes.size());
+                            modelLoader.loadMappedFile("ourDatamodel.tflite"), classes.size());
         } catch (IOException e) {
             throw new RuntimeException("Couldn't read underlying model for TransferLearningModel", e);
         }
