@@ -15,8 +15,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.transfer_api.GenericModel;
-import com.example.transfer_api.TransferLearningModel;
+import com.example.transfer_api.Prediction;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
@@ -360,6 +359,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Train the kNN and the TransferLearning Model
         if (this.isKnnLearning && this.dataProcessor.getClassifyType() != ActivityType.None) {
             double[] features = new double[knnData.length + 1];
+
+            // manual copy is needed, as for the features, the last element has to be the className
+            // with a `Array.clone()` the array would have the wrong dimension
             for (int i = 0; i < knnData.length; i++) {
                 features[i] = knnData[i];
             }
@@ -374,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             try {
                 this.transferModel.addSample(f_knnData, className).get();
             } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+                System.err.println("addSample raised an issue: " + e.getCause());
             }
         }
 
@@ -387,9 +389,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if (this.baseModel != null) {
-            GenericModel.Prediction[] possibleResults = this.baseModel.predict(f_knnData);
-            GenericModel.Prediction baseResult = null;
-            for (GenericModel.Prediction prediction : possibleResults) {
+            Prediction[] possibleResults = this.baseModel.predict(f_knnData);
+            Prediction baseResult = null;
+            for (Prediction prediction : possibleResults) {
                 if (baseResult == null) {
                     baseResult = prediction;
                 }
@@ -414,9 +416,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if (this.transferModel != null) {
-            TransferLearningModel.Prediction[] possibleResults = this.transferModel.predict(f_knnData);
-            TransferLearningModel.Prediction transferResult = null;
-            for (TransferLearningModel.Prediction prediction : possibleResults) {
+            Prediction[] possibleResults = this.transferModel.predict(f_knnData);
+            Prediction transferResult = null;
+            for (Prediction prediction : possibleResults) {
                 if (transferResult == null) {
                     transferResult = prediction;
                 }
@@ -538,14 +540,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
 
         // stopping the transferModel learning after `millisInFuture` time
-        new CountDownTimer(3*1000L, 1000) {
+        new CountDownTimer(3 * 1000L, 1000) {
             @Override
             public void onTick(long timeLeftInMillis) {
             }
 
             @Override
             public void onFinish() {
-                if(transferModel == null) {
+                if (transferModel == null) {
                     return;
                 }
                 transferModel.disableTraining();
@@ -553,7 +555,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }.start();
 
         new Thread(() -> {
-
             // add training samples to the transferModel.
             // starts by taking the first 20 samples on the first execution
             // assumes that data is shuffled randomly each time and the first 20 elements
@@ -575,28 +576,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 System.out.println("class: " + className);
                 //*/
                 transferModel.addSample(f_data, className);
-                sampleSize++;
-                if (sampleSize > 20) break;
+                if (sampleSize++ > 20) break;
             }
-            sampleSize = 0;
 
             if (transferModel.getSamples() == 0) {
                 return;
             }
             System.out.println("Samples: " + sampleSize);
 
-            System.out.println("Starting new thread.");
             transferModel.enableTraining((epoch, loss) -> {
-                System.out.println("loss: " + loss);
+                System.out.println("Loss per Epoch: " + loss);
                 if (loss < 0.1) {
                     transferModel.disableTraining();
                     System.out.println("Trained for " + epoch + " epochs with loss " + loss + ".");
                 }
             });
         }).start();
-
-        //Executors.newSingleThreadExecutor().execute(() -> {});
-
 
         return true;
     }

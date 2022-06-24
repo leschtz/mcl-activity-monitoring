@@ -18,8 +18,8 @@ package com.example.activitymonitoring;
 import android.content.Context;
 
 import com.example.transfer_api.GenericModel;
-import com.example.transfer_api.GenericModel.Prediction;
 import com.example.transfer_api.ModelLoader;
+import com.example.transfer_api.Prediction;
 
 import java.io.Closeable;
 import java.util.Arrays;

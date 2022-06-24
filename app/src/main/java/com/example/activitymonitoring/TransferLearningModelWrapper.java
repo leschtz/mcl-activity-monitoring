@@ -18,12 +18,10 @@ package com.example.activitymonitoring;
 import android.content.Context;
 import android.os.ConditionVariable;
 
-
 import com.example.transfer_api.ModelLoader;
+import com.example.transfer_api.Prediction;
 import com.example.transfer_api.TransferLearningModel;
 import com.example.transfer_api.TransferLearningModel.LossConsumer;
-import com.example.transfer_api.TransferLearningModel.Prediction;
-
 
 import java.io.Closeable;
 import java.util.Arrays;
