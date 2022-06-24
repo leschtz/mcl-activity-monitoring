@@ -34,9 +34,8 @@ def main():
     # print(model.summary())
 
     model = train_base_model()
-
     #
-    model.save(saved_basemodel_dir)
+    #model.save(saved_basemodel_dir)
 
     model = cutOffHead(model)
     #
@@ -94,6 +93,8 @@ def train_base_model(noGrid=True, fixedData=False):
     x_train.columns = features
     x_test.columns = features
     x_complete.columns = features
+    print(x_complete.columns)
+
 
     # #   MIN,MAX,AV ACC+Gyro
     # wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
@@ -123,6 +124,18 @@ def train_base_model(noGrid=True, fixedData=False):
     x_test = x_test[x_test.columns.intersection(wantedFeatures)]
     x_complete = x_complete[x_complete.columns.intersection(wantedFeatures)]
 
+
+    df = pd.read_csv('../offlineModels/NN/data.csv', sep=',', index_col=False, header=None)
+    df.dropna(inplace=True)
+    df.to_csv('../offlineModels/NN/data.csv', sep=',', index=False, header=False)
+
+    targets = df.iloc[:, -1]
+    targets = targets -1
+    x_complete = df.iloc[:, :-1]
+    #
+    # print(x_complete.head())
+    #print(list(targets))
+
     if not fixedData:
         x_train, x_test, y_train, y_test = train_test_split(x_complete, targets, test_size=0.2, random_state=33)
         print('Create random train-test-split')
@@ -136,17 +149,27 @@ def train_base_model(noGrid=True, fixedData=False):
     encoder = LabelEncoder()
     encoder.fit(y_train)
     encoded_Y_train = encoder.transform(y_train)
+    # print(y_train.shape)
+    # print(encoded_Y_train.shape)
     # convert integers to dummy variables (i.e. one hot encoded)
+    #test = np_utils.to_categorical(y_train)
+    # print(test.shape)
+    # print(test.head())
     y_train = np_utils.to_categorical(encoded_Y_train)
+    # print(y_train.shape)
+    #print(list(y_train))
     encoded_Y_test = encoder.transform(y_test)
+    # print(encoded_Y_test.shape)
+
 
     y_test_hot = np_utils.to_categorical(encoded_Y_test)
+    # print(y_test_hot.shape)
 
     ### Single Train and test run
 
     if (noGrid):
 
-        es = EarlyStopping(patience=15, verbose=1, min_delta=0.001, monitor='val_loss', mode='auto',
+        es = EarlyStopping(patience=5, verbose=1, min_delta=0.001, monitor='loss', mode='auto',
                            restore_best_weights=True)
 
         param = {'activation': 'relu', 'optimizer': 'Adamax', 'dropout_rate': 0.1, 'nodecount': 256, 'nodecount2': 256,
@@ -169,6 +192,20 @@ def train_base_model(noGrid=True, fixedData=False):
         print('Classification report')
         print(classification_report(y_test, y_pred))
 
+        # x = pd.read_csv("../offlineModels/neighbors.csv", sep=',', index_col=False, header=None)
+        #
+        # targets = x.iloc[:, -1]
+        # targets = targets - 1
+        # x = x.iloc[:, :-1]
+        #
+        # y_pred = model.predict(x)
+        # y_pred = y_pred.round()
+        # y_pred = y_pred.argmax(1)
+        #
+        # print('Classification report')
+        # print(classification_report(targets, y_pred))
+
+        return model
         figure_path = '../offlineModels/NN/Results/'
 
         tf.keras.utils.plot_model(model, figure_path + 'Modelplot.png', show_shapes=True)
@@ -346,18 +383,18 @@ def convert_and_save(model, saved_model_dir):
     converter.experimental_enable_resource_variables = True
     tflite_model = converter.convert()
 
-    interpreter = tf.lite.Interpreter(model_content=tflite_model)
-    interpreter.allocate_tensors()
-    signatures = interpreter.get_signature_list()
-    print(signatures)
-    infer = interpreter.get_signature_runner("infer")
-    train = interpreter.get_signature_runner("train")
+    # interpreter = tf.lite.Interpreter(model_content=tflite_model)
+    # interpreter.allocate_tensors()
+    # signatures = interpreter.get_signature_list()
+    # print(signatures)
+    # infer = interpreter.get_signature_runner("infer")
+    # train = interpreter.get_signature_runner("train")
 
     # interpreter.invoke()
 
-    return
+
     # model_file_path = os.path.join('model.tflite')
-    model_file_path = '../offlineModels/NN/tfLite/tfLiteModelConverted/model.tflite'
+    model_file_path = '../offlineModels/NN/tfLite/tfLiteModelConverted/ourDatamodel.tflite'
     with open(model_file_path, 'wb') as model_file:
         model_file.write(tflite_model)
 
