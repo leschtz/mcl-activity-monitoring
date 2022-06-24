@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         stopTransferLearningFab.setVisibility(View.GONE);
         stopTransferLearningMainFab.setVisibility(View.GONE);
         stopTransferLearningText.setVisibility(View.GONE);
+        enableTrainingFab.setVisibility(View.GONE);
+        enableTrainingText.setVisibility(View.GONE);
 
         trainKnnFab.setVisibility(View.GONE);
         trainKnnText.setVisibility(View.GONE);
@@ -84,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         trainingData = new HashSet<>();
 
-        enableTrainingFab.setOnLongClickListener(this::hiddenTrainingKnnData);
         menuFab.setOnClickListener(this::fabViewButtonHandler);
 
         trainKnnFab.setOnClickListener(this::startKnnLearning);
@@ -92,6 +94,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         transferLearnFab.setOnClickListener(this::startAddingSamplesTransferLearning);
         stopTransferLearningFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
         stopTransferLearningMainFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
+
+        enableTrainingFab.setOnLongClickListener(this::hiddenTrainingKnnData);
+
+
+        if (this.transferModel == null) {
+            this.transferModel = new TransferLearningModelWrapper(getBaseContext());
+        }
+
+
+        if (this.dataProcessor == null) {
+            this.dataProcessor = new DataProcessor();
+        }
+
+
+        if (this.baseModel == null) {
+            this.baseModel = new GenericModelWrapper(getApplicationContext());
+        }
 
         File f = new File(this.getFilesDir(), "custom_features.txt");
         if (!f.exists()) {
@@ -121,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
+
         this.classifier = new KNNClassifier(31, 15, readFile());
     }
 
@@ -128,17 +148,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStart() {
         super.onStart();
 
-        if (this.dataProcessor == null) {
-            this.dataProcessor = new DataProcessor();
-        }
-
-        if (this.transferModel == null) {
-            this.transferModel = new TransferLearningModelWrapper(getApplicationContext());
-        }
-
-        if (this.baseModel == null) {
-            this.baseModel = new GenericModelWrapper(getApplicationContext());
-        }
 
         if (sensorAccelerometer != null) {
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -148,23 +157,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStop() {
         super.onStop();
-
-        /*
-        // doing this will remove everything if the app gets put into background
-        if (this.dataProcessor != null) {
-            this.dataProcessor = null;
-        }
-
-        if (this.transferModel != null) {
-            this.transferModel.close();
-            this.transferModel = null;
-        }
-
-        if (this.baseModel != null) {
-            this.baseModel.close();
-            this.baseModel = null;
-        }
-         */
 
         if (this.sensorManager != null) {
             sensorManager.unregisterListener(this);
@@ -388,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.classifier != null) {
             int knnResult = classifier.classify(knnData);
-            if(System.currentTimeMillis() % 100L == 0L) {
+            if (System.currentTimeMillis() % 100L == 0L) {
                 TextView classification_result = findViewById(R.id.knn_model);
                 classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
             }
@@ -500,11 +492,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 stopTransferLearningMainFab.show();
                 stopTransferLearningText.setVisibility(View.VISIBLE);
             } else {
+
                 stopTransferLearningMainFab.hide();
                 stopTransferLearningText.setVisibility(View.GONE);
                 transferLearnFab.show();
                 transferLearningText.setVisibility(View.VISIBLE);
             }
+
+            enableTrainingFab.show();
+            enableTrainingText.setVisibility(View.VISIBLE);
+
             trainKnnFab.show();
             trainKnnText.setVisibility(View.VISIBLE);
             stopTransferLearningFab.hide();
@@ -514,6 +511,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (transferModel != null && transferModel.getIsLearning()) {
                 stopTransferLearningFab.show();
             }
+
+            enableTrainingFab.hide();
+            enableTrainingText.setVisibility(View.GONE);
             trainKnnFab.hide();
             transferLearnFab.hide();
             stopTransferLearningMainFab.hide();
@@ -528,13 +528,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Boolean hiddenTrainingKnnData(View view) {
         List<double[]> knnData = readFile();
 
+        // knnData is a big file, with a lot features of the same class consecutively.
+        // to mix this up, it has to be shuffled
+        Collections.shuffle(knnData);
+
         if (transferModel == null) {
             return false;
         }
-
         Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
-        Thread trainingThread = new Thread((() -> {
-            System.out.println("elements in knndata: " + knnData.size());
+
+        // stopping the transferModel learning after `millisInFuture` time
+        new CountDownTimer(3*1000L, 1000) {
+            @Override
+            public void onTick(long timeLeftInMillis) {
+            }
+
+            @Override
+            public void onFinish() {
+                if(transferModel == null) {
+                    return;
+                }
+                transferModel.disableTraining();
+            }
+        }.start();
+
+        new Thread(() -> {
+
+            // add training samples to the transferModel.
+            // starts by taking the first 20 samples on the first execution
+            // assumes that data is shuffled randomly each time and the first 20 elements
+            // in `knnData` are different every time.
             int sampleSize = 0;
             for (double[] data : knnData) {
                 float[] f_data = new float[data.length - 1];
@@ -544,38 +567,36 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 int classInt = (int) data[data.length - 1];
                 String className = String.valueOf(classInt);
-                /*
+                ///*
                 System.out.print("Adding Sample: ");
                 for (float d : f_data) {
                     System.out.print(d + ", ");
                 }
                 System.out.println("class: " + className);
-                */
+                //*/
                 transferModel.addSample(f_data, className);
                 sampleSize++;
+                if (sampleSize > 20) break;
             }
+            sampleSize = 0;
 
             if (transferModel.getSamples() == 0) {
                 return;
             }
             System.out.println("Samples: " + sampleSize);
 
-
             System.out.println("Starting new thread.");
             transferModel.enableTraining((epoch, loss) -> {
-                if(epoch % 50 == 0) {
-                    System.out.println("Current round with loss " + loss + ".");
-
-                }
-                if (loss < 1) {
+                System.out.println("loss: " + loss);
+                if (loss < 0.1) {
                     transferModel.disableTraining();
                     System.out.println("Trained for " + epoch + " epochs with loss " + loss + ".");
-
                 }
             });
-        }));
+        }).start();
 
-        trainingThread.start();
+        //Executors.newSingleThreadExecutor().execute(() -> {});
+
 
         return true;
     }

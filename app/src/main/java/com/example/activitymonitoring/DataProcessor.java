@@ -81,17 +81,14 @@ public class DataProcessor {
             List<float[]> normalizedSensorData = this.normalize(this.sensorData);
 
             // features: {min: xyz, avg:  xyz, max: xyz, std: xyz, mad: xyz}
-            List<Double> f = new ArrayList<>();
 
             // unnecessary complicated, I guess
             double[] avgFeature = new AverageFeature().execute(normalizedSensorData);
-            f.addAll(Arrays.asList(Arrays.stream(avgFeature).boxed().toArray(Double[]::new)));
+            List<Double> f = new ArrayList<>(Arrays.asList(Arrays.stream(avgFeature).boxed().toArray(Double[]::new)));
 
-            // fails
             double[] stdFeature = new StdFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(stdFeature).boxed().toArray((Double[]::new))));
 
-            // fails
             double[] madFeature = new MadFeature().execute(normalizedSensorData);
             f.addAll(Arrays.asList(Arrays.stream(madFeature).boxed().toArray((Double[]::new))));
 
