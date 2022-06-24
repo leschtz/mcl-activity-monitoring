@@ -96,16 +96,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         enableTrainingFab.setOnLongClickListener(this::hiddenTrainingKnnData);
 
-
         if (this.transferModel == null) {
             this.transferModel = new TransferLearningModelWrapper(getBaseContext());
         }
 
-
         if (this.dataProcessor == null) {
             this.dataProcessor = new DataProcessor();
         }
-
 
         if (this.baseModel == null) {
             this.baseModel = new GenericModelWrapper(getApplicationContext());
@@ -123,7 +120,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 while ((line = bufferedReader.readLine()) != null) {
                     String[] d = line.split(",");
                     if (d.length != 16) {
-                        // todo: this is definitely a bug!
                         // bug description: when writing to the new file, the bufferedReader is not able to read beyond 401 lines.
                         //                  and stops in the middle of the line. as a result, the last lines do not get copied over correctly.
                         //                  For the last line it writes, it does not write the full line.
@@ -139,14 +135,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-
         this.classifier = new KNNClassifier(31, 15, readFile());
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
 
         if (sensorAccelerometer != null) {
             sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -255,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
 
                     if (trainingData != null && trainingData.size() > 0) {
-                        addFeatureSetToRawFile(trainingData);
+                        addFeatureSetToCustomFeaturesFile(trainingData);
                         trainingData.clear();
                     }
 
@@ -390,21 +384,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.baseModel != null) {
             Prediction[] possibleResults = this.baseModel.predict(f_knnData);
-            Prediction baseResult = null;
-            for (Prediction prediction : possibleResults) {
-                if (baseResult == null) {
-                    baseResult = prediction;
-                }
-                if (prediction.getConfidence() > baseResult.getConfidence()) {
-                    baseResult = prediction;
-                }
-            }
-
+            Prediction baseResult = getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
 
             if (baseResult == null) {
                 return;
             }
+
             String activity = baseResult.getClassName();
             if (activity == null) {
                 return;
@@ -417,31 +403,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.transferModel != null) {
             Prediction[] possibleResults = this.transferModel.predict(f_knnData);
-            Prediction transferResult = null;
-            for (Prediction prediction : possibleResults) {
-                if (transferResult == null) {
-                    transferResult = prediction;
-                }
-                if (prediction.getConfidence() > transferResult.getConfidence()) {
-                    transferResult = prediction;
-                }
-            }
+            Prediction transferResult = getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
 
-            // todo: possibleResults is sorted by class.\
-            //System.out.println(possibleResults[0].getClassName());
-            TextView pred_values = findViewById(R.id.predictions);
-            pred_values.setText(getResources()
-                    .getString(
-                            R.string.prediction_templates,
-                            possibleResults[0].getConfidence(),
-                            possibleResults[1].getConfidence(),
-                            possibleResults[2].getConfidence(),
-                            possibleResults[3].getConfidence(),
-                            possibleResults[4].getConfidence(),
-                            possibleResults[5].getConfidence()
-                    )
-            );
+            TextView predictionProbabilities = findViewById(R.id.predictions);
+            predictionProbabilities.setText(buildPredictionProbabilityString(possibleResults));
 
             if (transferResult == null) {
                 return;
@@ -451,10 +417,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
+
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
             TextView base_classification_result = findViewById(R.id.transfer_model);
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
+    }
+
+    private Prediction getMostLikelyPrediction(Prediction[] possiblePredictions) {
+        Prediction mostLikely = null;
+
+        for (Prediction prediction : possiblePredictions) {
+            if (mostLikely == null) {
+                mostLikely = prediction;
+            }
+            if (prediction.getConfidence() > mostLikely.getConfidence()) {
+                mostLikely = prediction;
+            }
+        }
+
+        return mostLikely;
     }
 
     public List<double[]> readFile() {
@@ -527,18 +509,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    private Boolean hiddenTrainingKnnData(View view) {
-        List<double[]> knnData = readFile();
-
-        // knnData is a big file, with a lot features of the same class consecutively.
-        // to mix this up, it has to be shuffled
-        Collections.shuffle(knnData);
-
-        if (transferModel == null) {
-            return false;
+    private String buildPredictionProbabilityString(Prediction[] predictions) {
+        if (predictions.length != 6) {
+            return "";
         }
-        Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
 
+        return getResources()
+                .getString(
+                        R.string.prediction_templates,
+                        predictions[0].getConfidence(),
+                        predictions[1].getConfidence(),
+                        predictions[2].getConfidence(),
+                        predictions[3].getConfidence(),
+                        predictions[4].getConfidence(),
+                        predictions[5].getConfidence()
+                );
+    }
+
+    private Boolean hiddenTrainingKnnData(View view) {
         // stopping the transferModel learning after `millisInFuture` time
         new CountDownTimer(3 * 1000L, 1000) {
             @Override
@@ -554,7 +542,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }.start();
 
+        Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
         new Thread(() -> {
+            List<double[]> knnData = readFile();
+
+            // knnData is a big file, with a lot features of the same class consecutively.
+            // to mix this up, it has to be shuffled
+            Collections.shuffle(knnData);
+
+            if (transferModel == null) {
+                return;
+            }
+
             // add training samples to the transferModel.
             // starts by taking the first 20 samples on the first execution
             // assumes that data is shuffled randomly each time and the first 20 elements
@@ -596,7 +595,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return true;
     }
 
-    public void addFeatureSetToRawFile(Set<double[]> featureSet) {
+    public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet) {
         try {
             File f = new File(this.getFilesDir(), "custom_features.txt");
             OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));
