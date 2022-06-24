@@ -18,7 +18,9 @@
     <string name="toast_failed_stop_knn_learning">Stopping kNN Learning failed.</string>
 
     <string name="transfer_learning_stop_text">Stop Transfer Learning</string>
-    <string name="classification_result">%1$s.</string>
+    <string name="classification_result">%1$s</string>
+    <string name="prediction_result">%1$s</string>
+    <string name="prediction_confidence">Confidence: %1$.2f</string>
 
     <string name="error_already_learning">The device is already learning.</string>
     <string name="fab_train_description">kNN Training</string>
@@ -28,6 +30,10 @@
     <string name="train_title">Activity Training</string>
     <string name="automatic_classify">Automatically learning the kNN model as %1$s for the next %2$d seconds.</string>
     <string name="predictions_transfer_learning">Predictions: Transfer Learning</string>
+    <string name="predictions_generic_model">Predictions: Generic Model</string>
     <string name="transfer_learning_predictions">Transfer Learning Predictions</string>
     <string name="enable_training">Enable Training</string>
+    <string name="transfer_model">Transfer Model</string>
+    <string name="generic_model">Generic Model</string>
+    <string name="custom_model">Custom Model</string>
 </resources>
