@@ -14,12 +14,12 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="@string/fab_train_description"
-        android:src="@drawable/ic_baseline_play_arrow_24"
+        android:src="@drawable/ic_baseline_model_training_24"
         app:layout_constraintBottom_toTopOf="@+id/transfer_learn_fab"
         app:layout_constraintEnd_toEndOf="@+id/transfer_learn_fab"
         app:layout_constraintStart_toStartOf="@+id/transfer_learn_fab"
 
-        app:fabSize="auto"/>
+        app:fabSize="mini"/>
 
     <TextView
         android:id="@+id/enable_training"
@@ -40,12 +40,12 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="@string/fab_train_description"
-        android:src="@drawable/ic_baseline_play_arrow_24"
+        android:src="@drawable/ic_baseline_add_24"
         app:layout_constraintBottom_toTopOf="@+id/train_fab"
         app:layout_constraintEnd_toEndOf="@+id/train_fab"
         app:layout_constraintStart_toStartOf="@+id/train_fab"
 
-        app:fabSize="auto"/>
+        app:fabSize="mini"/>
 
     <TextView
         android:id="@+id/transfer_learning_text"
@@ -59,6 +59,7 @@
         app:layout_constraintEnd_toStartOf="@+id/transfer_learn_fab"
         app:layout_constraintTop_toTopOf="@+id/transfer_learn_fab" />
 
+    <!--
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/stop_data_log_fab"
         android:layout_width="wrap_content"
@@ -70,7 +71,7 @@
         app:layout_constraintBottom_toTopOf="@+id/train_fab"
         app:layout_constraintEnd_toEndOf="@+id/train_fab"
         app:layout_constraintStart_toStartOf="@+id/train_fab"
-        app:fabSize="auto"/>
+        app:fabSize="mini"/>
 
     <TextView
         android:id="@+id/stop_transfer_learning_text"
@@ -83,7 +84,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/stop_data_log_fab"
         app:layout_constraintEnd_toStartOf="@+id/stop_data_log_fab"
         app:layout_constraintTop_toTopOf="@+id/stop_data_log_fab" />
-
+-->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/train_fab"
         android:layout_width="wrap_content"
@@ -91,11 +92,11 @@
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
         android:contentDescription="@string/fab_train_description"
-        android:src="@drawable/ic_baseline_model_training_24"
+        android:src="@drawable/ic_baseline_add_24"
         app:layout_constraintBottom_toTopOf="@+id/main_fab"
         app:layout_constraintEnd_toEndOf="@+id/main_fab"
         app:layout_constraintStart_toStartOf="@+id/main_fab"
-        app:fabSize="auto"/>
+        app:fabSize="mini"/>
 
     <TextView
         android:id="@+id/train_model_text"
@@ -118,7 +119,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
         android:contentDescription="@string/fab_main_description"
-        android:src="@drawable/ic_baseline_add_24"
+        android:src="@drawable/ic_baseline_menu_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:fabSize="auto"/>
@@ -342,7 +343,7 @@
         </LinearLayout>
     </ScrollView>
 
-
+    <!--
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/stop_log_fab"
         android:layout_width="wrap_content"
@@ -355,7 +356,7 @@
         app:layout_constraintEnd_toEndOf="@+id/main_fab"
         app:layout_constraintStart_toStartOf="@+id/main_fab"
         app:fabSize="mini"/>
-
+    -->
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

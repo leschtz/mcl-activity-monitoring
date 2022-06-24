@@ -58,10 +58,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         menuFab = findViewById(R.id.main_fab);
         transferLearnFab = findViewById(R.id.transfer_learn_fab);
-        stopTransferLearningFab = findViewById(R.id.stop_log_fab);
-        stopTransferLearningMainFab = findViewById(R.id.stop_data_log_fab);
+        //stopTransferLearningFab = findViewById(R.id.stop_log_fab);
+        //stopTransferLearningMainFab = findViewById(R.id.stop_data_log_fab);
         transferLearningText = findViewById(R.id.transfer_learning_text);
-        stopTransferLearningText = findViewById(R.id.stop_transfer_learning_text);
+        //stopTransferLearningText = findViewById(R.id.stop_transfer_learning_text);
         enableTrainingText = findViewById(R.id.enable_training);
         enableTrainingFab = findViewById(R.id.start_transfer_training_fab);
 
@@ -70,9 +70,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         transferLearnFab.setVisibility(View.GONE);
         transferLearningText.setVisibility(View.GONE);
-        stopTransferLearningFab.setVisibility(View.GONE);
-        stopTransferLearningMainFab.setVisibility(View.GONE);
-        stopTransferLearningText.setVisibility(View.GONE);
+        //stopTransferLearningFab.setVisibility(View.GONE);
+        //stopTransferLearningMainFab.setVisibility(View.GONE);
+        //stopTransferLearningText.setVisibility(View.GONE);
         enableTrainingFab.setVisibility(View.GONE);
         enableTrainingText.setVisibility(View.GONE);
 
@@ -91,8 +91,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         trainKnnFab.setOnClickListener(this::startKnnLearning);
 
         transferLearnFab.setOnClickListener(this::startAddingSamplesTransferLearning);
-        stopTransferLearningFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
-        stopTransferLearningMainFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
+        //stopTransferLearningFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
+        //stopTransferLearningMainFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
 
         enableTrainingFab.setOnLongClickListener(this::hiddenTrainingKnnData);
 
@@ -324,9 +324,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.transferModel.clearIsLearning();
 
             Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
-            stopTransferLearningFab.hide();
-            stopTransferLearningMainFab.hide();
-            stopTransferLearningText.setVisibility(View.GONE);
+            //stopTransferLearningFab.hide();
+            //stopTransferLearningMainFab.hide();
+            //stopTransferLearningText.setVisibility(View.GONE);
         } else {
             Toast.makeText(getApplicationContext(), R.string.toast_failed_stop_transfer_learning, Toast.LENGTH_SHORT).show();
         }
@@ -473,12 +473,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (transferModel != null && transferModel.getIsLearning()) {
                 transferLearnFab.hide();
                 transferLearningText.setVisibility(View.GONE);
-                stopTransferLearningMainFab.show();
-                stopTransferLearningText.setVisibility(View.VISIBLE);
+                //stopTransferLearningMainFab.show();
+                //stopTransferLearningText.setVisibility(View.VISIBLE);
             } else {
 
-                stopTransferLearningMainFab.hide();
-                stopTransferLearningText.setVisibility(View.GONE);
+                //stopTransferLearningMainFab.hide();
+                //stopTransferLearningText.setVisibility(View.GONE);
                 transferLearnFab.show();
                 transferLearningText.setVisibility(View.VISIBLE);
             }
@@ -488,20 +488,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             trainKnnFab.show();
             trainKnnText.setVisibility(View.VISIBLE);
-            stopTransferLearningFab.hide();
+            //stopTransferLearningFab.hide();
 
             fabIsVisible = true;
         } else {
             if (transferModel != null && transferModel.getIsLearning()) {
-                stopTransferLearningFab.show();
+                //stopTransferLearningFab.show();
             }
 
             enableTrainingFab.hide();
             enableTrainingText.setVisibility(View.GONE);
             trainKnnFab.hide();
             transferLearnFab.hide();
-            stopTransferLearningMainFab.hide();
-            stopTransferLearningText.setVisibility(View.GONE);
+            //stopTransferLearningMainFab.hide();
+            //stopTransferLearningText.setVisibility(View.GONE);
             trainKnnText.setVisibility(View.GONE);
             transferLearningText.setVisibility(View.GONE);
 
