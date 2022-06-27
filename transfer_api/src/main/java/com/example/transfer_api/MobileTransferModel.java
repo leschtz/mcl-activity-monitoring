@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Represents a "partially" trainable model that is based on some other, base model.
  */
-public final class CustomModel implements Closeable {
+public final class MobileTransferModel implements Closeable {
     private static class TrainingSample {
         float[] bottleneck;
         float[] label;
@@ -86,12 +86,11 @@ public final class CustomModel implements Closeable {
     // Set to true when [close] has been called.
     private volatile boolean isTerminating = false;
 
-    public CustomModel(ModelLoader modelLoader, Collection<String> classes) {
+    public MobileTransferModel(ModelLoader modelLoader, Collection<String> classes) {
         try {
             this.model =
                     new LiteMultipleSignatureModel(
-                            //modelLoader.loadMappedFile("ourDatamodel.tflite"), classes.size());
-                            modelLoader.loadMappedFile("model.tflite"), classes.size());
+                            modelLoader.loadMappedFile("custom.tflite"), classes.size());
         } catch (IOException e) {
             throw new RuntimeException("Couldn't read underlying model for TransferLearningModel", e);
         }
@@ -147,7 +146,7 @@ public final class CustomModel implements Closeable {
      * @param lossConsumer callback to receive loss values, may be null.
      * @return future that is resolved when training is finished.
      */
-    public Future<Void> train(int numEpochs, LossConsumer lossConsumer){
+    public Future<Void> train(int numEpochs, LossConsumer lossConsumer) {
         checkNotTerminating();
         int trainBatchSize = getTrainBatchSize();
 
@@ -229,13 +228,6 @@ public final class CustomModel implements Closeable {
                 predictions[classIdx] = new Prediction(classesByIdx[classIdx], confidences[classIdx]);
             }
 
-            //Arrays.sort(predictions, (a, b) -> -Float.compare(a.confidence, b.confidence));
-
-            /*
-            for (Prediction x : predictions) {
-                System.out.println(x.confidence);
-            }
-            */
             return predictions;
         } finally {
             trainingInferenceLock.unlock();

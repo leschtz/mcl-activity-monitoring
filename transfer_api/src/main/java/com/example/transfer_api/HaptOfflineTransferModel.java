@@ -1,9 +1,9 @@
 package com.example.transfer_api;
 
 import org.tensorflow.lite.Interpreter;
+
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,8 +98,6 @@ public final class HaptOfflineTransferModel implements Closeable {
             for (int classIdx = 0; classIdx < classes.size(); classIdx++) {
                 predictions[classIdx] = new Prediction(classesByIdx[classIdx], confidences[classIdx]);
             }
-
-            Arrays.sort(predictions, (a, b) -> -Float.compare(a.confidence, b.confidence));
 
 
             return predictions;

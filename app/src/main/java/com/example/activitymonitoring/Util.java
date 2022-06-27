@@ -7,8 +7,7 @@ import com.example.transfer_api.Prediction;
 import java.util.stream.DoubleStream;
 
 public class Util {
-    public static double[] join(double[] a, double[] b)
-    {
+    public static double[] join(double[] a, double[] b) {
         return DoubleStream.concat(DoubleStream.of(a), DoubleStream.of(b))
                 .toArray();
     }
@@ -56,5 +55,20 @@ public class Util {
                         predictions[4].getConfidence(),
                         predictions[5].getConfidence()
                 );
+    }
+
+    public static Prediction getMostLikelyPrediction(Prediction[] possiblePredictions) {
+        Prediction mostLikely = null;
+
+        for (Prediction prediction : possiblePredictions) {
+            if (mostLikely == null) {
+                mostLikely = prediction;
+            }
+            if (prediction.getConfidence() > mostLikely.getConfidence()) {
+                mostLikely = prediction;
+            }
+        }
+
+        return mostLikely;
     }
 }

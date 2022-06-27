@@ -23,22 +23,9 @@ public final class GenericModel implements Closeable {
     private final Interpreter interpreter;
     private final int numClasses;
 
-//    private static class TrainingSample {
-//        float[] bottleneck;
-//        float[] label;
-//
-//        TrainingSample(float[] bottleneck, float[] label) {
-//            this.bottleneck = bottleneck;
-//            this.label = label;
-//        }
-//    }
-
     /**
      * Consumer interface for training loss.
      */
-//    public interface LossConsumer {
-//        void onLoss(int epoch, float loss);
-//    }
 
     // Setting this to a higher value allows to calculate bottlenecks for more samples while
     // adding them to the bottleneck collection is blocked by an active training thread.
@@ -48,14 +35,6 @@ public final class GenericModel implements Closeable {
     private final Map<String, Integer> classes;
     private final String[] classesByIdx;
     private final Map<String, float[]> oneHotEncodedClass;
-
-
-
-    //private final List<TrainingSample> trainingSamples = new ArrayList<>();
-
-    // Where to store training inputs.
-    private float[][] trainingBatchBottlenecks;
-    private float[][] trainingBatchLabels;
 
     // Used to spawn background threads.
     private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
@@ -76,9 +55,6 @@ public final class GenericModel implements Closeable {
             this.interpreter = new Interpreter(modelLoader.loadMappedFile("generic.tflite"));
             this.numClasses = classes.size();
 
-//            this.model =
-//                    new LiteMultipleSignatureModel(
-//                            modelLoader.loadMappedFile("generic.tflite"), classes.size());
         } catch (IOException e) {
             throw new RuntimeException("Couldn't read underlying model for GenericModel", e);
         }
@@ -121,12 +97,6 @@ public final class GenericModel implements Closeable {
                 predictions[classIdx] = new Prediction(classesByIdx[classIdx], confidences[classIdx]);
             }
 
-            Arrays.sort(predictions, (a, b) -> -Float.compare(a.confidence, b.confidence));
-
-//            for (Prediction x :predictions
-//            ) {
-//                System.out.println(x.confidence);
-//            }
             return predictions;
         } finally {
             trainingInferenceLock.unlock();

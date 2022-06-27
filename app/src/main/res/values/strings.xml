@@ -25,7 +25,7 @@
 
     <string name="not_training">Learning disabled</string>
     <string name="error_already_learning">The device is already learning.</string>
-    <string name="fab_train_description">kNN Training</string>
+    <string name="fab_train_description">Add kNN Samples</string>
     <string name="fab_transfer_learn_description">Add Samples</string>
     <string name="fab_main_description">Open Menu</string>
     <string name="loss_value">%1$.2f.</string>
@@ -35,7 +35,7 @@
     <string name="predictions_generic_model">Predictions: Generic Model</string>
     <string name="hapt_offline_model_predictions">HAPT Offline Learning Predictions</string>
     <string name="enable_training">Enable Training</string>
-    <string name="transfer_model">Transfer Model</string>
+    <string name="mobile_transfer_model">Mobile Transfer Model</string>
     <string name="generic_model">Generic Model</string>
     <string name="custom_model">Custom Model</string>
     <string name="predictions_hapt_offline">Predictions: HAPT Offline Model</string>

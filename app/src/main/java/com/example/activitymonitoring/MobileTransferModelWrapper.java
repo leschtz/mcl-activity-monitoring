@@ -17,7 +17,7 @@ package com.example.activitymonitoring;
 import android.content.Context;
 import android.os.ConditionVariable;
 
-import com.example.transfer_api.CustomModel;
+import com.example.transfer_api.MobileTransferModel;
 import com.example.transfer_api.ModelLoader;
 import com.example.transfer_api.Prediction;
 
@@ -27,24 +27,24 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
- * App-layer wrapper for {@link CustomModel}.
+ * App-layer wrapper for {@link MobileTransferModel}.
  *
  * <p>This wrapper allows to run training continuously, using start/stop API, in contrast to
- * run-once API of {@link CustomModel}.
+ * run-once API of {@link MobileTransferModel}.
  */
-public class CustomModelWrapper implements Closeable {
+public class MobileTransferModelWrapper implements Closeable {
     public static final int IMAGE_SIZE = 224;
 
-    private final CustomModel model;
+    private final MobileTransferModel model;
 
     private final ConditionVariable shouldTrain = new ConditionVariable();
-    private volatile CustomModel.LossConsumer lossConsumer;
+    private volatile MobileTransferModel.LossConsumer lossConsumer;
     private Boolean isLearning = false;
     private Integer samples = 0;
 
-    CustomModelWrapper(Context context) {
+    MobileTransferModelWrapper(Context context) {
         model =
-                new CustomModel(
+                new MobileTransferModel(
                         new ModelLoader(context, "model"), Arrays.asList("0", "1", "2", "3","4","5"));
 
         new Thread(() -> {
@@ -82,7 +82,7 @@ public class CustomModelWrapper implements Closeable {
      *
      * @param lossConsumer callback that the loss values will be passed to.
      */
-    public void enableTraining(CustomModel.LossConsumer lossConsumer) {
+    public void enableTraining(MobileTransferModel.LossConsumer lossConsumer) {
         this.lossConsumer = lossConsumer;
         shouldTrain.open();
     }

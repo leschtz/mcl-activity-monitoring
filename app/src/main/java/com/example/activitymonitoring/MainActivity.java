@@ -50,9 +50,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float prevLoss = 0.0f;
     private int stopTrain = 0;
 
-    FloatingActionButton mainMenuBtn, knnAddSampleBtn, transferAddSampleBtn, stopTransferLearningFab,
-            stopTransferLearningMainFab, enableTrainingBtn;
-    TextView trainKnnText, transferLearningText, stopTransferLearningText, enableTrainingText;
+    FloatingActionButton mainMenuBtn, knnAddSampleBtn, transferAddSampleBtn, enableTrainingBtn;
+    TextView trainKnnText, transferLearningText, enableTrainingText;
     Boolean fabIsVisible;
 
     @Override
@@ -62,10 +61,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         mainMenuBtn = findViewById(R.id.main_fab);
         transferAddSampleBtn = findViewById(R.id.transfer_learn_fab);
-        //stopTransferLearningFab = findViewById(R.id.stop_log_fab);
-        //stopTransferLearningMainFab = findViewById(R.id.stop_data_log_fab);
         transferLearningText = findViewById(R.id.transfer_learning_text);
-        //stopTransferLearningText = findViewById(R.id.stop_transfer_learning_text);
         enableTrainingText = findViewById(R.id.enable_training);
         enableTrainingBtn = findViewById(R.id.start_transfer_training_fab);
 
@@ -74,9 +70,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         transferAddSampleBtn.setVisibility(View.GONE);
         transferLearningText.setVisibility(View.GONE);
-        //stopTransferLearningFab.setVisibility(View.GONE);
-        //stopTransferLearningMainFab.setVisibility(View.GONE);
-        //stopTransferLearningText.setVisibility(View.GONE);
         enableTrainingBtn.setVisibility(View.GONE);
         enableTrainingText.setVisibility(View.GONE);
 
@@ -93,8 +86,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mainMenuBtn.setOnClickListener(this::fabViewButtonHandler);
         knnAddSampleBtn.setOnClickListener(this::startKnnLearning);
         transferAddSampleBtn.setOnClickListener(this::startAddingSamplesTransferLearning);
-        //stopTransferLearningFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
-        //stopTransferLearningMainFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
+
+        enableTrainingBtn.setOnClickListener(this::trainWithSamples);
         enableTrainingBtn.setOnLongClickListener(this::trainWithRecordedData);
 
         if (this.dataProcessor == null) {
@@ -142,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         this.classifier = new KNNClassifier(31, 15, readFile());
     }
+
 
     @Override
     protected void onStart() {
@@ -200,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             String activityString = getResources().getStringArray(R.array.activityArray)[which];
             ActivityType activity = ActivityType.valueOf(activityString);
-            Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_SHORT).show();
 
             dataProcessor.setClassifyAs(activity);
 
@@ -221,7 +215,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
 
                     addFeatureSetToCustomFeaturesFile(trainingData, "transfer_learning_features.txt");
-                    trainingData.clear();
                     mobileTransferModel.clearIsLearning();
 
                     RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
@@ -241,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             String activityString = getResources().getStringArray(R.array.activityArray)[which];
             ActivityType activity = ActivityType.valueOf(activityString);
             String toastString = getResources().getString(R.string.automatic_classify, activity.name(), 10);
-            Toast.makeText(getApplicationContext(), toastString, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), toastString, Toast.LENGTH_SHORT).show();
 
             dataProcessor.setClassifyAs(activity);
 
@@ -300,28 +293,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mainMenuBtn.performClick();
     }
 
-    /*
-    private void stopAddingSamplesTransferLearning(View view) {
-        if (offlineTransferModel != null && offlineTransferModel.getIsLearning()) {
-            dataProcessor.setClassifyAs(ActivityType.None);
-            this.offlineTransferModel.clearIsLearning();
-
-            Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
-            //stopTransferLearningFab.hide();
-            //stopTransferLearningMainFab.hide();
-            //stopTransferLearningText.setVisibility(View.GONE);
-        } else {
-            Toast.makeText(getApplicationContext(), R.string.toast_failed_stop_transfer_learning, Toast.LENGTH_SHORT).show();
-        }
-        if (fabIsVisible) {
-            knnAddSampleBtn.hide();
-            trainKnnText.setVisibility(View.GONE);
-            fabIsVisible = Boolean.FALSE;
-        }
-    }
-
-
-     */
     public void classification() {
         if (this.dataProcessor == null) {
             return;
@@ -334,7 +305,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         float[] f_knnData = new float[knnData.length];
 
-        // Inference
         // Train the kNN and the TransferLearning Model
         if (this.isKnnLearning && this.dataProcessor.getClassifyType() != ActivityType.None) {
             double[] features = new double[knnData.length + 1];
@@ -348,18 +318,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
             this.trainingData.add(features.clone());
         }
-
-        /*
-        if (transferModel != null && transferModel.getIsLearning() && this.dataProcessor.getClassifyType() != ActivityType.None) {
-            String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
-            System.out.println(className);
-            try {
-                this.transferModel.addSample(f_knnData, className).get();
-            } catch (ExecutionException | InterruptedException e) {
-                System.err.println("addSample raised an issue: " + e.getCause());
-            }
-        }
-        */
 
         if (mobileTransferModel != null && this.dataProcessor.getClassifyType() != ActivityType.None) {
             String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
@@ -393,9 +351,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.mobileTransferModel != null) {
             Prediction[] possibleResults = this.mobileTransferModel.predict(f_knnData);
-            Prediction predictionResult = getMostLikelyPrediction(possibleResults);
-            //System.out.println("Generic Prediction: " + genericResult.className);
-
+            Prediction predictionResult = Util.getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
 
             if (predictionResult == null) {
@@ -407,23 +363,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
             }
 
-            TextView predictionProbabilities = findViewById(R.id.custom_model_predictions);
+            TextView predictionProbabilities = findViewById(R.id.mobile_model_predictions);
             predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
 
 
-            TextView confidencePrediction = findViewById(R.id.custom_model_confidence_text);
+            TextView confidencePrediction = findViewById(R.id.mobile_model_confidence_text);
             confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, predictionResult.confidence));
 
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
-            TextView base_classification_result = findViewById(R.id.custom_model);
+            TextView base_classification_result = findViewById(R.id.mobile_model);
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
 
         if (this.genericModel != null) {
             Prediction[] possibleResults = this.genericModel.predict(f_knnData);
-            Prediction genericResult = getMostLikelyPrediction(possibleResults);
-            //System.out.println("Generic Prediction: " + genericResult.className);
-
+            Prediction genericResult = Util.getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
 
             if (genericResult == null) {
@@ -448,14 +402,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.haptOfflineModel != null) {
             Prediction[] possibleResults = this.haptOfflineModel.predict(f_knnData);
-            Prediction transferResult = getMostLikelyPrediction(possibleResults);
+            Prediction haptResult = Util.getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
-            //System.out.println("Transfer Prediction: " + transferResult.className);
-            if (transferResult == null) {
+
+            if (haptResult == null) {
                 return;
             }
 
-            String activity = transferResult.getClassName();
+            String activity = haptResult.getClassName();
             if (activity == null) {
                 return;
             }
@@ -464,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
 
             TextView confidencePrediction = findViewById(R.id.hapt_offline_model_confidence_text);
-            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, transferResult.confidence));
+            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, haptResult.confidence));
 
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
             TextView base_classification_result = findViewById(R.id.hapt_offline_model);
@@ -472,48 +426,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    private Prediction getMostLikelyPrediction(Prediction[] possiblePredictions) {
-        Prediction mostLikely = null;
-
-        for (Prediction prediction : possiblePredictions) {
-            if (mostLikely == null) {
-                mostLikely = prediction;
-            }
-            if (prediction.getConfidence() > mostLikely.getConfidence()) {
-                mostLikely = prediction;
-            }
-        }
-
-        return mostLikely;
-    }
 
     public List<double[]> readFile() {
-        List<double[]> rowList = new ArrayList<>();
-        try {
-            File f = new File(this.getFilesDir(), "custom_features.txt");
-            InputStream is = new DataInputStream(new FileInputStream(f));
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                //System.out.println("Reading: "+ line);
-                String[] lineItemsStrings = line.split(",");
-                double[] lineItems = new double[lineItemsStrings.length];
-                if (lineItems.length != 16) {
-                    System.err.println("Found an invalid line.");
-                    continue;
-                }
-                for (int i = 0; i < lineItemsStrings.length; i++) {
-                    lineItems[i] = Double.parseDouble(lineItemsStrings[i]);
-                }
-                rowList.add(lineItems);
-            }
-        } catch (Exception e) {
-            System.err.println("Could not open neighbor file:   " + e);
-        }
-        System.out.println("# of loaded features: " + rowList.size());
-        return rowList;
+        return readFile("custom_features.txt");
     }
 
     public List<double[]> readFile(String filename) {
@@ -570,13 +485,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
-
     private Boolean trainWithRecordedData(View view) {
         // close the menu
         this.mainMenuBtn.performClick();
 
         // informing the user about the data learning
-        Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Learning with pre-recorded data.", Toast.LENGTH_SHORT).show();
         new Thread(() -> {
             List<double[]> trainingData = readFile("transfer_learning_features.txt");
 
@@ -590,7 +504,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             // No samples were loaded, it can't train the Model and should not do so
             if (trainingData.size() == 0) {
-                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "No samples available to train.", Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "No pre-recorded data available to train.", Toast.LENGTH_SHORT).show());
                 return;
             }
 
@@ -606,48 +520,44 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
 
                 int classInt = (int) data[data.length - 1];
-                String className = String.valueOf(classInt - 1);
-                /*
+                String className = String.valueOf(classInt);
+                ///*
                 System.out.print("Adding Sample: ");
                 for (float d : f_data) {
                     System.out.print(d + ", ");
                 }
                 System.out.println("class: " + className);
-                */
+                //*/
                 mobileTransferModel.addSample(f_data, className);
                 if (sampleSize++ > 100) break;
             }
 
-            if (mobileTransferModel.getSamples() == 0) {
+            if (0 == sampleSize) {
                 return;
             }
             System.out.println("Samples: " + sampleSize);
 
             AtomicInteger epochs = new AtomicInteger();
             mobileTransferModel.enableTraining((epoch, loss) -> {
-
-                runOnUiThread(() -> {
-                    //TextView lossText = findViewById(R.id.loss_text);
-                    //lossText.setText(getResources().getString(R.string.loss_string, loss));
-                });
-
                 System.out.println("Epoch: " + epochs.get() + " Loss: " + loss + " with error: " + Math.abs(loss - prevLoss));
                 if (Float.isNaN(loss)) {
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Finished training due to invalid data.", Toast.LENGTH_SHORT).show());
                     this.mobileTransferModel.disableTraining();
+                    Thread.currentThread().interrupt();
                 }
 
-                if (epochs.get() > 1000) {
+                if (epochs.get() > 500) {
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Finished training due to too many epochs.", Toast.LENGTH_SHORT).show());
                     this.mobileTransferModel.disableTraining();
+                    Thread.currentThread().interrupt();
                 }
 
                 if (Math.abs(loss - prevLoss) < 0.001) {
                     if (stopTrain++ == 5) {
+                        runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Finished training due to too convergence.", Toast.LENGTH_SHORT).show());
                         this.mobileTransferModel.disableTraining();
-                        runOnUiThread(() -> {
-                            //TextView lossText = findViewById(R.id.loss_text);
-                            //lossText.setText(R.string.not_training);
-                            //lossText.setTextSize(30);
-                        });
+                        Thread.currentThread().interrupt();
+                        stopTrain = 0;
                     }
                 } else {
                     if (stopTrain > 0) {
@@ -662,6 +572,48 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return true;
     }
 
+    private void trainWithSamples(View view) {
+        this.mainMenuBtn.performClick();
+
+        if (trainingData == null || trainingData.size() == 0) {
+            runOnUiThread(() -> Toast.makeText(getApplicationContext(), "No training samples available.", Toast.LENGTH_SHORT).show());
+            System.err.println("No training samples available.");
+            return;
+        }
+
+        trainingData.clear();
+
+        AtomicInteger epochs = new AtomicInteger();
+        mobileTransferModel.enableTraining((epoch, loss) -> {
+            System.out.println("Epoch: " + epochs.get() + " Loss: " + loss + " with error: " + Math.abs(loss - prevLoss));
+            if (Float.isNaN(loss)) {
+                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Finished training due to invalid data.", Toast.LENGTH_SHORT).show());
+                this.mobileTransferModel.disableTraining();
+                Thread.currentThread().interrupt();
+            }
+
+            if (epochs.get() > 500) {
+                runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Finished training due to too many epochs.", Toast.LENGTH_SHORT).show());
+                this.mobileTransferModel.disableTraining();
+                Thread.currentThread().interrupt();
+            }
+
+            if (Math.abs(loss - prevLoss) < 0.001) {
+                if (stopTrain++ == 5) {
+                    runOnUiThread(() -> Toast.makeText(getApplicationContext(), "Finished training due to too convergence.", Toast.LENGTH_SHORT).show());
+                    this.mobileTransferModel.disableTraining();
+                    Thread.currentThread().interrupt();
+                    stopTrain = 0;
+                }
+            } else {
+                if (stopTrain > 0) {
+                    stopTrain--;
+                }
+            }
+            prevLoss = loss;
+            epochs.getAndIncrement();
+        });
+    }
 
     public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet, String
             filename) {

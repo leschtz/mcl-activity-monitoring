@@ -281,12 +281,12 @@
                     android:layout_gravity="top|center_horizontal"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
-                    android:text="@string/transfer_model"
+                    android:text="@string/mobile_transfer_model"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/custom_model"
+                    android:id="@+id/mobile_model"
                     android:layout_width="200dp"
                     android:layout_height="100dp"
                     android:layout_gravity="center"
@@ -298,7 +298,7 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/custom_model_confidence_text"
+                    android:id="@+id/mobile_model_confidence_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|center_horizontal"
@@ -426,7 +426,7 @@
                 app:cardUseCompatPadding="true">
 
                 <TextView
-                    android:id="@+id/custom_model_predictions"
+                    android:id="@+id/mobile_model_predictions"
                     android:layout_width="200dp"
                     android:layout_height="200dp"
                     android:layout_gravity="bottom|center_horizontal"
@@ -443,7 +443,7 @@
                     android:layout_gravity="top|center_horizontal"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
-                    android:text="Predictions: Custom Model"
+                    android:text="Predictions: Mobile Transfer Model"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
