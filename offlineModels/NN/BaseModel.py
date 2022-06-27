@@ -19,33 +19,25 @@ from sklearn.preprocessing import LabelEncoder
 from keras.utils import np_utils
 from sklearn.model_selection import KFold
 
-# https://tugraz.webex.com/meet/saukh
-# https://tugraz.webex.com/tugraz-de/url.php?frompanel=false&gourl=https%3A%2F%2Fgithub.com%2Fosaukh%2Fmobile_computing_lab%2Fblob%2Fmaster%2Fcolab%2FWS04_TransferLearning_Personalization.ipynb
-# https://tugraz.webex.com/tugraz-de/url.php?frompanel=false&gourl=https%3A%2F%2Fgithub.com%2Fosaukh%2Fmobile_computing_lab%2Ftree%2Fmaster%2Fcode%2FModelPersonalization
 from offlineModels.NN.tflitwrapper import TransferLearningModel
 
 num_features = None
 
 
+# In main you can call all methods in the order you need depending on what you want to do
 def main():
     saved_basemodel_dir = '../offlineModels/NN/Hapt_neighbors'
 
-    model = keras.models.load_model(saved_basemodel_dir)
-    # print(model.summary())
+    # model = keras.models.load_model(saved_basemodel_dir)
+    model = train_base_model(HAPT=True)
 
-    #model = train_base_model(HAPT=True)
-    model.summary()
-    #
-    #model.save(saved_basemodel_dir)
+    model.save(saved_basemodel_dir)
 
     model = cutOffHead(model)
-    model.summary()
 
-    #createTransferModel(model,  modelname='Hapt_neighbors.tflite')
+    createTransferModel(model, modelname='Hapt_neighbors.tflite')
 
-    #
-    convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel' , tfmodel_name='custom.tflite')
-    # convert_and_save(model, '../offlineModels/NN/tfLite/test')
+    convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel', tfmodel_name='custom.tflite')
 
 
 def train_base_model(noGrid=True, fixedData=False, HAPT=False):
@@ -136,14 +128,8 @@ def train_base_model(noGrid=True, fixedData=False, HAPT=False):
         targets = df.iloc[:, -1]
         targets = targets - 1
         x_complete = df.iloc[:, :-1]
-        #
-    df = pd.read_csv('../offlineModels/NN/data.csv', sep=',', index_col=False, header=None)
-    df.dropna(inplace=True)
-    y_val = df.iloc[:, -1]
-    y_val = y_val - 1
-    x_val = df.iloc[:, :-1]
-    # print(x_complete.head())
-    # print(list(targets))
+
+
 
     if not fixedData:
         x_train, x_test, y_train, y_test = train_test_split(x_complete, targets, test_size=0.2, random_state=33)
@@ -194,78 +180,77 @@ def train_base_model(noGrid=True, fixedData=False, HAPT=False):
         print('Classification report')
         print(classification_report(y_test, y_pred))
 
-        y_pred = model.predict(x_val)
-        y_pred = y_pred.round()
-        y_pred = y_pred.argmax(1)
-
-        print('Classification report')
-        print(classification_report(y_val, y_pred))
-
-        cm = ConfusionMatrixDisplay(confusion_matrix(y_val, y_pred))
-        cm.plot()
-        # plt.savefig(figure_path + 'CM.png')
-        plt.show()
-
-        # x = pd.read_csv("../offlineModels/neighbors.csv", sep=',', index_col=False, header=None)
-        #
-        # targets = x.iloc[:, -1]
-        # targets = targets - 1
-        # x = x.iloc[:, :-1]
-        #
-        # y_pred = model.predict(x)
+        # y_pred = model.predict(x_val)
         # y_pred = y_pred.round()
         # y_pred = y_pred.argmax(1)
         #
         # print('Classification report')
-        # print(classification_report(targets, y_pred))
+        # print(classification_report(y_val, y_pred))
+        #
+        # cm = ConfusionMatrixDisplay(confusion_matrix(y_val, y_pred))
+        # cm.plot()
+        # # plt.savefig(figure_path + 'CM.png')
+        # plt.show()
 
-        return model
+        x = pd.read_csv("../offlineModels/Data/right-front-pocket-jeans-02.csv", sep=',', index_col=False, header=None)
+
+        targets = x.iloc[:, -1]
+        x = x.iloc[:, :-1]
+
+        y_pred = model.predict(x)
+        y_pred = y_pred.round()
+        y_pred = y_pred.argmax(1)
+
+        print('Classification report')
+        print(classification_report(targets, y_pred))
+
         figure_path = '../offlineModels/NN/Results/'
 
-        tf.keras.utils.plot_model(model, figure_path + 'Modelplot.png', show_shapes=True)
+        # tf.keras.utils.plot_model(model, figure_path + 'Modelplot.png', show_shapes=True)
 
-        cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
+        cm = ConfusionMatrixDisplay(confusion_matrix(targets, y_pred))
         cm.plot()
         plt.savefig(figure_path + 'CM.png')
         plt.show()
 
-        best_epoch = es.best_epoch
-
-        print(history.history.keys())
-
-        # print(epochs)
-        plt.plot(history.history['loss'], 'g', label='Training loss')
-        plt.plot(history.history['val_loss'], 'b', label='validation loss')
-        plt.axvline(x=best_epoch, color='r', label='best_epoch')
-        plt.title('Training and Validation loss')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.savefig(figure_path + 'loss.png')
-        plt.show()
-
-        # epochs = range(1, num_epochs+1)
-        plt.plot(history.history['precision'], 'g', label='Training precision')
-        plt.plot(history.history['val_precision'], 'b', label='validation precision')
-        plt.axvline(x=best_epoch, color='r', label='best_epoch')
-        plt.title('Training and Validation precision')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_precision.png')
-        plt.savefig(figure_path + 'precision.png')
-        plt.show()
-
-        plt.plot(history.history['categorical_accuracy'], 'g', label='Training categorical_accuracy')
-        plt.plot(history.history['val_categorical_accuracy'], 'b', label='validation categorical_accuracy')
-        plt.axvline(x=best_epoch, color='r', label='best_epoch')
-        plt.title('Training and Validation accuracy')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_accuracy.png')
-        plt.savefig(figure_path + 'accuracy.png')
-        plt.show()
+        # Optional graphs
+        # best_epoch = es.best_epoch
+        #
+        # print(history.history.keys())
+        #
+        # # print(epochs)
+        # plt.plot(history.history['loss'], 'g', label='Training loss')
+        # plt.plot(history.history['val_loss'], 'b', label='validation loss')
+        # #plt.axvline(x=best_epoch, color='r', label='best_epoch')
+        # plt.title('Training and Validation loss')
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Loss')
+        # plt.legend()
+        # plt.savefig(figure_path + 'loss.png')
+        # plt.show()
+        #
+        # # epochs = range(1, num_epochs+1)
+        # plt.plot(history.history['precision'], 'g', label='Training precision')
+        # plt.plot(history.history['val_precision'], 'b', label='validation precision')
+        # plt.axvline(x=best_epoch, color='r', label='best_epoch')
+        # plt.title('Training and Validation precision')
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Loss')
+        # plt.legend()
+        # # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_precision.png')
+        # plt.savefig(figure_path + 'precision.png')
+        # plt.show()
+        #
+        # plt.plot(history.history['categorical_accuracy'], 'g', label='Training categorical_accuracy')
+        # plt.plot(history.history['val_categorical_accuracy'], 'b', label='validation categorical_accuracy')
+        # plt.axvline(x=best_epoch, color='r', label='best_epoch')
+        # plt.title('Training and Validation accuracy')
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Loss')
+        # plt.legend()
+        # # plt.savefig('/content/drive/MyDrive/NLP/Bert_' + dataset + '/figures/bert' + dataset + '_accuracy.png')
+        # plt.savefig(figure_path + 'accuracy.png')
+        # plt.show()
 
         return model
 
@@ -343,7 +328,7 @@ def createTransferModel(model, modelname):
     df.dropna(inplace=True)
 
     targets = df.iloc[:, -1]
-    #targets = targets - 1
+
     x_complete = df.iloc[:, :-1]
 
     x_train, x_test, y_train, y_test = train_test_split(x_complete, targets, test_size=0.2, random_state=33)
@@ -374,7 +359,24 @@ def createTransferModel(model, modelname):
     print('Classification report')
     print(classification_report(y_test, y_pred))
 
-    convertToTFLiteModelfromKeras(model,modelname)
+    df = pd.read_csv('../offlineModels/Data/right-front-pocket-jeans-02.csv', sep=',', index_col=False, header=None)
+    df.dropna(inplace=True)
+
+    targets = df.iloc[:, -1]
+
+    x_complete = df.iloc[:, :-1]
+
+    y_pred = model.predict(x_complete)
+    y_pred = y_pred.round()
+    y_pred = y_pred.argmax(1)
+
+    print('Classification report')
+    print(classification_report(targets, y_pred))
+
+    cm = ConfusionMatrixDisplay(confusion_matrix(targets, y_pred))
+    cm.plot()
+    plt.show()
+    convertToTFLiteModelfromKeras(model, modelname)
 
 
 def convertToTFLiteModelfromKeras(model, modelname):
