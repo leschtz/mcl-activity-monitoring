@@ -219,7 +219,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         return;
                     }
 
-
                     addFeatureSetToCustomFeaturesFile(trainingData, "transfer_learning_features.txt");
                     trainingData.clear();
                     customModel.clearIsLearning();
@@ -632,13 +631,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // informing the user about the data learning
         Toast.makeText(getApplicationContext(), "Learning with kNN data.", Toast.LENGTH_LONG).show();
         new Thread(() -> {
-            List<double[]> knnData = readFile("transfer_learning_features.txt");
+            List<double[]> trainingData = readFile("transfer_learning_features.txt");
 
             // knnData is a big file, with a lot features of the same class consecutively.
             // to mix this up, it has to be shuffled
-            Collections.shuffle(knnData);
+            Collections.shuffle(trainingData);
 
             if (customModel == null) {
+                return;
+            }
+
+            if (trainingData.size() == 0) {
                 return;
             }
 
@@ -647,14 +650,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // assumes that data is shuffled randomly each time and the first 20 elements
             // in `knnData` are different every time.
             int sampleSize = 0;
-            for (double[] data : knnData) {
+            for (double[] data : trainingData) {
                 float[] f_data = new float[data.length - 1];
                 for (int i = 0; i < f_data.length; i++) {
                     f_data[i] = (float) data[i];
                 }
 
                 int classInt = (int) data[data.length - 1];
-                String className = String.valueOf(classInt);
+                String className = String.valueOf(classInt-1);
                 ///*
                 System.out.print("Adding Sample: ");
                 for (float d : f_data) {
@@ -670,11 +673,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
             }
             System.out.println("Samples: " + sampleSize);
+
             customModel.enableTraining((epoch, loss) -> {
                 System.out.println("Loss: " + loss + " with error: " + Math.abs(loss - prevLoss));
+
+
+                runOnUiThread(() -> {
+                    TextView lossText = findViewById(R.id.loss_text);
+                    lossText.setText(getResources().getString(R.string.loss_string, loss));
+                });
                 if (Math.abs(loss - prevLoss) < 0.01) {
-                    if (stopTrain++ == 5) {
+                    if (stopTrain++ == 3) {
                         this.customModel.disableTraining();
+                        runOnUiThread(() -> {
+                            TextView lossText = findViewById(R.id.loss_text);
+                            lossText.setText(R.string.not_training);
+                            lossText.setTextSize(30);
+                        });
                     }
                 } else {
                     if (stopTrain > 0) {
