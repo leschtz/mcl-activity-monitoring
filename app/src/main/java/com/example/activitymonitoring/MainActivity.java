@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mainMenuBtn.setOnClickListener(this::fabViewButtonHandler);
         knnAddSampleBtn.setOnClickListener(this::startKnnLearning);
         transferAddSampleBtn.setOnClickListener(this::startAddingSamplesTransferLearning);
+        //transferAddSampleBtn.setOnLongClickListener(this::testTransferLearningModelWithEvaluationDataset);
 
         enableTrainingBtn.setOnClickListener(this::trainWithSamples);
         enableTrainingBtn.setOnLongClickListener(this::trainWithRecordedData);
@@ -128,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     outputStream.write(System.lineSeparator());
                 }
                 outputStream.write(System.lineSeparator());
+                outputStream.close();
+                bufferedReader.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -305,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // neural networks need their data as floats
         float[] f_knnData = new float[knnData.length];
-        for(int i = 0; i < knnData.length; i++) {
+        for (int i = 0; i < knnData.length; i++) {
             f_knnData[i] = (float) knnData[i];
         }
 
@@ -459,6 +462,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
                 rowList.add(lineItems);
             }
+
+            br.close();
+            is.close();
         } catch (Exception e) {
             System.err.println("Could not open neighbor file:   " + e);
         }
@@ -491,6 +497,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
+    // usage:
     private Boolean trainWithRecordedData(View view) {
         // close the menu
         this.mainMenuBtn.performClick();
@@ -498,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // informing the user about the data learning
         Toast.makeText(getApplicationContext(), "Learning with pre-recorded data.", Toast.LENGTH_SHORT).show();
         new Thread(() -> {
-            List<double[]> trainingData = readFile("transfer_learning_features.txt");
+            List<double[]> trainingData = readFile("transfer-test-data.csv");
 
             // knnData is a big file, with a lot features of the same class consecutively.
             // to mix this up, it has to be shuffled
@@ -647,4 +654,62 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     // todo: quick function to compare the data with
+
+    private Boolean testTransferLearningModelWithEvaluationDataset(View view) {
+        List<double[]> data = readFile("evaluation-data.txt");
+
+
+        StringJoiner s_pred = new StringJoiner(", ");
+        StringJoiner s_real = new StringJoiner(", ");
+        System.out.println("evaluation");
+        System.out.println(data.size());
+        for(double[] d : data) {
+            float[] f_data = new float[d.length-1];
+            for(int i = 0; i < (d.length-1); i++) {
+                f_data[i] = (float) d[i];
+            }
+
+            Double className = Double.valueOf(d[d.length-1]);
+
+            Prediction[] pred = this.mobileTransferModel.predict(f_data);
+            Prediction result = null;
+            for( Prediction p : pred) {
+                if(result == null) {
+                    result = p;
+                }
+
+                if (result.getConfidence() < p.getConfidence()) {
+                    result = p;
+                }
+            }
+
+            if(result != null) {
+                s_real.add(String.valueOf(className.intValue()));
+                s_pred.add(result.getClassName());
+            }
+        }
+
+        System.out.println(s_pred.length());
+        System.out.println(s_real.length());
+        File f = new File(this.getFilesDir(), "evaluation_results.txt");
+        if (!f.exists()) {
+            // on first access, base features are copied to a writeable place
+            try {
+                OutputStreamWriter outputStream = new OutputStreamWriter(new FileOutputStream(f));
+                outputStream.write("x_real = [");
+                outputStream.write(s_real.toString());
+                outputStream.write("]");
+                outputStream.write(System.lineSeparator());
+
+                outputStream.write("x_pred = [");
+                outputStream.write(s_pred.toString());
+                outputStream.write("]");
+                outputStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
+
+    }
 }
