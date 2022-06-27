@@ -680,7 +680,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (epochs.get()> 1000){
                     this.customModel.disableTraining();
                 }
-                if (Math.abs(loss - prevLoss) < 0.01) {
+                if (Math.abs(loss - prevLoss) < 0.001) {
                     if (stopTrain++ == 5) {
 
                     }
