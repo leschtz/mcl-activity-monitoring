@@ -20,8 +20,10 @@
     <string name="transfer_learning_stop_text">Stop Transfer Learning</string>
     <string name="classification_result">%1$s</string>
     <string name="prediction_result">%1$s</string>
+    <string name="loss_string">%1$.2f</string>
     <string name="prediction_confidence">Confidence: %1$.2f</string>
 
+    <string name="not_training">Learning disabled</string>
     <string name="error_already_learning">The device is already learning.</string>
     <string name="fab_train_description">kNN Training</string>
     <string name="fab_transfer_learn_description">Add Samples</string>

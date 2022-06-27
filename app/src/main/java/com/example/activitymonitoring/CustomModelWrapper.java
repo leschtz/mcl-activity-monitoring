@@ -45,7 +45,7 @@ public class CustomModelWrapper implements Closeable {
     CustomModelWrapper(Context context) {
         model =
                 new CustomModel(
-                        new ModelLoader(context, "model"), Arrays.asList("1", "2", "3", "4","5","6"));
+                        new ModelLoader(context, "model"), Arrays.asList("0", "1", "2", "3","4","5"));
 
         new Thread(() -> {
             while (!Thread.interrupted()) {
