@@ -28,7 +28,7 @@ num_features = None
 
 
 def main():
-    saved_basemodel_dir = '../offlineModels/NN/savedModel'
+    saved_basemodel_dir = '../offlineModels/NN/Hapt_neighbors'
 
     # model = keras.models.load_model(saved_basemodel_dir)
     # print(model.summary())
@@ -36,19 +36,19 @@ def main():
     model = train_base_model(HAPT=True)
     model.summary()
     #
-    # model.save(saved_basemodel_dir)
-    return
+    model.save(saved_basemodel_dir)
+
     model = cutOffHead(model)
     model.summary()
 
-    createTransferModel(model)
+    createTransferModel(model,  modelname='Hapt_neighbors.tflite')
 
     #
-    convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
+    #convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
     # convert_and_save(model, '../offlineModels/NN/tfLite/test')
 
 
-def train_base_model(noGrid=True, fixedData=False, HAPT = False):
+def train_base_model(noGrid=True, fixedData=False, HAPT=False):
     x_train = pd.read_csv("../offlineModels/HAPT_Data_Set/Train/X_train.txt", sep=' ', index_col=False, header=None)
     y_train = pd.read_csv("../offlineModels/HAPT_Data_Set/Train/y_train.txt", sep=' ', index_col=False, header=None)
     x_test = pd.read_csv("../offlineModels/HAPT_Data_Set/Test/X_test.txt", sep=' ', index_col=False, header=None)
@@ -98,7 +98,7 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
     x_train.columns = features
     x_test.columns = features
     x_complete.columns = features
-    #print(x_complete.columns)
+    # print(x_complete.columns)
 
     # #   MIN,MAX,AV ACC+Gyro
     # wantedFeatures = ['tBodyAcc-Mean-1', 'tBodyAcc-Mean-2', 'tBodyAcc-Mean-3', 'tBodyAcc-Max-1', 'tBodyAcc-Max-2',
@@ -128,8 +128,7 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
     x_test = x_test[x_test.columns.intersection(wantedFeatures)]
     x_complete = x_complete[x_complete.columns.intersection(wantedFeatures)]
 
-    if(not HAPT):
-
+    if (not HAPT):
         df = pd.read_csv('../offlineModels/NN/data.csv', sep=',', index_col=False, header=None)
         df.dropna(inplace=True)
         df.to_csv('../offlineModels/NN/data.csv', sep=',', index=False, header=False)
@@ -175,7 +174,7 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
         model = create_model(param=param)
 
         history = model.fit(x_train, y_train, epochs=300, batch_size=50, validation_data=(x_test, y_test_hot),
-                            verbose=1)#, callbacks=[es]
+                            verbose=1)  # , callbacks=[es]
 
         print()
         print('Score from model evaluation:')
@@ -189,7 +188,7 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
 
         cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
         cm.plot()
-        #plt.savefig(figure_path + 'CM.png')
+        # plt.savefig(figure_path + 'CM.png')
         plt.show()
 
         print('Classification report')
@@ -204,7 +203,7 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
 
         cm = ConfusionMatrixDisplay(confusion_matrix(y_val, y_pred))
         cm.plot()
-        #plt.savefig(figure_path + 'CM.png')
+        # plt.savefig(figure_path + 'CM.png')
         plt.show()
 
         # x = pd.read_csv("../offlineModels/neighbors.csv", sep=',', index_col=False, header=None)
@@ -324,7 +323,7 @@ def cutOffHead(model):
     return model2
 
 
-def createTransferModel(model):
+def createTransferModel(model, modelname):
     model.trainable = False
 
     x = model(model.inputs, training=False)
@@ -340,18 +339,14 @@ def createTransferModel(model):
 
     print(model.summary())
 
-    df = pd.read_csv('../offlineModels/NN/transfer-learning-data-right-backpocket.csv', sep=',', index_col=False, header=None)
+    df = pd.read_csv('../offlineModels/Data/neighbors.csv', sep=',', index_col=False, header=None)
     df.dropna(inplace=True)
 
     targets = df.iloc[:, -1]
     targets = targets - 1
     x_complete = df.iloc[:, :-1]
 
-
     x_train, x_test, y_train, y_test = train_test_split(x_complete, targets, test_size=0.2, random_state=33)
-
-    global num_features
-    num_features = x_train.shape[1]
 
     encoder = LabelEncoder()
     encoder.fit(y_train)
@@ -379,45 +374,33 @@ def createTransferModel(model):
     print('Classification report')
     print(classification_report(y_test, y_pred))
 
+    convertToTFLiteModelfromKeras(model,modelname)
 
 
+def convertToTFLiteModelfromKeras(model, modelname):
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+        tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
+    ]
+    tflite_model = converter.convert()
 
-# def convertToTFLiteModelfromDisk(saved_model_dir):
-#     converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)  # path to the SavedModel directory
-#     converter.target_spec.supported_ops = [
-#         tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
-#         tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
-#     ]
-#     tflite_model = converter.convert()
-#
-#     interpreter = tf.lite.Interpreter(model_content=tflite_model)
-#     interpreter.allocate_tensors()
-#     signatures = interpreter.get_signature_list()
-#     print(signatures)
-#     # infer = interpreter.get_signature_runner("infer")
-#
-#     # Save the model.
-#     with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
-#         f.write(tflite_model)
-#
-#
-# def convertToTFLiteModelfromKeras(model):
-#     converter = tf.lite.TFLiteConverter.from_keras_model(model)
-#     converter.target_spec.supported_ops = [
-#         tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
-#         tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
-#     ]
-#     tflite_model = converter.convert()
-#
-#     interpreter = tf.lite.Interpreter(model_content=tflite_model)
-#     interpreter.allocate_tensors()
-#     signatures = interpreter.get_signature_list()
-#     print(signatures)
-#     # infer = interpreter.get_signature_runner("infer")
-#
-#     # Save the model.
-#     with open('../offlineModels/NN/tfLite/model.tflite', 'wb') as f:
-#         f.write(tflite_model)
+    # Save the model.
+    with open('../offlineModels/NN/tfLite/tfLiteModelConverted/' + modelname, 'wb') as f:
+        f.write(tflite_model)
+
+
+def convertToTFLiteModelfromDisk(saved_model_dir, save=False):
+    converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)  # path to the SavedModel directory
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+        tf.lite.OpsSet.SELECT_TF_OPS  # enable TensorFlow ops.
+    ]
+    tflite_model = converter.convert()
+
+    if (save):
+        with open('../tfLite/tfLiteModelConverted/generic.tflite', 'wb') as f:
+            f.write(tflite_model)
 
 
 def set_seed(seed):
@@ -427,12 +410,13 @@ def set_seed(seed):
     random.seed(seed)
 
 
-def convert_and_save(model, saved_model_dir):
+def convert_and_save(model, saved_model_dir, tfmodel_name='model.tflite'):
     """Converts and saves the TFLite Transfer Learning model.
 
   Args:
     saved_model_dir: A directory path to save a converted model.
     model: model to convert
+    :param tfmodel_name:
   """
     tl_model = TransferLearningModel(model)
 
@@ -457,17 +441,8 @@ def convert_and_save(model, saved_model_dir):
     converter.experimental_enable_resource_variables = True
     tflite_model = converter.convert()
 
-    # interpreter = tf.lite.Interpreter(model_content=tflite_model)
-    # interpreter.allocate_tensors()
-    # signatures = interpreter.get_signature_list()
-    # print(signatures)
-    # infer = interpreter.get_signature_runner("infer")
-    # train = interpreter.get_signature_runner("train")
-
-    # interpreter.invoke()
-
     # model_file_path = os.path.join('model.tflite')
-    model_file_path = '../offlineModels/NN/tfLite/tfLiteModelConverted/ourDatamodel.tflite'
+    model_file_path = '../offlineModels/NN/tfLite/tfLiteModelConverted/' + tfmodel_name
     with open(model_file_path, 'wb') as model_file:
         model_file.write(tflite_model)
 

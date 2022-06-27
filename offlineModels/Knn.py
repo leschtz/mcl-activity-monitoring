@@ -41,15 +41,6 @@ class KNearestNeighborsClassifier(BaseEstimator):
             print("k must be smaller than the number of data samples")
             return
 
-        # print("_________")
-        # print(eucledian_dist(self._X[0], X[0]))
-        # print(eucledian_dist(self._X[0], X[1]))
-        # print('!!!!!!!')
-        # print(eucledian_dist(self._X[1], X[0]))
-        # print(eucledian_dist(self._X[1], X[1]))
-
-        # print(dist)
-
         predictions = np.array([])
         y_train = self._y.reshape(-1, 1)
         for x in X:  # iterating through every test data point
@@ -69,13 +60,12 @@ class KNearestNeighborsClassifier(BaseEstimator):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('neighbors.csv')
+    df = pd.read_csv('Data/neighbors.csv')
     print(df.head())
-    #df = df.to_numpy()
+    # df = df.to_numpy()
     Y_col = 'label'
     X_cols = df.loc[:, df.columns != Y_col].columns
-    X_train, X_test,y_train,y_test = train_test_split(df[X_cols],df[Y_col], test_size=0.2)
-
+    X_train, X_test, y_train, y_test = train_test_split(df[X_cols], df[Y_col], test_size=0.2)
 
     X_train = X_train.to_numpy()
     X_test = X_test.to_numpy()
@@ -93,7 +83,7 @@ if __name__ == '__main__':
     print(f"Test Score: {test_score}")
     print(f"Dataset : {clf.best_params_}")
 
-    cm = ConfusionMatrixDisplay(confusion_matrix(y_test,y_pred))
+    cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
     cm.plot()
     plt.show()
 
@@ -101,7 +91,7 @@ if __name__ == '__main__':
 
     plot_dataset(X_train, X_test, y_train, y_test)
     plt.title(f'Dataset')
-    #plt.savefig(f'images/Dataset.png')
+    # plt.savefig(f'images/Dataset.png')
 
     plt.show()
     plt.figure()
@@ -109,5 +99,5 @@ if __name__ == '__main__':
     plt.plot(clf.cv_results_['mean_test_score'], label="mean_test_score")
     plt.title(f'Dataset')
     plt.legend()
-    #plt.savefig(f'images/Dataset_cvresults.png')
+    # plt.savefig(f'images/Dataset_cvresults.png')
     plt.show()

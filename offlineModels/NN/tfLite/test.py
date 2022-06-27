@@ -49,7 +49,7 @@ def basic_test(tflite_model):
 
 
 def train_evaluateTransfer():
-    x = pd.read_csv("../../../offlineModels/neighbors.csv", sep=',', index_col=False, header=None)
+    x = pd.read_csv("../../Data/neighbors.csv", sep=',', index_col=False, header=None)
 
     targets = x.iloc[:, -1]
     targets = targets - 1
@@ -132,7 +132,7 @@ def train_evaluateTransfer():
 
 
 def evaluateGeneric():
-    x = pd.read_csv("../../../offlineModels/neighbors.csv", sep=',', index_col=False, header=None)
+    x = pd.read_csv("../../Data/neighbors.csv", sep=',', index_col=False, header=None)
 
     targets = x.iloc[:, -1]
     targets = targets - 1
