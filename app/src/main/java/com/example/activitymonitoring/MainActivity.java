@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -290,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (customModel != null && !customModel.getIsLearning()) {
             customModel.setIsLearning();
-            AlertDialog.Builder builder = this.createTransferActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning), 10 * 1000L);
+            AlertDialog.Builder builder = this.createTransferActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning), 3 * 60 * 1000L);
             builder.show();
         } else {
             Toast.makeText(getApplicationContext(), R.string.toast_failed_stop_transfer_learning, Toast.LENGTH_SHORT).show();
@@ -657,7 +658,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
 
                 int classInt = (int) data[data.length - 1];
-                String className = String.valueOf(classInt-1);
+                String className = String.valueOf(classInt - 1);
                 ///*
                 System.out.print("Adding Sample: ");
                 for (float d : f_data) {
@@ -674,16 +675,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             System.out.println("Samples: " + sampleSize);
 
+            AtomicInteger epochs = new AtomicInteger();
             customModel.enableTraining((epoch, loss) -> {
-                System.out.println("Loss: " + loss + " with error: " + Math.abs(loss - prevLoss));
-
 
                 runOnUiThread(() -> {
                     TextView lossText = findViewById(R.id.loss_text);
                     lossText.setText(getResources().getString(R.string.loss_string, loss));
                 });
-                if (Math.abs(loss - prevLoss) < 0.01) {
-                    if (stopTrain++ == 3) {
+                System.out.println("Epoch: " + epochs.get() + " Loss: " + loss + " with error: " + Math.abs(loss - prevLoss));
+                if (Float.isNaN(loss)) {
+                    this.customModel.disableTraining();
+                }
+                if (epochs.get() > 1000) {
+                    this.customModel.disableTraining();
+                }
+                if (Math.abs(loss - prevLoss) < 0.001) {
+                    if (stopTrain++ == 5) {
                         this.customModel.disableTraining();
                         runOnUiThread(() -> {
                             TextView lossText = findViewById(R.id.loss_text);
@@ -697,6 +704,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }
                 prevLoss = loss;
+                epochs.getAndIncrement();
             });
         }).start();
 
@@ -704,7 +712,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
-    public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet, String filename) {
+    public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet, String
+            filename) {
         try {
             File f = new File(this.getFilesDir(), filename);
             OutputStreamWriter streamWriter = new OutputStreamWriter(new FileOutputStream(f, true));

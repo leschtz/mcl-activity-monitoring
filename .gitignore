@@ -321,3 +321,4 @@ fabric.properties
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,androidstudio,android,java,gradle
+/offlineModels/NN/Hapt_neighbors/

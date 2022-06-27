@@ -90,6 +90,7 @@ public final class CustomModel implements Closeable {
         try {
             this.model =
                     new LiteMultipleSignatureModel(
+                            //modelLoader.loadMappedFile("ourDatamodel.tflite"), classes.size());
                             modelLoader.loadMappedFile("model.tflite"), classes.size());
         } catch (IOException e) {
             throw new RuntimeException("Couldn't read underlying model for TransferLearningModel", e);
@@ -146,15 +147,20 @@ public final class CustomModel implements Closeable {
      * @param lossConsumer callback to receive loss values, may be null.
      * @return future that is resolved when training is finished.
      */
-    public Future<Void> train(int numEpochs, LossConsumer lossConsumer) {
+    public Future<Void> train(int numEpochs, LossConsumer lossConsumer){
         checkNotTerminating();
         int trainBatchSize = getTrainBatchSize();
 
+
+        try{
         if (trainingSamples.size() < trainBatchSize) {
             throw new RuntimeException(
                     String.format(
                             "Too few samples to start training: need %d, got %d",
                             trainBatchSize, trainingSamples.size()));
+        }}catch (RuntimeException e ){
+            //TODO alert not enough samples
+
         }
 
         trainingBatchBottlenecks = new float[trainBatchSize][numBottleneckFeatures()];
@@ -181,6 +187,7 @@ public final class CustomModel implements Closeable {
                                 }
 
                                 float loss = this.model.runTraining(trainingBatchBottlenecks, trainingBatchLabels);
+
                                 totalLoss += loss;
                                 numBatchesProcessed++;
                             }
