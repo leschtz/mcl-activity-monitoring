@@ -30,21 +30,21 @@ num_features = None
 def main():
     saved_basemodel_dir = '../offlineModels/NN/Hapt_neighbors'
 
-    # model = keras.models.load_model(saved_basemodel_dir)
+    model = keras.models.load_model(saved_basemodel_dir)
     # print(model.summary())
 
-    model = train_base_model(HAPT=True)
+    #model = train_base_model(HAPT=True)
     model.summary()
     #
-    model.save(saved_basemodel_dir)
+    #model.save(saved_basemodel_dir)
 
     model = cutOffHead(model)
     model.summary()
 
-    createTransferModel(model,  modelname='Hapt_neighbors.tflite')
+    #createTransferModel(model,  modelname='Hapt_neighbors.tflite')
 
     #
-    #convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel')
+    convert_and_save(model, '../offlineModels/NN/tfLite/tfLiteModel' , tfmodel_name='custom.tflite')
     # convert_and_save(model, '../offlineModels/NN/tfLite/test')
 
 
