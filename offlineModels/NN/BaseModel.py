@@ -33,11 +33,11 @@ def main():
     # model = keras.models.load_model(saved_basemodel_dir)
     # print(model.summary())
 
-    model = train_base_model(HAPT=False)
+    model = train_base_model(HAPT=True)
     model.summary()
     #
     # model.save(saved_basemodel_dir)
-
+    return
     model = cutOffHead(model)
     model.summary()
 
@@ -138,6 +138,11 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
         targets = targets - 1
         x_complete = df.iloc[:, :-1]
         #
+    df = pd.read_csv('../offlineModels/NN/data.csv', sep=',', index_col=False, header=None)
+    df.dropna(inplace=True)
+    y_val = df.iloc[:, -1]
+    y_val = y_val - 1
+    x_val = df.iloc[:, :-1]
     # print(x_complete.head())
     # print(list(targets))
 
@@ -169,8 +174,8 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
                  'nodecount3': 128}
         model = create_model(param=param)
 
-        history = model.fit(x_train, y_train, epochs=250, batch_size=50, validation_data=(x_test, y_test_hot),
-                            verbose=0, callbacks=[es])
+        history = model.fit(x_train, y_train, epochs=300, batch_size=50, validation_data=(x_test, y_test_hot),
+                            verbose=1)#, callbacks=[es]
 
         print()
         print('Score from model evaluation:')
@@ -182,8 +187,25 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
         y_pred = y_pred.round()
         y_pred = y_pred.argmax(1)
 
+        cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
+        cm.plot()
+        #plt.savefig(figure_path + 'CM.png')
+        plt.show()
+
         print('Classification report')
         print(classification_report(y_test, y_pred))
+
+        y_pred = model.predict(x_val)
+        y_pred = y_pred.round()
+        y_pred = y_pred.argmax(1)
+
+        print('Classification report')
+        print(classification_report(y_val, y_pred))
+
+        cm = ConfusionMatrixDisplay(confusion_matrix(y_val, y_pred))
+        cm.plot()
+        #plt.savefig(figure_path + 'CM.png')
+        plt.show()
 
         # x = pd.read_csv("../offlineModels/neighbors.csv", sep=',', index_col=False, header=None)
         #
@@ -207,6 +229,7 @@ def train_base_model(noGrid=True, fixedData=False, HAPT = False):
         cm.plot()
         plt.savefig(figure_path + 'CM.png')
         plt.show()
+
         best_epoch = es.best_epoch
 
         print(history.history.keys())
