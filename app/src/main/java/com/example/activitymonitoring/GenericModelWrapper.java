@@ -30,7 +30,7 @@ public class GenericModelWrapper implements Closeable {
     GenericModelWrapper(Context context) {
         model = new GenericModel(
                 new ModelLoader(context, "model"),
-                Arrays.asList("1", "2", "3", "4", "5", "6")
+                Arrays.asList("0", "1", "2", "3", "4", "5")
         );
     }
 

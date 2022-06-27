@@ -1,5 +1,7 @@
 package com.example.activitymonitoring;
 
+import android.content.res.Resources;
+
 import com.example.transfer_api.Prediction;
 
 import java.util.stream.DoubleStream;
@@ -37,5 +39,22 @@ public class Util {
             System.out.print(predict.getClassName() + ": " + predict.getConfidence() + "  ;  ");
         }
         System.out.println();
+    }
+
+    public static String buildPredictionProbabilityString(Resources resources, Prediction[] predictions) {
+        if (predictions.length != 6) {
+            return "";
+        }
+
+        return resources
+                .getString(
+                        R.string.prediction_templates,
+                        predictions[0].getConfidence(),
+                        predictions[1].getConfidence(),
+                        predictions[2].getConfidence(),
+                        predictions[3].getConfidence(),
+                        predictions[4].getConfidence(),
+                        predictions[5].getConfidence()
+                );
     }
 }

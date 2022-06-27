@@ -309,6 +309,7 @@
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
 
+            <!--
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -342,74 +343,8 @@
                     android:textSize="40sp"
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
+            -->
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="1dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="5dp"
-                app:cardMaxElevation="12dp"
-                app:cardPreventCornerOverlap="true"
-                app:cardUseCompatPadding="true">
-
-                <TextView
-                    android:id="@+id/custom_model_predictions"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_margin="10dp"
-                    android:contentDescription="@string/transfer_learning_predictions"
-                    android:gravity="bottom|center_horizontal"
-                    android:text="@string/prediction_templates"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="top|center_horizontal"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="20dp"
-                    android:text="Predictions: Custom Model"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="1dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="5dp"
-                app:cardMaxElevation="12dp"
-                app:cardPreventCornerOverlap="true"
-                app:cardUseCompatPadding="true">
-
-                <TextView
-                    android:id="@+id/transfer_model_predictions"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_margin="10dp"
-                    android:contentDescription="@string/transfer_learning_predictions"
-                    android:gravity="bottom|center_horizontal"
-                    android:text="@string/prediction_templates"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="top|center_horizontal"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="20dp"
-                    android:text="@string/predictions_transfer_learning"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -444,6 +379,77 @@
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="1dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="5dp"
+                app:cardMaxElevation="12dp"
+                app:cardPreventCornerOverlap="true"
+                app:cardUseCompatPadding="true">
+
+                <TextView
+                    android:id="@+id/transfer_model_predictions"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="10dp"
+                    android:contentDescription="@string/transfer_learning_predictions"
+                    android:gravity="bottom|center_horizontal"
+                    android:text="@string/prediction_templates"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="@string/predictions_transfer_learning"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="1dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="5dp"
+                app:cardMaxElevation="12dp"
+                app:cardPreventCornerOverlap="true"
+                app:cardUseCompatPadding="true">
+
+                <TextView
+                    android:id="@+id/custom_model_predictions"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_margin="10dp"
+                    android:contentDescription="@string/transfer_learning_predictions"
+                    android:gravity="bottom|center_horizontal"
+                    android:text="@string/prediction_templates"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="Predictions: Custom Model"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+
+
+
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
