@@ -303,7 +303,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return;
         }
 
+        // neural networks need their data as floats
         float[] f_knnData = new float[knnData.length];
+        for(int i = 0; i < knnData.length; i++) {
+            f_knnData[i] = (float) knnData[i];
+        }
 
         // Train the kNN and the TransferLearning Model
         if (this.isKnnLearning && this.dataProcessor.getClassifyType() != ActivityType.None) {
@@ -401,9 +405,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         if (this.haptOfflineModel != null) {
-            Prediction[] possibleResults = this.haptOfflineModel.predict(f_knnData);
+            Prediction[] possibleResults = this.haptOfflineModel.predict(f_knnData.clone());
+
             Prediction haptResult = Util.getMostLikelyPrediction(possibleResults);
-            // Util.debugPredictions(possibleResults);
+            //Util.debugPredictions(possibleResults);
+            //System.out.println(haptResult + "\t" + haptResult.className + "\t" + haptResult.getConfidence() + "");
 
             if (haptResult == null) {
                 return;
@@ -639,4 +645,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void addFeatureSetToCustomFeaturesFile(Set<double[]> featureSet) {
         addFeatureSetToCustomFeaturesFile(featureSet, "custom_features.txt");
     }
+
+    // todo: quick function to compare the data with
 }

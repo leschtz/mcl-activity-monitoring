@@ -33,7 +33,7 @@ public class Util {
     }
 
     public static void debugPredictions(Prediction[] predictions) {
-        System.out.print("TransferModel Predictions: ");
+        System.out.print("Predictions: ");
         for (Prediction predict : predictions) {
             System.out.print(predict.getClassName() + ": " + predict.getConfidence() + "  ;  ");
         }
