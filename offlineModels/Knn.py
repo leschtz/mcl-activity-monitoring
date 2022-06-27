@@ -4,7 +4,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 
 import numpy as np
 from sklearn.base import BaseEstimator
-from sklearn.metrics import pairwise_distances, ConfusionMatrixDisplay
+from sklearn.metrics import pairwise_distances, ConfusionMatrixDisplay, classification_report
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 
@@ -60,22 +60,41 @@ class KNearestNeighborsClassifier(BaseEstimator):
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('Data/neighbors.csv')
-    print(df.head())
-    # df = df.to_numpy()
-    Y_col = 'label'
-    X_cols = df.loc[:, df.columns != Y_col].columns
-    X_train, X_test, y_train, y_test = train_test_split(df[X_cols], df[Y_col], test_size=0.2)
+    df = pd.read_csv('Data/right-front-pocket-jean.csv')
+    df.dropna(inplace=True)
+
+    targets = df.iloc[:, -1]
+    #targets = targets - 1
+    features = df.iloc[:, :-1]
+
+    print(list(targets))
+
+    testdf = pd.read_csv('Data/right-front-pocket-jeans-02.csv')
+    testdf.dropna(inplace=True)
+
+    X_train = features
+    y_train = targets
+
+    X_test = testdf.iloc[:, :-1]
+    y_test = testdf.iloc[:, -1]
+
+    #X_train, X_test, y_train, y_test = train_test_split(features, targets, test_size=0.2)
 
     X_train = X_train.to_numpy()
     X_test = X_test.to_numpy()
     y_train = y_train.to_numpy()
     y_test = y_test.to_numpy()
 
-    knn = KNearestNeighborsClassifier()
+    knn = KNearestNeighborsClassifier(k=31)
+    knn.fit(X_train, y_train)
+    test_score = knn.score(X_test, y_test)
+    y_pred = knn.predict(X_test)
+    print(f"Test Score: {test_score}")
+    print(classification_report(y_test, y_pred))
 
-    parameters = {'k': [1, 3, 5, 9, 25, 49]}
-    clf = GridSearchCV(knn, parameters, return_train_score=True)
+    knn2 = KNearestNeighborsClassifier()
+    parameters = {'k': [13,19,25,31,37]}
+    clf = GridSearchCV(knn2, parameters, return_train_score=True)
 
     clf.fit(X_train, y_train)
     test_score = clf.score(X_test, y_test)
@@ -86,18 +105,18 @@ if __name__ == '__main__':
     cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
     cm.plot()
     plt.show()
-
-    plt.figure()
-
-    plot_dataset(X_train, X_test, y_train, y_test)
-    plt.title(f'Dataset')
-    # plt.savefig(f'images/Dataset.png')
-
-    plt.show()
-    plt.figure()
-    plt.plot(clf.cv_results_['mean_train_score'], label="mean_train_score")
-    plt.plot(clf.cv_results_['mean_test_score'], label="mean_test_score")
-    plt.title(f'Dataset')
-    plt.legend()
-    # plt.savefig(f'images/Dataset_cvresults.png')
-    plt.show()
+    #
+    # plt.figure()
+    #
+    # plot_dataset(X_train, X_test, y_train, y_test)
+    # plt.title(f'Dataset')
+    # # plt.savefig(f'images/Dataset.png')
+    #
+    # plt.show()
+    # plt.figure()
+    # plt.plot(clf.cv_results_['mean_train_score'], label="mean_train_score")
+    # plt.plot(clf.cv_results_['mean_test_score'], label="mean_test_score")
+    # plt.title(f'Dataset')
+    # plt.legend()
+    # # plt.savefig(f'images/Dataset_cvresults.png')
+    # plt.show()

@@ -339,11 +339,11 @@ def createTransferModel(model, modelname):
 
     print(model.summary())
 
-    df = pd.read_csv('../offlineModels/Data/neighbors.csv', sep=',', index_col=False, header=None)
+    df = pd.read_csv('../offlineModels/Data/right-front-pocket-jean.csv', sep=',', index_col=False, header=None)
     df.dropna(inplace=True)
 
     targets = df.iloc[:, -1]
-    targets = targets - 1
+    #targets = targets - 1
     x_complete = df.iloc[:, :-1]
 
     x_train, x_test, y_train, y_test = train_test_split(x_complete, targets, test_size=0.2, random_state=33)

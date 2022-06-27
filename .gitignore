@@ -322,3 +322,16 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,androidstudio,android,java,gradle
 /offlineModels/NN/Hapt_neighbors/
+/offlineModels/NN/Results/Basemodel_class_report_old.PNG
+/offlineModels/NN/savedModel/keras_metadata.pb
+/offlineModels/NN/tfLite/test/model.tflite
+/offlineModels/NN/Results/noearlystopping.pdf
+/offlineModels/NN/savedModel/saved_model.pb
+/offlineModels/NN/tfLite/test/saved_model.pb
+/offlineModels/NN/tfLite/tfLiteModel/saved_model.pb
+/offlineModels/NN/savedModel/variables/variables.data-00000-of-00001
+/offlineModels/NN/tfLite/test/variables/variables.data-00000-of-00001
+/offlineModels/NN/tfLite/tfLiteModel/variables/variables.data-00000-of-00001
+/offlineModels/NN/savedModel/variables/variables.index
+/offlineModels/NN/tfLite/test/variables/variables.index
+/offlineModels/NN/tfLite/tfLiteModel/variables/variables.index
