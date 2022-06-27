@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataProcessor dataProcessor;
     private Set<double[]> trainingData;
     private GenericModelWrapper genericModel;
-    private HaptOfflineTransferModelWrapper offlineTransferModel;
+    private HaptOfflineTransferModelWrapper haptOfflineModel;
     private MobileTransferModelWrapper mobileTransferModel;
     private Boolean isKnnLearning = false;
     private float prevLoss = 0.0f;
@@ -105,8 +105,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.genericModel = new GenericModelWrapper(getApplicationContext());
         }
 
-        if (this.offlineTransferModel == null) {
-            this.offlineTransferModel = new HaptOfflineTransferModelWrapper(getApplicationContext());
+        if (this.haptOfflineModel == null) {
+            this.haptOfflineModel = new HaptOfflineTransferModelWrapper(getApplicationContext());
         }
 
         if (this.mobileTransferModel == null) {
@@ -407,7 +407,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
             }
 
-
             TextView predictionProbabilities = findViewById(R.id.custom_model_predictions);
             predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
 
@@ -447,8 +446,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
 
-        if (this.offlineTransferModel != null) {
-            Prediction[] possibleResults = this.offlineTransferModel.predict(f_knnData);
+        if (this.haptOfflineModel != null) {
+            Prediction[] possibleResults = this.haptOfflineModel.predict(f_knnData);
             Prediction transferResult = getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
             //System.out.println("Transfer Prediction: " + transferResult.className);
@@ -461,14 +460,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
             }
 
-            TextView predictionProbabilities = findViewById(R.id.transfer_model_predictions);
+            TextView predictionProbabilities = findViewById(R.id.hapt_offline_model_predictions);
             predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
 
-            TextView confidencePrediction = findViewById(R.id.transfer_model_confidence_text);
+            TextView confidencePrediction = findViewById(R.id.hapt_offline_model_confidence_text);
             confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, transferResult.confidence));
 
             ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
-            TextView base_classification_result = findViewById(R.id.transfer_model);
+            TextView base_classification_result = findViewById(R.id.hapt_offline_model);
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
     }

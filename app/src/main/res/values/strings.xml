@@ -33,9 +33,11 @@
     <string name="automatic_classify">Automatically learning the kNN model as %1$s for the next %2$d seconds.</string>
     <string name="predictions_transfer_learning">Predictions: Transfer Learning</string>
     <string name="predictions_generic_model">Predictions: Generic Model</string>
-    <string name="transfer_learning_predictions">Transfer Learning Predictions</string>
+    <string name="hapt_offline_model_predictions">HAPT Offline Learning Predictions</string>
     <string name="enable_training">Enable Training</string>
     <string name="transfer_model">Transfer Model</string>
     <string name="generic_model">Generic Model</string>
     <string name="custom_model">Custom Model</string>
+    <string name="predictions_hapt_offline">Predictions: HAPT Offline Model</string>
+    <string name="hapt_offline_transfer_model">HAPT Offline Transfer Model</string>
 </resources>

@@ -3,7 +3,6 @@ package com.example.activitymonitoring;
 
 import android.content.Context;
 
-import com.example.transfer_api.GenericModel;
 import com.example.transfer_api.HaptOfflineTransferModel;
 import com.example.transfer_api.ModelLoader;
 import com.example.transfer_api.Prediction;
@@ -18,7 +17,7 @@ public class HaptOfflineTransferModelWrapper implements Closeable {
     HaptOfflineTransferModelWrapper(Context context) {
         model = new HaptOfflineTransferModel(
                 new ModelLoader(context, "model"),
-                Arrays.asList("1", "2", "3", "4", "5", "6")
+                Arrays.asList("0", "1", "2", "3", "4", "5")
         );
     }
 

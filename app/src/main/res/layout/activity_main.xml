@@ -236,12 +236,12 @@
                     android:layout_gravity="top|center_horizontal"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
-                    android:text="@string/custom_model"
+                    android:text="@string/hapt_offline_transfer_model"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/custom_model"
+                    android:id="@+id/hapt_offline_model"
                     android:layout_width="200dp"
                     android:layout_height="100dp"
                     android:layout_gravity="center"
@@ -253,7 +253,7 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/custom_model_confidence_text"
+                    android:id="@+id/hapt_offline_model_confidence_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|center_horizontal"
@@ -286,7 +286,7 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/transfer_model"
+                    android:id="@+id/custom_model"
                     android:layout_width="200dp"
                     android:layout_height="100dp"
                     android:layout_gravity="center"
@@ -298,7 +298,7 @@
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/transfer_model_confidence_text"
+                    android:id="@+id/custom_model_confidence_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom|center_horizontal"
@@ -393,12 +393,12 @@
                 app:cardUseCompatPadding="true">
 
                 <TextView
-                    android:id="@+id/transfer_model_predictions"
+                    android:id="@+id/hapt_offline_model_predictions"
                     android:layout_width="200dp"
                     android:layout_height="200dp"
                     android:layout_gravity="bottom|center_horizontal"
                     android:layout_margin="10dp"
-                    android:contentDescription="@string/transfer_learning_predictions"
+                    android:contentDescription="@string/hapt_offline_model_predictions"
                     android:gravity="bottom|center_horizontal"
                     android:text="@string/prediction_templates"
                     android:textSize="20sp"
@@ -410,7 +410,7 @@
                     android:layout_gravity="top|center_horizontal"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
-                    android:text="@string/predictions_transfer_learning"
+                    android:text="@string/predictions_hapt_offline"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </androidx.cardview.widget.CardView>
@@ -431,7 +431,7 @@
                     android:layout_height="200dp"
                     android:layout_gravity="bottom|center_horizontal"
                     android:layout_margin="10dp"
-                    android:contentDescription="@string/transfer_learning_predictions"
+                    android:contentDescription="@string/hapt_offline_model_predictions"
                     android:gravity="bottom|center_horizontal"
                     android:text="@string/prediction_templates"
                     android:textSize="20sp"
