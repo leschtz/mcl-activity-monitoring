@@ -152,15 +152,11 @@ public final class CustomModel implements Closeable {
         int trainBatchSize = getTrainBatchSize();
 
 
-        try{
         if (trainingSamples.size() < trainBatchSize) {
             throw new RuntimeException(
                     String.format(
                             "Too few samples to start training: need %d, got %d",
                             trainBatchSize, trainingSamples.size()));
-        }}catch (RuntimeException e ){
-            //TODO alert not enough samples
-
         }
 
         trainingBatchBottlenecks = new float[trainBatchSize][numBottleneckFeatures()];

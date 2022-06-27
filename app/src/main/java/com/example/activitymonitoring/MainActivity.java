@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataProcessor dataProcessor;
     private Set<double[]> trainingData;
     private GenericModelWrapper genericModel;
-    private TransferLearningModelWrapper transferModel;
-    private CustomModelWrapper customModel;
+    private OfflineTransferModelWrapper offlineTransferModel;
+    private MobileTransferModelWrapper mobileTransferModel;
     private Boolean isKnnLearning = false;
     private float prevLoss = 0.0f;
     private int stopTrain = 0;
@@ -97,8 +97,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //stopTransferLearningMainFab.setOnClickListener(this::stopAddingSamplesTransferLearning);
         enableTrainingBtn.setOnLongClickListener(this::trainWithRecordedData);
 
-        if (this.transferModel == null) {
-            this.transferModel = new TransferLearningModelWrapper(getBaseContext());
+        if (this.offlineTransferModel == null) {
+            this.offlineTransferModel = new OfflineTransferModelWrapper(getApplicationContext());
         }
 
         if (this.dataProcessor == null) {
@@ -109,8 +109,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.genericModel = new GenericModelWrapper(getApplicationContext());
         }
 
-        if (this.customModel == null) {
-            this.customModel = new CustomModelWrapper(getApplicationContext());
+        if (this.mobileTransferModel == null) {
+            this.mobileTransferModel = new MobileTransferModelWrapper(getApplicationContext());
         }
 
         File f = new File(this.getFilesDir(), "custom_features.txt");
@@ -216,13 +216,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                     dataProcessor.setClassifyAs(ActivityType.None);
 
-                    if (customModel == null || !customModel.getIsLearning()) {
+                    if (mobileTransferModel == null || !mobileTransferModel.getIsLearning()) {
                         return;
                     }
 
                     addFeatureSetToCustomFeaturesFile(trainingData, "transfer_learning_features.txt");
                     trainingData.clear();
-                    customModel.clearIsLearning();
+                    mobileTransferModel.clearIsLearning();
 
                     RingtoneManager.getRingtone(getApplicationContext(), RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)).play();
                     Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
@@ -289,9 +289,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void startAddingSamplesTransferLearning(View view) {
 
-        if (customModel != null && !customModel.getIsLearning()) {
-            customModel.setIsLearning();
-            AlertDialog.Builder builder = this.createTransferActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning), 3 * 60 * 1000L);
+        if (mobileTransferModel != null && !mobileTransferModel.getIsLearning()) {
+            mobileTransferModel.setIsLearning();
+            AlertDialog.Builder builder = this.createTransferActivityDialog(getString(R.string.train_title), getString(R.string.toast_start_transfer_learning), 10 * 1000L);
             builder.show();
         } else {
             Toast.makeText(getApplicationContext(), R.string.toast_failed_stop_transfer_learning, Toast.LENGTH_SHORT).show();
@@ -301,9 +301,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void stopAddingSamplesTransferLearning(View view) {
-        if (transferModel != null && transferModel.getIsLearning()) {
+        if (offlineTransferModel != null && offlineTransferModel.getIsLearning()) {
             dataProcessor.setClassifyAs(ActivityType.None);
-            this.transferModel.clearIsLearning();
+            this.offlineTransferModel.clearIsLearning();
 
             Toast.makeText(getApplicationContext(), R.string.toast_stop_transfer_learning, Toast.LENGTH_SHORT).show();
             //stopTransferLearningFab.hide();
@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         */
 
-        if (customModel != null && this.dataProcessor.getClassifyType() != ActivityType.None) {
+        if (mobileTransferModel != null && this.dataProcessor.getClassifyType() != ActivityType.None) {
             String className = String.valueOf(this.dataProcessor.getClassifyType().ordinal());
             //System.out.println(className);
             try {
@@ -373,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 features[knnData.length] = this.dataProcessor.getClassifyType().ordinal();
                 this.trainingData.add(features.clone());
 
-                this.customModel.addSample(f_knnData, className).get();
+                this.mobileTransferModel.addSample(f_knnData, className).get();
             } catch (ExecutionException | InterruptedException e) {
                 System.err.println("addSample raised an issue: " + e.getCause());
             }
@@ -388,8 +388,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        if (this.customModel != null) {
-            Prediction[] possibleResults = this.customModel.predict(f_knnData);
+        if (this.mobileTransferModel != null) {
+            Prediction[] possibleResults = this.mobileTransferModel.predict(f_knnData);
             Prediction predictionResult = getMostLikelyPrediction(possibleResults);
             //System.out.println("Generic Prediction: " + genericResult.className);
 
@@ -444,8 +444,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
         }
 
-        if (this.transferModel != null) {
-            Prediction[] possibleResults = this.transferModel.predict(f_knnData);
+        if (this.offlineTransferModel != null) {
+            Prediction[] possibleResults = this.offlineTransferModel.predict(f_knnData);
             Prediction transferResult = getMostLikelyPrediction(possibleResults);
             // Util.debugPredictions(possibleResults);
             //System.out.println("Transfer Prediction: " + transferResult.className);
@@ -545,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void fabViewButtonHandler(View view) {
         if (!fabIsVisible) {
-            if (transferModel != null && transferModel.getIsLearning()) {
+            if (offlineTransferModel != null && offlineTransferModel.getIsLearning()) {
                 //transferLearnFab.hide();
                 //transferLearningText.setVisibility(View.GONE);
                 //stopTransferLearningMainFab.show();
@@ -579,7 +579,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             fabIsVisible = true;
         } else {
-            if (transferModel != null && transferModel.getIsLearning()) {
+            if (offlineTransferModel != null && offlineTransferModel.getIsLearning()) {
                 //stopTransferLearningFab.show();
             }
 
@@ -638,11 +638,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // to mix this up, it has to be shuffled
             Collections.shuffle(trainingData);
 
-            if (customModel == null) {
+            if (mobileTransferModel == null) {
                 return;
             }
 
+            // No samples were loaded, it can't train the Model and should not do so
             if (trainingData.size() == 0) {
+                runOnUiThread(() -> {
+                    Toast.makeText(getApplicationContext(), "No samples available to train.", Toast.LENGTH_LONG).show();
+                });
                 return;
             }
 
@@ -659,39 +663,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 int classInt = (int) data[data.length - 1];
                 String className = String.valueOf(classInt - 1);
-                ///*
+                /*
                 System.out.print("Adding Sample: ");
                 for (float d : f_data) {
                     System.out.print(d + ", ");
                 }
                 System.out.println("class: " + className);
-                //*/
-                customModel.addSample(f_data, className);
+                */
+                mobileTransferModel.addSample(f_data, className);
                 if (sampleSize++ > 100) break;
             }
 
-            if (customModel.getSamples() == 0) {
+            if (mobileTransferModel.getSamples() == 0) {
                 return;
             }
             System.out.println("Samples: " + sampleSize);
 
             AtomicInteger epochs = new AtomicInteger();
-            customModel.enableTraining((epoch, loss) -> {
+            mobileTransferModel.enableTraining((epoch, loss) -> {
 
                 runOnUiThread(() -> {
                     TextView lossText = findViewById(R.id.loss_text);
                     lossText.setText(getResources().getString(R.string.loss_string, loss));
                 });
+
                 System.out.println("Epoch: " + epochs.get() + " Loss: " + loss + " with error: " + Math.abs(loss - prevLoss));
                 if (Float.isNaN(loss)) {
-                    this.customModel.disableTraining();
+                    this.mobileTransferModel.disableTraining();
                 }
+
                 if (epochs.get() > 1000) {
-                    this.customModel.disableTraining();
+                    this.mobileTransferModel.disableTraining();
                 }
+
                 if (Math.abs(loss - prevLoss) < 0.001) {
                     if (stopTrain++ == 5) {
-                        this.customModel.disableTraining();
+                        this.mobileTransferModel.disableTraining();
                         runOnUiThread(() -> {
                             TextView lossText = findViewById(R.id.loss_text);
                             lossText.setText(R.string.not_training);
