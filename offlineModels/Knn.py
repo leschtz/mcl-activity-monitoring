@@ -92,15 +92,15 @@ if __name__ == '__main__':
     print(f"Test Score: {test_score}")
     print(classification_report(y_test, y_pred))
 
-    knn2 = KNearestNeighborsClassifier()
-    parameters = {'k': [13,19,25,31,37]}
-    clf = GridSearchCV(knn2, parameters, return_train_score=True)
-
-    clf.fit(X_train, y_train)
-    test_score = clf.score(X_test, y_test)
-    y_pred = clf.predict(X_test)
-    print(f"Test Score: {test_score}")
-    print(f"Dataset : {clf.best_params_}")
+    # knn2 = KNearestNeighborsClassifier()
+    # parameters = {'k': [13,19,25,31,37]}
+    # clf = GridSearchCV(knn2, parameters, return_train_score=True)
+    #
+    # clf.fit(X_train, y_train)
+    # test_score = clf.score(X_test, y_test)
+    # y_pred = clf.predict(X_test)
+    # print(f"Test Score: {test_score}")
+    # print(f"Dataset : {clf.best_params_}")
 
     cm = ConfusionMatrixDisplay(confusion_matrix(y_test, y_pred))
     cm.plot()
