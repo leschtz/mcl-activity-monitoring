@@ -14,17 +14,17 @@ public class Util {
 
     public static String getActivityByNumber(int activity) {
         switch (activity) {
-            case 1:
+            case 0:
                 return "Walk";
-            case 2:
+            case 1:
                 return "Run";
-            case 3:
+            case 2:
                 return "Jump";
-            case 4:
+            case 3:
                 return "Squat";
-            case 5:
+            case 4:
                 return "Stand";
-            case 6:
+            case 5:
                 return "Sit";
 
             default:

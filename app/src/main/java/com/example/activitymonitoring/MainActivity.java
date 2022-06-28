@@ -350,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (this.classifier != null) {
             int knnResult = classifier.classify(knnData);
-            if (System.currentTimeMillis() % 100L == 0L) {
+            if (System.currentTimeMillis() % 20L == 0L) {
                 TextView classification_result = findViewById(R.id.knn_model);
                 classification_result.setText(getResources().getString(R.string.classification_result, Util.getActivityByNumber(knnResult)));
             }
@@ -370,16 +370,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
             }
 
-            TextView predictionProbabilities = findViewById(R.id.mobile_model_predictions);
-            predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
+            if (System.currentTimeMillis() % 20L == 0L) {
+
+                TextView predictionProbabilities = findViewById(R.id.mobile_model_predictions);
+                predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
 
 
-            TextView confidencePrediction = findViewById(R.id.mobile_model_confidence_text);
-            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, predictionResult.confidence));
+                TextView confidencePrediction = findViewById(R.id.mobile_model_confidence_text);
+                confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, predictionResult.confidence));
 
-            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
-            TextView base_classification_result = findViewById(R.id.mobile_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+                ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
+                TextView base_classification_result = findViewById(R.id.mobile_model);
+                base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+            }
         }
 
         if (this.genericModel != null) {
@@ -395,16 +398,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
+            if (System.currentTimeMillis() % 20L == 0L) {
+                TextView predictionProbabilities = findViewById(R.id.generic_model_predictions);
+                predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
 
-            TextView predictionProbabilities = findViewById(R.id.generic_model_predictions);
-            predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
+                TextView confidencePrediction = findViewById(R.id.generic_model_confidence_text);
+                confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, genericResult.confidence));
 
-            TextView confidencePrediction = findViewById(R.id.generic_model_confidence_text);
-            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, genericResult.confidence));
-
-            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
-            TextView base_classification_result = findViewById(R.id.generic_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+                ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
+                TextView base_classification_result = findViewById(R.id.generic_model);
+                base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+            }
         }
 
         if (this.haptOfflineModel != null) {
@@ -422,16 +426,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (activity == null) {
                 return;
             }
+            if (System.currentTimeMillis() % 20L == 0L) {
 
-            TextView predictionProbabilities = findViewById(R.id.hapt_offline_model_predictions);
-            predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
+                TextView predictionProbabilities = findViewById(R.id.hapt_offline_model_predictions);
+                predictionProbabilities.setText(Util.buildPredictionProbabilityString(getResources(), possibleResults));
 
-            TextView confidencePrediction = findViewById(R.id.hapt_offline_model_confidence_text);
-            confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, haptResult.confidence));
+                TextView confidencePrediction = findViewById(R.id.hapt_offline_model_confidence_text);
+                confidencePrediction.setText(getResources().getString(R.string.prediction_confidence, haptResult.confidence));
 
-            ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
-            TextView base_classification_result = findViewById(R.id.hapt_offline_model);
-            base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+                ActivityType act = ActivityType.values()[Integer.parseInt(activity)];
+                TextView base_classification_result = findViewById(R.id.hapt_offline_model);
+                base_classification_result.setText(getResources().getString(R.string.classification_result, act.name()));
+            }
         }
     }
 
@@ -663,18 +669,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         StringJoiner s_real = new StringJoiner(", ");
         System.out.println("evaluation");
         System.out.println(data.size());
-        for(double[] d : data) {
-            float[] f_data = new float[d.length-1];
-            for(int i = 0; i < (d.length-1); i++) {
+        for (double[] d : data) {
+            float[] f_data = new float[d.length - 1];
+            for (int i = 0; i < (d.length - 1); i++) {
                 f_data[i] = (float) d[i];
             }
 
-            Double className = Double.valueOf(d[d.length-1]);
+            Double className = Double.valueOf(d[d.length - 1]);
 
             Prediction[] pred = this.mobileTransferModel.predict(f_data);
             Prediction result = null;
-            for( Prediction p : pred) {
-                if(result == null) {
+            for (Prediction p : pred) {
+                if (result == null) {
                     result = p;
                 }
 
@@ -683,7 +689,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
 
-            if(result != null) {
+            if (result != null) {
                 s_real.add(String.valueOf(className.intValue()));
                 s_pred.add(result.getClassName());
             }
