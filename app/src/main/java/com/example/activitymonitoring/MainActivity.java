@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             currentValue = sensorEvent.values.clone();
             dataProcessor.addSensorData(timestamp, currentValue);
 
-            if (System.currentTimeMillis() % 100L == 0L) {
+            if (System.currentTimeMillis() % 20L == 0L) {
                 TextView debugAccView = findViewById(R.id.debug_acc);
                 debugAccView.setText(getResources().getString(R.string.three_axis_sensor, currentValue[0], currentValue[1], currentValue[2]));
 
@@ -511,7 +511,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // informing the user about the data learning
         Toast.makeText(getApplicationContext(), "Learning with pre-recorded data.", Toast.LENGTH_SHORT).show();
         new Thread(() -> {
-            List<double[]> trainingData = readFile("transfer-test-data.csv");
+            List<double[]> trainingData = readFile("transfer_learning_features.txt");
 
             // knnData is a big file, with a lot features of the same class consecutively.
             // to mix this up, it has to be shuffled
